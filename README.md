@@ -3,6 +3,8 @@
 [![ci](https://github.com/rakshit-737/linchpin/actions/workflows/ci.yml/badge.svg)](https://github.com/rakshit-737/linchpin/actions/workflows/ci.yml)
 ![python](https://img.shields.io/badge/python-3.11%E2%80%933.14-blue)
 [![license: MIT](https://img.shields.io/badge/license-MIT-green)](LICENSE)
+[![docs](https://github.com/rakshit-737/linchpin/actions/workflows/docs.yml/badge.svg)](https://rakshit-737.github.io/linchpin/)
+[![release](https://img.shields.io/github/v/release/rakshit-737/linchpin)](https://github.com/rakshit-737/linchpin/releases)
 
 **Read-only attack-path reasoning: find the few fixes that cut every route to the crown jewels, using scanner, identity and exploit-intel data.**
 
@@ -11,9 +13,11 @@
 LINCHPIN reads exports that were **already collected**: OpenVAS, Nessus and nmap reports, SharpHound/BloodHound JSON, and a topology/inventory overlay. It enriches them with real exploitability data (NVD CVSS vectors, FIRST EPSS, CISA KEV) and builds a heterogeneous attack graph. Each edge is a possible attacker transition with a deterministic cost. From that graph it:
 
 1. enumerates and ranks entry-to-crown-jewel attack paths (Yen's k-shortest paths),
-2. finds **chokepoints** (dominators) and the **exact minimum remediation cut** (vertex max-flow/min-cut),
-3. recommends an ordered, budgeted set of fixes (patch, rotate a credential, add a segmentation rule). Each fix comes with a templated rationale and the ids of the paths it breaks as evidence. No LLM is involved,
+2. finds **chokepoints** (dominators) and the **exact minimum remediation cut** (vertex max-flow/min-cut), by fix count or by remediation effort (`cuts --weighted`),
+3. recommends an ordered, budgeted set of fixes (patch, rotate a credential, remove an abusable AD ACL, add a segmentation rule). Each fix comes with a templated rationale and the ids of the paths it breaks as evidence. No LLM is involved,
 4. serves all of this through a CLI, a FastAPI service, a Cytoscape.js path explorer with live what-if analysis, and an optional Neo4j mirror.
+
+**Docs:** <https://rakshit-737.github.io/linchpin/> · **Static demo (runs in the browser):** <https://rakshit-737.github.io/linchpin/demo/> · **Image:** `docker run --rm -p 127.0.0.1:8000:8000 ghcr.io/rakshit-737/linchpin`
 
 **Safety property:** LINCHPIN cannot exploit anything. It sends no packets and only parses files. See [SECURITY.md](SECURITY.md) and [THREAT_MODEL.md](THREAT_MODEL.md).
 
@@ -51,13 +55,13 @@ flowchart LR
 
 | Module | Path | Notes |
 | --- | --- | --- |
-| M1 connectors | `src/linchpin/connectors/` | OpenVAS, Nessus, nmap (+ `vulners` CVEs), BloodHound v5/v6, inventory overlay, native JSON. Format auto-detection; `defusedxml` parsing |
+| M1 connectors | `src/linchpin/connectors/` | OpenVAS, Nessus, nmap (+ `vulners` CVEs), BloodHound v5/v6 (incl. abusable ACEs and DCSync), inventory overlay, native JSON. Format auto-detection; `defusedxml` parsing |
 | intel | `src/linchpin/intel/` | NVD 2.0 / EPSS / KEV parsers, 379k-CVE lookup cache, finding enrichment |
 | scenario | `src/linchpin/scenario.py` | real exports + declared topology + intel in one YAML |
 | M2 GraphStore | `src/linchpin/graph/store.py`, `neo4j_store.py` | in-memory NetworkX; Neo4j mirror (push/pull, `.cypher` export) |
 | M3 edge cost | `src/linchpin/engine/edge_cost.py` | frozen formula; uses the CVSS exploitability sub-score and a KEV floor |
 | M4 paths | `src/linchpin/engine/paths.py` | Yen k-shortest, kill-chain stages, criticality |
-| cuts | `src/linchpin/engine/cuts.py` | chokepoints (dominator tree) and exact min vertex cut |
+| cuts | `src/linchpin/engine/cuts.py` | chokepoints (dominator tree) and exact min vertex cut, unweighted or effort-weighted |
 | M5 optimizer | `src/linchpin/engine/optimizer.py` | exact min cut when it fits the budget, otherwise greedy set cover |
 | M6 explain | `src/linchpin/engine/explain.py` | deterministic templates |
 | M7 API | `src/linchpin/api/app.py` | frozen endpoints plus `/graph`, `/chokepoints`, `/demo/load`, `/ui` |
@@ -66,7 +70,7 @@ flowchart LR
 | M10 UI | `src/linchpin/api/static/index.html` | Cytoscape.js path explorer, remediation table, what-if |
 | M11 ML | `src/linchpin/ml/exploitability.py` | KEV-membership model from NVD text and vectors, trained on a temporal split |
 
-Contracts are frozen in [`contracts/`](contracts/). v1.1 changes are additive: the `cvss_exploitability` and `kev` edge-cost inputs, plus `exploitability_source` in the config. Design notes are in [`docs/`](docs/).
+Contracts are frozen in [`contracts/`](contracts/). v1.1 changes are additive: the `cvss_exploitability` and `kev` edge-cost inputs, plus `exploitability_source` in the config. v1.2 adds the `Ace` node, `HAS_ACE` / `ABUSES` edges, the `acl_abuse` skill class and `fix_cost` ([ADR 0004](docs/adr/0004-ace-edges-weighted-cut.md)). Design notes are in [`docs/`](docs/).
 
 ## Results
 
@@ -78,8 +82,8 @@ The **findings and exploit intel are real.** The inputs are an OpenVAS scan of M
 
 | | |
 | --- | --- |
-| findings | 132 from 6 exports; 43 of 69 vuln findings carry an NVD CVE (the rest are CVE-less checks); 2 are in KEV |
-| attack graph | 123 nodes, 218 edges; 33 of 69 vulns grant code execution (from the CVSS vector) |
+| findings | 135 from 6 exports; 43 of 69 vuln findings carry an NVD CVE (the rest are CVE-less checks); 2 are in KEV |
+| attack graph | 128 nodes, 224 edges (incl. 3 abusable-ACE nodes, none reachable from the entry points); 33 of 69 vulns grant code execution (from the CVSS vector) |
 | crown jewel | NTDS on the domain controller `primary.testlab.local` (from BloodHound) |
 | chokepoints | Windows app-server RCE, `app-win`, `svc_deploy`, `win10`, cached `ADMINISTRATOR` hash |
 
@@ -113,6 +117,8 @@ Graphs have 12–60 hosts (≈90–300 nodes). The budget is **3 fixes**. "Disco
 | multi (2.0; no chokepoint) | **100%** | 96% | 2% | 0% | 0% | 0% | 0% |
 | none (7.1) | 0% | 0% | 0% | 0% | 0% | 0% | 0% |
 
+Re-run for v1.0 with 95% intervals (Wilson for rates, seeded bootstrap for cost gain); the numbers are unchanged from v0.2. With n = 50 per family, a 100% rate has the interval [93%, 100%]. The strongest baseline's intervals: betweenness 88% [76%, 94%] on `single` and 40% [28%, 54%] on `ad`; CVSS-first 14% [7%, 26%] on `ad`. On `none`, LINCHPIN's cost gain is +0.207 [+0.187, +0.229] against +0.063 [+0.044, +0.083] for KEV→EPSS.
+
 ![strategies](benchmarks/results/strategies.png)
 
 * **When no plan within budget can disconnect** (`none`), LINCHPIN still raises the attacker's cheapest-path cost the most: +0.207 in edge-cost units, against +0.023 for CVSS-first, +0.063 for KEV→EPSS and +0.046 for betweenness.
@@ -125,12 +131,14 @@ Details: [`benchmarks/results/summary.md`](benchmarks/results/summary.md) and th
 
 The label is CISA KEV membership. The model trains on NVD CVEs published 2015–2022 (124,943 CVEs, 883 in KEV) and tests on CVEs published from 2023 on (177,922 CVEs, 691 in KEV, base rate 0.39%). It is a hashed bag of description n-grams, CVSS vector components and CWE ids, fed to a class-balanced logistic regression. EPSS is not a feature.
 
-| scorer | ROC-AUC | avg. precision |
+| scorer | ROC-AUC [95% CI] | avg. precision [95% CI] |
 | --- | ---: | ---: |
-| CVSS base score | 0.748 | 0.012 |
-| CVSS exploitability sub-score | 0.594 | 0.006 |
-| **LINCHPIN learned** | **0.863** | **0.063** |
-| FIRST EPSS (reference only\*) | 0.967 | 0.376 |
+| CVSS base score | 0.748 [0.731, 0.766] | 0.012 [0.011, 0.015] |
+| CVSS exploitability sub-score | 0.594 [0.574, 0.617] | 0.006 [0.005, 0.006] |
+| **LINCHPIN learned** | **0.863 [0.850, 0.875]** | **0.063 [0.049, 0.080]** |
+| FIRST EPSS (reference only\*) | 0.967 [0.960, 0.972] | 0.376 [0.339, 0.412] |
+
+CIs: class-stratified bootstrap, 200 replicates, seed 0. The learned model's AUC interval does not overlap CVSS base score's.
 
 \* The EPSS scores are dated 2026-09-25, after most test CVEs were exploited, and EPSS consumes exploitation telemetry. Treat it as an upper reference, not a baseline this model claims to beat. The learned score improves on CVSS by about 5× in average precision. It is useful where EPSS is missing, for example for brand-new CVEs, and it is opt-in via `exploitability_source: learned`.
 
@@ -158,7 +166,7 @@ Docker was not available on the build machine, so no scans of local vulnerable c
 
 ```bash
 pip install -e ".[dev,api,ml,bench]"
-python -m pytest -q                       # 82 tests (3 real-data + 1 live-Neo4j auto-skip without data/server)
+python -m pytest -q                       # 88 tests (real-data, live-Neo4j and browser tests auto-skip without data/server/Chromium)
 
 # synthetic demo (no downloads)
 export PYTHONPATH=src
@@ -205,17 +213,19 @@ Everything is seeded. EPSS and KEV are rolling feeds, so exact numbers shift sli
 ## Limitations
 
 - **Declared topology.** Public exports come from unrelated networks, so the case-study topology is an assumption. The results show the reasoning works on real finding data. They do not show any real organisation's exposure.
-- **Simplified attack semantics.** "Code execution" is inferred from CVSS vectors (I:H, or v2 C:P/I:P/A:P), with a name/severity heuristic for CVE-less checks and KEV promotion. Local-privesc vulns are kept but grant nothing. Credential use ignores network reachability to the target. `prerequisite_match` is fixed at 1.0. Only AdminTo, sessions and DA membership are modelled from BloodHound, not ACE edges (GenericAll, DCSync, ADCS).
+- **AD coverage.** AdminTo, sessions, DA membership and abusable ACEs (GenericAll/Write, WriteDacl/Owner, Owns, ForceChangePassword, AddMember, AllExtendedRights, AddAllowedToAct, DCSync) are modelled. ADCS, shadow credentials, GPO links and trusts are not. On the public `TESTLAB.LOCAL` data no ACE path is reachable from the declared entry points, so ACE evidence is unit-level.
+- **Simplified attack semantics.** "Code execution" is inferred from CVSS vectors (I:H, or v2 C:P/I:P/A:P), with a name/severity heuristic for CVE-less checks and KEV promotion. Local-privesc vulns are kept but grant nothing. Credential use ignores network reachability to the target. `prerequisite_match` is fixed at 1.0.
 - **Residual-path metric is k-capped** (k=100/200). It is informative for disconnection but not for dense graphs. That is why cost gain and disconnect rate are reported as well.
 - **Synthetic topologies** use real CVE parameters but invented hosts. Graph-shape realism is limited by the four families.
+- **Weighted cut effort** (patch = rotate = remove ACE = 1, segmentation = 3) are defaults, not measured costs.
+- **Needs a live environment (not done here):** scanning local vulnerable containers for same-network exports (no Docker on the build machine; third-party scanning is off-limits) and a Neo4j GDS backend benchmark.
 - **Scale:** Yen's algorithm dominates the cost. Graphs above roughly 1,500 nodes need path sampling or a Neo4j GDS backend (not built).
 
 ## Roadmap
 
-- BloodHound ACE edges (GenericAll/WriteDacl/DCSync/ADCS) and credential reachability checks
+- ADCS / shadow-credential / GPO edges, and credential reachability checks
 - Neo4j GDS-native path queries for large graphs
-- Weighted (cost-aware) min-cut, and remediation cost per fix type
-- Playwright smoke test for the UI; React rewrite if the UI grows
+- Measured per-organisation remediation costs for the weighted cut
 
 ## Lab-only safety note
 

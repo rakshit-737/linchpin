@@ -1,5 +1,24 @@
 # Changelog
 
+## 1.0.0 (2026-09-26): ACL paths, weighted cuts, docs site, releases
+
+### Added
+- **BloodHound ACE edges** (contracts v1.2, additive): `Ace` nodes with `HAS_ACE` / `ABUSES` edges for GenericAll/GenericWrite, WriteDacl/WriteOwner/Owns, ForceChangePassword, AddMember/AddSelf, AllExtendedRights, AddAllowedToAct (RBCD), ReadLAPSPassword and DCSync (GetChanges + GetChangesAll). "Remove ACE" is a remediation type.
+- **Effort-weighted minimum cut** (`cuts --weighted`, `/chokepoints?weighted=true`, config `fix_cost`).
+- **Confidence intervals:** 95% Wilson intervals for disconnect rates, seeded bootstrap intervals for attacker-cost gain, and class-stratified bootstrap intervals for the ML ROC-AUC / average precision.
+- **Static demo** of the path explorer on GitHub Pages (`scripts/build_static_demo.py`, in-browser what-if).
+- **Playwright browser smoke tests** (live API and static demo) and a CI `ui` job.
+- **MkDocs Material docs site** with mkdocstrings API reference, deployed by `docs.yml`.
+- **Dockerfile** (slim, non-root), compose now builds it; `release.yml` pushes `ghcr.io/rakshit-737/linchpin` and creates a GitHub Release with wheel and sdist.
+
+### Fixed
+- Configured (non-internet) entry hosts could be proposed as a "segmentation" fix and appear in min cuts.
+- `benchmarks/results/summary.md` was written in the Windows code page instead of UTF-8.
+- Threat model still listed defusedxml as TODO; package `__version__` was stale.
+
+### Results changed
+- Case study: 135 findings, 128 nodes / 224 edges (3 ACE nodes, none reachable from the declared entry points); the plan is unchanged.
+
 ## 0.2.0 (2026-09-26): real data
 
 ### Added
