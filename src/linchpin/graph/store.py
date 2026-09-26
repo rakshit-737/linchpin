@@ -95,9 +95,11 @@ class GraphStore:
                 svc = service(f.host_id, f.port or 0, f)
                 vid = f"vuln:{f.cve_id}@{f.host_id}:{f.port or 0}"
                 g.add_node(vid, label="Vuln", cve=f.cve_id, cvss_base=f.cvss_base, epss=f.epss,
-                           exploit_maturity=d.get("exploit_maturity"), host_id=f.host_id)
+                           exploit_maturity=d.get("exploit_maturity"), kev=bool(d.get("kev")),
+                           host_id=f.host_id)
                 self._add(g, svc, "HAS_VULN", vid)
-                self._add(g, vid, "ENABLES", priv(f.host_id), cvss_base=f.cvss_base, epss=f.epss)
+                self._add(g, vid, "ENABLES", priv(f.host_id), cvss_base=f.cvss_base, epss=f.epss,
+                          cvss_exploitability=d.get("cvss_exploitability"), kev=bool(d.get("kev")))
             elif f.kind == "credential":
                 cid = f"cred:{d['principal']}"
                 g.add_node(cid, label="Credential", principal=d["principal"],
@@ -144,7 +146,8 @@ class GraphStore:
 
     def _add(self, g: nx.DiGraph, u: str, rel: str, v: str, **props) -> None:
         ctx = EdgeContext(rel=rel, transition_class=CLASS_BY_REL.get(rel),
-                          cvss_base=props.get("cvss_base"), epss=props.get("epss"))
+                          cvss_base=props.get("cvss_base"), epss=props.get("epss"),
+                          cvss_exploitability=props.get("cvss_exploitability"), kev=bool(props.get("kev")))
         g.add_edge(u, v, rel=rel, id=edge_id(u, rel, v), cost=edge_cost(ctx, self.cfg), **props)
 
     # --------------------------------------------------------- entry / crown

@@ -1,6 +1,6 @@
 """Fetch the public datasets LINCHPIN's real-data pipeline uses (never committed to git).
 
-Usage:  python scripts/download_data.py [--out DIR] [--years 2002-2025] [--skip-nvd]
+Usage:  python scripts/download_data.py [--out DIR] [--years 2002-2026] [--skip-nvd]
 
 Sources (all public, no auth):
   * CISA Known Exploited Vulnerabilities catalog (CC0 / US-gov public domain)
@@ -83,7 +83,7 @@ def fetch(url: str, dest: Path, force: bool = False) -> None:
 def main(argv: list[str] | None = None) -> int:
     ap = argparse.ArgumentParser()
     ap.add_argument("--out", default="../../datasets/linchpin")
-    ap.add_argument("--years", default="2002-2025")
+    ap.add_argument("--years", default="2002-2026")
     ap.add_argument("--skip-nvd", action="store_true")
     a = ap.parse_args(argv)
     out = Path(a.out)

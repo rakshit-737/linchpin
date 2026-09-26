@@ -5,12 +5,16 @@ from pydantic import BaseModel
 
 from linchpin.config import Config
 
+KEV_FLOOR = 0.95  # known-exploited-in-the-wild => near-maximal exploitability
+
 
 class EdgeContext(BaseModel):
     rel: str
     transition_class: str | None = None  # key into cfg.skill_penalty, None => 0 penalty
     cvss_base: float | None = None
     epss: float | None = None
+    cvss_exploitability: float | None = None  # NVD exploitability sub-score, normalised to [0, 1]
+    kev: bool = False  # listed in CISA Known Exploited Vulnerabilities
     exploitability: float | None = None  # explicit override (e.g. learned model)
     prerequisite_match: float = 1.0
 
@@ -20,13 +24,17 @@ def exploitability(ctx: EdgeContext) -> float:
         return ctx.exploitability
     if ctx.rel != "ENABLES":
         return 1.0
-    if ctx.cvss_base is None and ctx.epss is None:
-        return 0.5
-    if ctx.epss is None:
-        return ctx.cvss_base / 10.0
-    if ctx.cvss_base is None:
-        return ctx.epss
-    return 0.6 * (ctx.cvss_base / 10.0) + 0.4 * ctx.epss
+    cv = ctx.cvss_exploitability if ctx.cvss_exploitability is not None else (
+        None if ctx.cvss_base is None else ctx.cvss_base / 10.0)
+    if cv is None and ctx.epss is None:
+        e = 0.5
+    elif ctx.epss is None:
+        e = cv
+    elif cv is None:
+        e = ctx.epss
+    else:
+        e = 0.6 * cv + 0.4 * ctx.epss
+    return max(e, KEV_FLOOR) if ctx.kev else e
 
 
 def edge_cost(ctx: EdgeContext, cfg: Config) -> float:
