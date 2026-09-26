@@ -14,7 +14,7 @@ Offline inputs (exported findings or synthetic data) go through validation into 
 
 | Boundary | Crossing | Controls |
 | --- | --- | --- |
-| Scanner export to connector | untrusted file content | pydantic validation, drop-and-log invalid records; defusedxml recommended (TODO default) |
+| Scanner export to connector | untrusted file content | pydantic validation, drop-and-log invalid records; `defusedxml` parsing (a hard dependency since 0.2.0) |
 | User to API | HTTP on localhost | bind 127.0.0.1; no auth (TODO: token auth before any non-local use) |
 | Config file | YAML | `yaml.safe_load` and pydantic validation |
 
@@ -27,7 +27,7 @@ Offline inputs (exported findings or synthetic data) go through validation into 
 | Repudiation | nobody can tell who ingested which data | findings keep their `source`; audit log is TODO |
 | Information disclosure | state file or API output leaks the weakness map | state stays local and is gitignored; API is local-only |
 | Denial of service | huge or path-explosive graph | k-shortest is capped by `k`; request-size limits are TODO |
-| Elevation of privilege | XML entity expansion in the parser | stdlib expat refuses external entities; defusedxml is TODO |
+| Elevation of privilege | XML entity expansion in the parser | `defusedxml` rejects entity declarations; the stdlib fallback refuses `<!ENTITY` |
 
 ## Misuse considerations
 

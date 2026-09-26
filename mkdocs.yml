@@ -1,0 +1,66 @@
+site_name: LINCHPIN
+site_description: Read-only attack-path reasoning and remediation prioritisation over scanner, identity and exploit-intel data
+site_url: https://rakshit-737.github.io/linchpin/
+repo_url: https://github.com/rakshit-737/linchpin
+repo_name: rakshit-737/linchpin
+edit_uri: edit/main/docs/
+copyright: MIT licence. Lab-only, read-only tooling.
+
+theme:
+  name: material
+  features: [navigation.sections, navigation.top, content.code.copy, search.highlight]
+  palette:
+    - media: "(prefers-color-scheme: light)"
+      scheme: default
+      primary: indigo
+      toggle: {icon: material/weather-night, name: Dark mode}
+    - media: "(prefers-color-scheme: dark)"
+      scheme: slate
+      primary: indigo
+      toggle: {icon: material/weather-sunny, name: Light mode}
+
+markdown_extensions:
+  - admonition
+  - tables
+  - attr_list
+  - toc: {permalink: true}
+  - pymdownx.details
+  - pymdownx.snippets: {base_path: ["."], check_paths: true}
+  - pymdownx.superfences:
+      custom_fences:
+        - name: mermaid
+          class: mermaid
+          format: !!python/name:pymdownx.superfences.fence_code_format
+
+plugins:
+  - search
+  - mkdocstrings:
+      handlers:
+        python:
+          paths: [src]
+          options: {show_source: false, docstring_style: google, show_root_heading: true, heading_level: 3}
+
+not_in_nav: |
+  /demo/**
+
+nav:
+  - Home: index.md
+  - Getting started: getting-started.md
+  - Live demo: demo.md
+  - Architecture: architecture.md
+  - Design notes: design.md
+  - Datasets: datasets.md
+  - Benchmarks & results: benchmarks.md
+  - Reference:
+      - CLI: reference/cli.md
+      - HTTP API: reference/api.md
+      - Python API: reference/python.md
+  - Threat model: threat-model.md
+  - Security: security.md
+  - ADRs:
+      - 0001 Exact cut plus greedy: adr/0001-exact-cut-plus-greedy.md
+      - 0002 Neo4j adapter: adr/0002-neo4j-adapter.md
+      - 0003 Real-data strategy: adr/0003-real-data-strategy.md
+      - 0004 AD ACEs and weighted cut: adr/0004-ace-edges-weighted-cut.md
+  - Limitations & roadmap: limitations.md
+  - Changelog: changelog.md
