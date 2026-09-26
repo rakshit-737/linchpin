@@ -1,16 +1,21 @@
-# OPTIONAL. The MVP runs fully in-memory (NetworkX) and does not need this.
-# Brings up the API on localhost only. A Neo4j service is sketched for the future
-# Neo4j GraphStore backend (TODO) and is disabled by default via a profile.
+# Lab-only stack: API + web UI on localhost, optional Neo4j mirror.
+#   docker compose up api                       -> http://127.0.0.1:8000/ui (synthetic demo)
+#   docker compose --profile neo4j up           -> also Neo4j Browser on http://127.0.0.1:7474
+# To serve the real-export case study, mount the dataset dir and set LINCHPIN_SCENARIO.
 services:
   api:
     image: python:3.12-slim
     working_dir: /app
-    volumes: [".:/app:ro"]
-    command: sh -c "pip install -q . fastapi uvicorn && uvicorn linchpin.api.app:app --host 0.0.0.0 --port 8000"
+    volumes: [".:/app:ro", "${LINCHPIN_DATA:-../../datasets/linchpin}:/data:ro"]
+    environment:
+      LINCHPIN_DATA_DIR: /data
+      LINCHPIN_SCENARIO: ${LINCHPIN_SCENARIO:-}
+    command: sh -c "pip install -q '.[api]' && uvicorn linchpin.api.app:app --host 0.0.0.0 --port 8000"
     ports: ["127.0.0.1:8000:8000"]
   neo4j:
     profiles: ["neo4j"]
     image: neo4j:5
     environment:
       NEO4J_AUTH: neo4j/change-me-lab-only
+      NEO4J_PLUGINS: '["graph-data-science"]'
     ports: ["127.0.0.1:7474:7474", "127.0.0.1:7687:7687"]

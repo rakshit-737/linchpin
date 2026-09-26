@@ -59,9 +59,8 @@ def statements(g: nx.DiGraph, graph_name: str = "default") -> list[tuple[str, di
     out: list[tuple[str, dict]] = [
         ("MATCH (n:LinchpinNode {graph: $graph}) DETACH DELETE n", {"graph": graph_name}),
     ]
-    for lbl in sorted(nodes):
-        out.append((f"CREATE CONSTRAINT linchpin_{lbl.lower()}_id IF NOT EXISTS "
-                    f"FOR (n:{lbl}) REQUIRE (n.graph, n.id) IS UNIQUE", {}))
+    # composite range index (works on Community Edition; uniqueness is enforced by MERGE)
+    out.insert(0, ("CREATE INDEX linchpin_node_key IF NOT EXISTS FOR (n:LinchpinNode) ON (n.graph, n.id)", {}))
     for lbl, rows in sorted(nodes.items()):
         for i in range(0, len(rows), BATCH):
             out.append((f"UNWIND $rows AS r MERGE (n:{lbl}:LinchpinNode {{graph: $graph, id: r.id}}) "

@@ -6,15 +6,43 @@ jobs:
   test:
     runs-on: ubuntu-latest
     strategy:
+      fail-fast: false
       matrix:
-        python: ["3.11", "3.12"]
+        python: ["3.11", "3.12", "3.13"]
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
         with: { python-version: "${{ matrix.python }}" }
+      - run: pip install -e ".[dev,api,ml]"
+      - name: Lint
+        run: ruff check .
+      - name: Tests (real-data and live-Neo4j tests auto-skip)
+        run: pytest -q
+      - name: Synthetic demo
+        run: make demo
+      - name: Quick benchmark smoke
+        run: python benchmarks/run_benchmark.py --seeds 2 --budget 3 --families single,ad --out /tmp/bench
+  neo4j:
+    runs-on: ubuntu-latest
+    services:
+      neo4j:
+        image: neo4j:5
+        env:
+          NEO4J_AUTH: neo4j/ci-lab-only-pw
+        ports: ["7687:7687"]
+        options: >-
+          --health-cmd "cypher-shell -u neo4j -p ci-lab-only-pw 'RETURN 1'"
+          --health-interval 10s --health-timeout 10s --health-retries 12
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: { python-version: "3.12" }
       - run: pip install -e ".[dev]"
-      - run: pytest -q
-      - run: make demo
+      - name: Live Neo4j round trip
+        env:
+          NEO4J_URI: bolt://localhost:7687
+          NEO4J_PASSWORD: ci-lab-only-pw
+        run: pytest -q -m neo4j tests/test_neo4j_store.py
   security:
     runs-on: ubuntu-latest
     steps:
