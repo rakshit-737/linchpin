@@ -4,7 +4,7 @@
     "budget": 3,
     "k_cap": 100,
     "hosts": "12..60",
-    "runtime_s": 1182.1
+    "runtime_s": 3783.7
   },
   "families": {
     "ad": {
@@ -14,51 +14,101 @@
       "mean_min_cut": 1.38,
       "linchpin": {
         "disconnect_rate": 1.0,
+        "disconnect_ci95": [
+          0.9286,
+          1.0
+        ],
+        "cost_gain_ci95": null,
         "residual_frac": 0.0,
         "residual_frac_se": 0.0,
-        "mean_ms": 594.6823199999926,
+        "mean_ms": 663.8583139999537,
         "cost_gain_connected": null
       },
       "greedy": {
         "disconnect_rate": 1.0,
+        "disconnect_ci95": [
+          0.9286,
+          1.0
+        ],
+        "cost_gain_ci95": null,
         "residual_frac": 0.0,
         "residual_frac_se": 0.0,
-        "mean_ms": 521.6143800000282,
+        "mean_ms": 540.9500420003315,
         "cost_gain_connected": null
       },
       "cvss": {
         "disconnect_rate": 0.14,
+        "disconnect_ci95": [
+          0.0695,
+          0.2619
+        ],
+        "cost_gain_ci95": [
+          0.0549,
+          0.1387
+        ],
         "residual_frac": 0.7125854280776694,
         "residual_frac_se": 0.0587269917948978,
-        "mean_ms": 0.12880399990535807,
+        "mean_ms": 0.3258960004313849,
         "cost_gain_connected": 0.09273293023255814
       },
       "epss": {
         "disconnect_rate": 0.06,
+        "disconnect_ci95": [
+          0.0206,
+          0.1622
+        ],
+        "cost_gain_ci95": [
+          0.0642,
+          0.1338
+        ],
         "residual_frac": 0.8349260547477418,
         "residual_frac_se": 0.04579352369367427,
-        "mean_ms": 0.11038400014513172,
+        "mean_ms": 0.16811800029245205,
         "cost_gain_connected": 0.09775787234042554
       },
       "kev_epss": {
         "disconnect_rate": 0.04,
+        "disconnect_ci95": [
+          0.011,
+          0.1346
+        ],
+        "cost_gain_ci95": [
+          0.0726,
+          0.1459
+        ],
         "residual_frac": 0.8549260547477417,
         "residual_frac_se": 0.04267441819738043,
-        "mean_ms": 0.14768600012757815,
+        "mean_ms": 0.3643719994579442,
         "cost_gain_connected": 0.10912375
       },
       "betweenness": {
         "disconnect_rate": 0.4,
+        "disconnect_ci95": [
+          0.2761,
+          0.5382
+        ],
+        "cost_gain_ci95": [
+          0.0457,
+          0.1271
+        ],
         "residual_frac": 0.5312896551724138,
         "residual_frac_se": 0.06948454267239866,
-        "mean_ms": 139.92885799998476,
+        "mean_ms": 274.82023599979584,
         "cost_gain_connected": 0.08309326666666667
       },
       "random": {
         "disconnect_rate": 0.12,
+        "disconnect_ci95": [
+          0.0562,
+          0.2381
+        ],
+        "cost_gain_ci95": [
+          0.0035,
+          0.0413
+        ],
         "residual_frac": 0.7991971618358547,
         "residual_frac_se": 0.0531937556121616,
-        "mean_ms": 0.19438800038187765,
+        "mean_ms": 0.3465880001022015,
         "cost_gain_connected": 0.02102009090909091
       },
       "greedy_optimal_rate": 1.0,
@@ -72,51 +122,104 @@
       "mean_min_cut": 2,
       "linchpin": {
         "disconnect_rate": 1.0,
+        "disconnect_ci95": [
+          0.9286,
+          1.0
+        ],
+        "cost_gain_ci95": null,
         "residual_frac": 0.0,
         "residual_frac_se": 0.0,
-        "mean_ms": 1342.942908000041,
+        "mean_ms": 5363.859993999795,
         "cost_gain_connected": null
       },
       "greedy": {
         "disconnect_rate": 0.96,
+        "disconnect_ci95": [
+          0.8654,
+          0.989
+        ],
+        "cost_gain_ci95": [
+          0.4324,
+          0.491
+        ],
         "residual_frac": 0.04,
         "residual_frac_se": 0.027712812921102038,
-        "mean_ms": 1103.8674100000935,
+        "mean_ms": 4365.023035999475,
         "cost_gain_connected": 0.461711
       },
       "cvss": {
         "disconnect_rate": 0.02,
+        "disconnect_ci95": [
+          0.0035,
+          0.105
+        ],
+        "cost_gain_ci95": [
+          0.0276,
+          0.0836
+        ],
         "residual_frac": 0.98,
         "residual_frac_se": 0.019798989873223333,
-        "mean_ms": 0.16539800017199013,
+        "mean_ms": 0.4976799992437009,
         "cost_gain_connected": 0.05373048979591837
       },
       "epss": {
         "disconnect_rate": 0.0,
+        "disconnect_ci95": [
+          0.0,
+          0.0714
+        ],
+        "cost_gain_ci95": [
+          0.0576,
+          0.1116
+        ],
         "residual_frac": 1.0,
         "residual_frac_se": 0.0,
-        "mean_ms": 0.22215600009076297,
+        "mean_ms": 1.0412600002018735,
         "cost_gain_connected": 0.08309583999999999
       },
       "kev_epss": {
         "disconnect_rate": 0.0,
+        "disconnect_ci95": [
+          0.0,
+          0.0714
+        ],
+        "cost_gain_ci95": [
+          0.0584,
+          0.1135
+        ],
         "residual_frac": 1.0,
         "residual_frac_se": 0.0,
-        "mean_ms": 0.1424060000863392,
+        "mean_ms": 1.038568000367377,
         "cost_gain_connected": 0.08419367999999999
       },
       "betweenness": {
         "disconnect_rate": 0.0,
+        "disconnect_ci95": [
+          0.0,
+          0.0714
+        ],
+        "cost_gain_ci95": [
+          0.1327,
+          0.1974
+        ],
         "residual_frac": 1.0,
         "residual_frac_se": 0.0,
-        "mean_ms": 259.1145679997135,
+        "mean_ms": 1316.787055999157,
         "cost_gain_connected": 0.16454935999999998
       },
       "random": {
         "disconnect_rate": 0.0,
+        "disconnect_ci95": [
+          0.0,
+          0.0714
+        ],
+        "cost_gain_ci95": [
+          0.0164,
+          0.062
+        ],
         "residual_frac": 1.0,
         "residual_frac_se": 0.0,
-        "mean_ms": 0.18257200019434094,
+        "mean_ms": 1.5489079999679234,
         "cost_gain_connected": 0.03636612
       },
       "greedy_optimal_rate": 0.7,
@@ -130,51 +233,107 @@
       "mean_min_cut": 7.08,
       "linchpin": {
         "disconnect_rate": 0.0,
+        "disconnect_ci95": [
+          0.0,
+          0.0714
+        ],
+        "cost_gain_ci95": [
+          0.1872,
+          0.2286
+        ],
         "residual_frac": 1.0,
         "residual_frac_se": 0.0,
-        "mean_ms": 921.5940880002745,
+        "mean_ms": 2349.693533999962,
         "cost_gain_connected": 0.20749412
       },
       "greedy": {
         "disconnect_rate": 0.0,
+        "disconnect_ci95": [
+          0.0,
+          0.0714
+        ],
+        "cost_gain_ci95": [
+          0.1872,
+          0.2286
+        ],
         "residual_frac": 1.0,
         "residual_frac_se": 0.0,
-        "mean_ms": 859.0849680001702,
+        "mean_ms": 2080.637313999905,
         "cost_gain_connected": 0.20749412
       },
       "cvss": {
         "disconnect_rate": 0.0,
+        "disconnect_ci95": [
+          0.0,
+          0.0714
+        ],
+        "cost_gain_ci95": [
+          0.0097,
+          0.0373
+        ],
         "residual_frac": 1.0,
         "residual_frac_se": 0.0,
-        "mean_ms": 0.18504600004234817,
+        "mean_ms": 0.266567999497056,
         "cost_gain_connected": 0.022659600000000002
       },
       "epss": {
         "disconnect_rate": 0.0,
+        "disconnect_ci95": [
+          0.0,
+          0.0714
+        ],
+        "cost_gain_ci95": [
+          0.0358,
+          0.0733
+        ],
         "residual_frac": 1.0,
         "residual_frac_se": 0.0,
-        "mean_ms": 0.1585279999562772,
+        "mean_ms": 0.41138199987472035,
         "cost_gain_connected": 0.05423904
       },
       "kev_epss": {
         "disconnect_rate": 0.0,
+        "disconnect_ci95": [
+          0.0,
+          0.0714
+        ],
+        "cost_gain_ci95": [
+          0.0436,
+          0.0825
+        ],
         "residual_frac": 1.0,
         "residual_frac_se": 0.0,
-        "mean_ms": 0.19359599966264796,
+        "mean_ms": 0.5537339994043577,
         "cost_gain_connected": 0.0625084
       },
       "betweenness": {
         "disconnect_rate": 0.0,
+        "disconnect_ci95": [
+          0.0,
+          0.0714
+        ],
+        "cost_gain_ci95": [
+          0.027,
+          0.0652
+        ],
         "residual_frac": 1.0,
         "residual_frac_se": 0.0,
-        "mean_ms": 306.26492199953645,
+        "mean_ms": 907.7207059998182,
         "cost_gain_connected": 0.04577336
       },
       "random": {
         "disconnect_rate": 0.0,
+        "disconnect_ci95": [
+          0.0,
+          0.0714
+        ],
+        "cost_gain_ci95": [
+          0.006,
+          0.0335
+        ],
         "residual_frac": 1.0,
         "residual_frac_se": 0.0,
-        "mean_ms": 0.2191379999567289,
+        "mean_ms": 0.9646580001572147,
         "cost_gain_connected": 0.018653919999999997
       },
       "greedy_optimal_rate": 0.18,
@@ -188,51 +347,101 @@
       "mean_min_cut": 1,
       "linchpin": {
         "disconnect_rate": 1.0,
+        "disconnect_ci95": [
+          0.9286,
+          1.0
+        ],
+        "cost_gain_ci95": null,
         "residual_frac": 0.0,
         "residual_frac_se": 0.0,
-        "mean_ms": 482.11319599999115,
+        "mean_ms": 2906.9311259995447,
         "cost_gain_connected": null
       },
       "greedy": {
         "disconnect_rate": 1.0,
+        "disconnect_ci95": [
+          0.9286,
+          1.0
+        ],
+        "cost_gain_ci95": null,
         "residual_frac": 0.0,
         "residual_frac_se": 0.0,
-        "mean_ms": 447.97638599971833,
+        "mean_ms": 2586.9088059992646,
         "cost_gain_connected": null
       },
       "cvss": {
         "disconnect_rate": 0.04,
+        "disconnect_ci95": [
+          0.011,
+          0.1346
+        ],
+        "cost_gain_ci95": [
+          0.0492,
+          0.1276
+        ],
         "residual_frac": 0.9132,
         "residual_frac_se": 0.03716927763624146,
-        "mean_ms": 0.0939640001161024,
+        "mean_ms": 0.5796619998000097,
         "cost_gain_connected": 0.086127
       },
       "epss": {
         "disconnect_rate": 0.04,
+        "disconnect_ci95": [
+          0.011,
+          0.1346
+        ],
+        "cost_gain_ci95": [
+          0.0628,
+          0.1377
+        ],
         "residual_frac": 0.9378,
         "residual_frac_se": 0.03161428790910844,
-        "mean_ms": 0.08150000023306347,
+        "mean_ms": 0.250289999821689,
         "cost_gain_connected": 0.09939791666666667
       },
       "kev_epss": {
         "disconnect_rate": 0.04,
+        "disconnect_ci95": [
+          0.011,
+          0.1346
+        ],
+        "cost_gain_ci95": [
+          0.0713,
+          0.1435
+        ],
         "residual_frac": 0.9378,
         "residual_frac_se": 0.03161428790910844,
-        "mean_ms": 0.09539400001813192,
+        "mean_ms": 0.4303739999886602,
         "cost_gain_connected": 0.10706058333333335
       },
       "betweenness": {
         "disconnect_rate": 0.88,
+        "disconnect_ci95": [
+          0.7619,
+          0.9438
+        ],
+        "cost_gain_ci95": [
+          0.003,
+          0.0587
+        ],
         "residual_frac": 0.12,
         "residual_frac_se": 0.04595650117230423,
-        "mean_ms": 151.67811200022697,
+        "mean_ms": 1330.314359999902,
         "cost_gain_connected": 0.030295666666666665
       },
       "random": {
         "disconnect_rate": 0.08,
+        "disconnect_ci95": [
+          0.0315,
+          0.1884
+        ],
+        "cost_gain_ci95": [
+          0.0118,
+          0.0485
+        ],
         "residual_frac": 0.898,
         "residual_frac_se": 0.04081568326023711,
-        "mean_ms": 0.13592400027846452,
+        "mean_ms": 1.469324000645429,
         "cost_gain_connected": 0.028591391304347825
       },
       "greedy_optimal_rate": 1.0,
