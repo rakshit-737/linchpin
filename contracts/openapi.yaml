@@ -1,0 +1,26 @@
+openapi: 3.1.0
+info: { title: LINCHPIN API, version: "1.0" }
+paths:
+  /ingest:
+    post: { summary: "Accept NormalizedFinding[]; returns {accepted, rejected, graph_stats}" }
+  /graph/build:
+    post: { summary: "(Re)build attack graph; returns {nodes, edges, build_ms}" }
+  /paths:
+    get:
+      summary: "AttackPath[] sorted by ascending total_cost"
+      parameters:
+        - { name: from, in: query, schema: { type: string, default: entrypoints } }
+        - { name: to, in: query, schema: { type: string, default: crown_jewels } }
+        - { name: k, in: query, schema: { type: integer, default: 10 } }
+  /remediations:
+    get:
+      summary: "Remediation[] sorted by paths_broken desc"
+      parameters:
+        - { name: budget, in: query, schema: { type: integer, default: 5 } }
+  /nodes/{id}:
+    get:
+      summary: "Node detail + inbound/outbound attack edges"
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: string } }
+  /whatif:
+    post: { summary: "Body {remove_nodes: [id...]} -> recomputed path stats (no persistence)" }
