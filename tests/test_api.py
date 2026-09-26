@@ -26,3 +26,17 @@ def test_api_flow():
     assert client.get("/nodes/nope").status_code == 404
     w = PathStats.model_validate(client.post("/whatif", json={"remove_nodes": [gt.linchpin]}).json())
     assert w.paths_after == 0
+
+
+def test_ui_endpoints_and_demo_load():
+    client = TestClient(create_app())
+    st = client.post("/demo/load", json={"family": "multi", "seed": 1, "n_hosts": 14}).json()
+    assert st["nodes"] > 0 and st["reachable_crown_jewels"]
+    g = client.get("/graph").json()
+    assert len(g["nodes"]) == st["nodes"] and len(g["edges"]) == st["edges"]
+    ch = client.get("/chokepoints").json()
+    assert ch["chokepoints"] == [] and ch["min_cut_size"] >= 2
+    assert client.get("/criticality").status_code == 200
+    ui = client.get("/ui")
+    assert ui.status_code == 200 and "cytoscape" in ui.text
+    assert client.post("/demo/load", json={"family": "bogus"}).status_code == 400
