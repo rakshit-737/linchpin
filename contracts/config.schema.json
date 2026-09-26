@@ -1,0 +1,13 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "LinchpinConfig",
+  "type": "object",
+  "properties": {
+    "weights": { "type": "object", "properties": { "w1": {"type": "number"}, "w2": {"type": "number"}, "w3": {"type": "number"} } },
+    "skill_penalty": { "type": "object", "additionalProperties": { "type": "number", "minimum": 0, "maximum": 1 } },
+    "entrypoints": { "type": "array", "items": { "type": "string" } },
+    "crown_jewels": { "type": "array", "items": { "type": "string" } },
+    "k_shortest": { "type": "integer", "minimum": 1 },
+    "neo4j": { "type": "object", "properties": { "uri": {"type": "string"}, "user": {"type": "string"} } }
+  }
+}
