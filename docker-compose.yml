@@ -1,0 +1,16 @@
+# OPTIONAL. The MVP runs fully in-memory (NetworkX) and does not need this.
+# Brings up the API on localhost only. A Neo4j service is sketched for the future
+# Neo4j GraphStore backend (TODO) and is disabled by default via a profile.
+services:
+  api:
+    image: python:3.12-slim
+    working_dir: /app
+    volumes: [".:/app:ro"]
+    command: sh -c "pip install -q . fastapi uvicorn && uvicorn linchpin.api.app:app --host 0.0.0.0 --port 8000"
+    ports: ["127.0.0.1:8000:8000"]
+  neo4j:
+    profiles: ["neo4j"]
+    image: neo4j:5
+    environment:
+      NEO4J_AUTH: neo4j/change-me-lab-only
+    ports: ["127.0.0.1:7474:7474", "127.0.0.1:7687:7687"]
