@@ -4,13 +4,12 @@
 # To serve the real-export case study, mount the dataset dir and set LINCHPIN_SCENARIO.
 services:
   api:
-    image: python:3.12-slim
-    working_dir: /app
-    volumes: [".:/app:ro", "${LINCHPIN_DATA:-../../datasets/linchpin}:/data:ro"]
+    build: .
+    image: ghcr.io/rakshit-737/linchpin:latest
+    volumes: ["${LINCHPIN_DATA:-../../datasets/linchpin}:/data:ro"]
     environment:
       LINCHPIN_DATA_DIR: /data
       LINCHPIN_SCENARIO: ${LINCHPIN_SCENARIO:-}
-    command: sh -c "pip install -q '.[api]' && uvicorn linchpin.api.app:app --host 0.0.0.0 --port 8000"
     ports: ["127.0.0.1:8000:8000"]
   neo4j:
     profiles: ["neo4j"]
