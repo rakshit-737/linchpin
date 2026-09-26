@@ -35,18 +35,37 @@ def candidates(store) -> list[str]:
 
 
 def recommend(store, paths: list[AttackPath] | None = None, budget: int = 5,
-              cfg: Config | None = None, k: int = 100) -> list[Remediation]:
-    """Greedily pick <= budget nodes, each breaking the most still-viable crown-jewel paths.
+              cfg: Config | None = None, k: int = 100, exact: bool = True) -> list[Remediation]:
+    """Pick <= budget remediations that break the most crown-jewel attack paths.
+
+    Greedy set cover: repeatedly pick the remediable node on the most still-viable paths.
+    With ``exact=True`` (default) the exact minimum vertex cut over remediable nodes is also
+    computed (max-flow, engine/cuts.py). If it fits in the budget and greedy does not already
+    disconnect everything with that many fixes, the greedy is re-run restricted to the cut, so
+    the plan provably disconnects every crown jewel with the fewest possible fixes.
 
     Ties are broken by (fewest crown jewels still reachable after removal, node id), which
     prefers true graph cuts over nodes that merely appear on every *enumerated* path.
     When all enumerated paths are broken, paths are re-enumerated on the reduced graph.
     """
     cfg = cfg or store.cfg
+    greedy = _greedy(store, paths, budget, k, candidates(store))
+    if not exact:
+        return greedy
+    from linchpin.engine.cuts import min_remediation_cut
+    cut = min_remediation_cut(store)
+    if not cut or len(cut) > budget:
+        return greedy
+    g_nodes = [r.target_node for r in greedy]
+    if len(g_nodes) <= len(cut) and not store.reachable_crown_jewels(exclude=g_nodes):
+        return greedy  # greedy already optimal: keep its (path-coverage) preference among min cuts
+    return _greedy(store, paths, budget, k, cut)
+
+
+def _greedy(store, paths, budget, k, cands) -> list[Remediation]:
     universe: dict[str, AttackPath] = {p.path_id: p for p in (paths or store.k_shortest_paths(k=k))}
     alive = dict(universe)
     removed: list[str] = []
-    cands = candidates(store)
     out: list[Remediation] = []
     for _ in range(budget):
         if not alive:

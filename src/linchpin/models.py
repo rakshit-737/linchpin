@@ -81,8 +81,10 @@ class PathStats(BaseModel):
 
 
 class GroundTruth(BaseModel):
-    linchpin: str
+    linchpin: str  # planted single-node cut ("" when the topology has none by design)
     entrypoints: list[str]
     crown_jewels: list[str]
     decoy_high_cvss: str
     seed: int
+    topology: str = "single"
+    planted_cut: list[str] = Field(default_factory=list)  # a known (not necessarily minimum) cut
