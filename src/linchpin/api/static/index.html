@@ -86,7 +86,10 @@ function draw(g) {
       { selector: 'node.removed', style: { 'background-color': css('--hot'), shape: 'rectangle' } },
       { selector: '.faded', style: { opacity: .25 } },
     ],
-    layout: { name: 'breadthfirst', directed: true, roots: g.nodes.filter(n => n.data.entry).map(n => '#' + CSS.escape(n.data.id)), spacingFactor: .9 } });
+    layout: { name: 'preset' } });
+  const roots = cy.nodes('[?entry]');
+  cy.layout({ name: 'breadthfirst', directed: true, roots: roots.length ? roots : undefined, spacingFactor: 1.1,
+              avoidOverlap: true, circle: false, grid: false }).run();
   cy.on('tap', 'node', async ev => {
     const id = ev.target.id();
     const d = await api('/nodes/' + encodeURIComponent(id));
@@ -139,10 +142,14 @@ async function refresh(budget, st) {
   });
   $('#cut').textContent = ch.min_cut_size == null ? 'No finite cut: an entrypoint reaches a crown jewel directly.'
     : `Exact minimum cut: ${ch.min_cut_size} fix(es). Single-node chokepoints: ${ch.chokepoints.length ? ch.chokepoints.join(', ') : 'none'}.`;
-  $('#paths').innerHTML = paths.slice(0, 8).map(p => `<tr class="rem" data-p="${p.path_id}"><td>${p.total_cost.toFixed(3)}</td><td>${esc(p.nodes.filter(n => n.startsWith('host:') || n.startsWith('cred:') || n.startsWith('ds:')).join(' → '))}</td></tr>`).join('');
+  const seen = new Set();
+  const uniq = paths.filter(p => { const k = p.nodes.filter(n => /^(host|cred|ds):/.test(n)).join('>'); if (seen.has(k)) return false; seen.add(k); return true; });
+  $('#paths').innerHTML = uniq.slice(0, 8).map(p => `<tr class="rem" data-p="${p.path_id}"><td>${p.total_cost.toFixed(3)}</td><td>${esc(p.nodes.filter(n => n.startsWith('host:') || n.startsWith('cred:') || n.startsWith('ds:')).join(' → '))}</td></tr>`).join('');
   document.querySelectorAll('tr[data-p]').forEach(tr => tr.onclick = () => highlight([tr.dataset.p], 'onpath'));
+  document.querySelector('tr.rem[data-i]')?.click();  // show the top fix's evidence by default
 }
 $('#load').onclick = load;
+api('/stats').then(st => { if (st.loaded) $('#family').value = st.loaded.split(':')[0]; });
 refresh(3).catch(e => $('#stats').textContent = 'error: ' + e.message);
 </script>
 </body>

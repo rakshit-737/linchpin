@@ -44,10 +44,11 @@ def _load(store: GraphStore, findings, cfg: Config | None = None) -> GraphStore:
     return s
 
 
-def create_app(store: GraphStore | None = None) -> FastAPI:
+def create_app(store: GraphStore | None = None, loaded: str = "") -> FastAPI:
     app = FastAPI(title="LINCHPIN API", version="1.1",
                   description="Read-only attack-path reasoning. Consumes exported findings; sends no packets.")
     app.state.store = store or GraphStore(Config())
+    app.state.loaded = loaded
 
     def S() -> GraphStore:
         return app.state.store
@@ -121,7 +122,7 @@ def create_app(store: GraphStore | None = None) -> FastAPI:
         s = S()
         return {"findings": len(s.findings), "nodes": s.g.number_of_nodes(), "edges": s.g.number_of_edges(),
                 "entrypoints": s.entrypoints(), "crown_jewels": s.crown_jewels(),
-                "reachable_crown_jewels": s.reachable_crown_jewels()}
+                "reachable_crown_jewels": s.reachable_crown_jewels(), "loaded": app.state.loaded}
 
     @app.post("/demo/load")
     def demo_load(body: DemoLoad):
@@ -132,12 +133,14 @@ def create_app(store: GraphStore | None = None) -> FastAPI:
                 raise HTTPException(400, "scenario path missing or not found on the server")
             findings, cfg, meta = load_scenario(path, body.data_dir or os.environ.get("LINCHPIN_DATA_DIR"))
             app.state.store = _load(S(), findings, cfg)
+            app.state.loaded = "scenario:" + str(meta.get("name", ""))
         else:
             from linchpin.synth.topologies import FAMILIES, generate_family
             if body.family not in FAMILIES:
                 raise HTTPException(400, f"family must be one of {FAMILIES} or 'scenario'")
             findings, gt = generate_family(body.family, max(8, min(body.n_hosts, 200)), body.seed)
             app.state.store = _load(S(), findings, Config())
+            app.state.loaded = f"{body.family}:{body.seed}"
             meta = gt.model_dump()
         return {"meta": meta, **stats()}
 
@@ -157,14 +160,13 @@ def _default_app() -> FastAPI:
     path = os.environ.get("LINCHPIN_SCENARIO")
     if path and Path(path).exists():
         from linchpin.scenario import load_scenario
-        findings, cfg, _ = load_scenario(path, os.environ.get("LINCHPIN_DATA_DIR"))
+        findings, cfg, meta = load_scenario(path, os.environ.get("LINCHPIN_DATA_DIR"))
+        return create_app(_load(GraphStore(cfg), findings, cfg), loaded=f"scenario:{meta['name']}")
     elif os.environ.get("LINCHPIN_DEMO", "1") == "1":
         from linchpin.synth.topologies import generate_family
         findings, _ = generate_family("single", 20, 0)
-        cfg = Config()
-    else:
-        return create_app()
-    return create_app(_load(GraphStore(cfg), findings, cfg))
+        return create_app(_load(GraphStore(Config()), findings, Config()), loaded="single:0")
+    return create_app()
 
 
 app = _default_app()
