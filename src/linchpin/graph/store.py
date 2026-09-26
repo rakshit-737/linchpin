@@ -202,12 +202,20 @@ class GraphStore:
                          exclude: Iterable[str] = ()) -> list[AttackPath]:
         """Yen's k-shortest simple paths (by summed edge cost) from any source to any target."""
         k = k or self.cfg.k_shortest
-        g = self.g.copy()
-        g.remove_nodes_from([n for n in exclude if n in g])
+        banned = set(exclude)
+        g = nx.DiGraph(nx.restricted_view(self.g, banned, [])) if banned else self.g.copy()
         sources = [s for s in (sources or self.entrypoints()) if s in g]
         targets = [t for t in (targets or self.crown_jewels()) if t in g]
         if not sources or not targets:
             return []
+        # prune to the relevant subgraph: forward-reachable from a source AND able to reach a target
+        fwd = set(sources).union(*(nx.descendants(g, s) for s in sources))
+        bwd = set(targets).union(*(nx.ancestors(g, t) for t in targets))
+        keep = fwd & bwd
+        if not keep & set(targets):
+            return []
+        g = g.subgraph(keep).copy()
+        sources = [s for s in sources if s in g]
         for s in sources:
             g.add_edge(_SRC, s, cost=0.0)
         for t in targets:
@@ -230,13 +238,20 @@ class GraphStore:
         return out
 
     def reachable_crown_jewels(self, exclude: Iterable[str] = ()) -> list[str]:
-        g = self.g.copy()
-        g.remove_nodes_from([n for n in exclude if n in g])
-        seen: set[str] = set()
-        for s in self.entrypoints():
-            if s in g:
-                seen |= nx.descendants(g, s) | {s}
-        return [c for c in self.crown_jewels() if c in seen]
+        """Crown jewels reachable from any entrypoint with `exclude` removed (no graph copy)."""
+        banned = set(exclude)
+        crowns = self.crown_jewels()
+        want = set(crowns) - banned
+        stack = [s for s in self.entrypoints() if s not in banned]
+        seen = set(stack)
+        adj = self.g._succ
+        while stack and not want <= seen:
+            u = stack.pop()
+            for v in adj[u]:
+                if v not in seen and v not in banned:
+                    seen.add(v)
+                    stack.append(v)
+        return [c for c in crowns if c in seen and c not in banned]
 
     # ------------------------------------------------------------ inspection
     def node(self, node_id: str) -> NodeDetail:
