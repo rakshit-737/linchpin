@@ -1,0 +1,15 @@
+name: mini
+sources:
+  - openvas_sample.xml
+  - nmap_vulners.xml
+  - {path: bloodhound, connector: bloodhound}
+hosts:
+  - {id: msf2, match: [b6b9f466d63], segment: dmz, internet_facing: true}
+  - {id: jump, match: ["192.168.0.1"], segment: mgmt}
+  - {id: win10.testlab.local, segment: workstations}
+  - {id: primary.testlab.local, segment: tier0}
+reachability:
+  - {from: dmz, to: mgmt, ports: [5022]}
+credentials:
+  - {principal: svc_deploy, stored_on: msf2, valid_on: [win10.testlab.local]}
+k_shortest: 20

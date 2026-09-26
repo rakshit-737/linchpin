@@ -1,0 +1,252 @@
+<?xml version="1.0" ?>
+<NessusClientData_v2>
+    
+    <Report name="dummy scan" xmlns:cm="http://www.nessus.org/cm">
+        <ReportHost name="testphp.vulnweb.com">
+            <HostProperties>
+                <tag name="HOST_END_TIMESTAMP">1648044472</tag>
+                <tag name="HOST_END">Wed Mar 23 15:07:52 2022</tag>
+                <tag name="cpe-5">cpe:/a:php:php:5.1.6 -&gt; PHP PHP</tag>
+                <tag name="LastUnauthenticatedResults">1648044472</tag>
+                <tag name="Credentialed_Scan">false</tag>
+                <tag name="policy-used">Basic Network Scan</tag>
+                <tag name="cpe-4">cpe:/a:nginx:nginx:1.19.0 -&gt; Nginx</tag>
+                <tag name="cpe-3">cpe:/a:php:php:5.6.40-38+ubuntu20.04.1+deb.sury.org+1 -&gt; PHP PHP</tag>
+                <tag name="cpe-2">cpe:/a:igor_sysoev:nginx:1.19.0 -&gt; Nginx</tag>
+                <tag name="cpe-1">cpe:/a:php:php:5.6.40 -&gt; PHP PHP</tag>
+                <tag name="cpe-0">cpe:/o:linux:linux_kernel -&gt; Linux Kernel</tag>
+                <tag name="cpe">cpe:/o:linux:linux_kernel</tag>
+                <tag name="os">linux</tag>
+                <tag name="operating-system-conf">65</tag>
+                <tag name="operating-system-method">SinFP</tag>
+                <tag name="host-fqdns">[{&quot;FQDN&quot;:&quot;testphp.vulnweb.com&quot;,&quot;sources&quot;:[&quot;get_host_report_name()&quot;,&quot;determine_fqdn()&quot;]},{&quot;FQDN&quot;:&quot;ec2-44-228-249-3.us-west-2.compute.amazonaws.com&quot;,&quot;sources&quot;:[&quot;get_host_fqdn()&quot;]}]</tag>
+                <tag name="system-type">general-purpose</tag>
+                <tag name="operating-system">Linux Kernel 2.6</tag>
+                <tag name="DDI_Dir_Scanner_Global_Duration">197</tag>
+                <tag name="DDI_Dir_Scanner_Port_80_Duration">197</tag>
+                <tag name="DDI_Dir_Scanner_Port_80_Pass_Start">1648042696</tag>
+                <tag name="DDI_Dir_Scanner_Port_80_Init">1648042695</tag>
+                <tag name="DDI_Dir_Scanner_Global_Init">1648042695</tag>
+                <tag name="traceroute-hop-8">?</tag>
+                <tag name="traceroute-hop-7">?</tag>
+                <tag name="traceroute-hop-6">?</tag>
+                <tag name="traceroute-hop-5">?</tag>
+                <tag name="traceroute-hop-4">?</tag>
+                <tag name="traceroute-hop-3">?</tag>
+                <tag name="traceroute-hop-2">?</tag>
+                <tag name="traceroute-hop-1">?</tag>
+                <tag name="traceroute-hop-0">10.20.0.254</tag>
+                <tag name="sinfp-ml-prediction">[{&quot;predicted-os&quot;: &quot;Microsoft Windows Server 2012 R2&quot;,
+                    &quot;confidence&quot;: 1},{&quot;predicted-os&quot;: &quot;Ubuntu 14.04 Linux Kernel 3.13&quot;,
+                    &quot;confidence&quot;: 6},{&quot;predicted-os&quot;: &quot;CentOS Linux 7 Linux Kernel 3.10&quot;,
+                    &quot;confidence&quot;: 1}]
+                </tag>
+                <tag name="sinfp-signature">
+                    P1:B10113:F0x12:W62727:O0204ffff:M1460:
+                    P2:B10113:F0x12:W62643:O0204ffff0402080affffffff4445414401030307:M1460:
+                    P3:B00000:F0x00:W0:O0:M0
+                    P4:190101_7_p=80R
+                </tag>
+                <tag name="host-fqdn">testphp.vulnweb.com</tag>
+                <tag name="host-rdns">ec2-44-228-249-3.us-west-2.compute.amazonaws.com</tag>
+                <tag name="host-ip">44.228.249.3</tag>
+                <tag name="HOST_START_TIMESTAMP">1648042311</tag>
+                <tag name="HOST_START">Wed Mar 23 14:31:51 2022</tag>
+            </HostProperties>
+            <ReportItem port="0" svc_name="general" protocol="tcp" severity="0" pluginID="45590"
+                        pluginName="Common Platform Enumeration (CPE)" pluginFamily="General">
+                <agent>all</agent>
+                <description>By using information obtained from a Nessus scan, this plugin reports CPE (Common Platform
+                    Enumeration) matches for various hardware and software products found on a host.
+
+                    Note that if an official CPE is not available for the product, this plugin computes the best
+                    possible CPE based on the information available from the scan.
+                </description>
+                <fname>cpe.nbin</fname>
+                <plugin_modification_date>2022/02/14</plugin_modification_date>
+                <plugin_name>Common Platform Enumeration (CPE)</plugin_name>
+                <plugin_publication_date>2010/04/21</plugin_publication_date>
+                <plugin_type>combined</plugin_type>
+                <risk_factor>None</risk_factor>
+                <script_version>1.118</script_version>
+                <see_also>http://cpe.mitre.org/
+                    https://nvd.nist.gov/products/cpe
+                </see_also>
+                <solution>n/a</solution>
+                <synopsis>It was possible to enumerate CPE names that matched on the remote system.</synopsis>
+                <plugin_output>
+                    The remote operating system matched the following CPE :
+
+                    cpe:/o:linux:linux_kernel -&gt; Linux Kernel
+
+                    Following application CPE&apos;s matched on the remote system :
+
+                    cpe:/a:igor_sysoev:nginx:1.19.0 -&gt; Nginx
+                    cpe:/a:nginx:nginx:1.19.0 -&gt; Nginx
+                    cpe:/a:php:php:5.1.6 -&gt; PHP PHP
+                    cpe:/a:php:php:5.6.40 -&gt; PHP PHP
+                    cpe:/a:php:php:5.6.40-38+ubuntu20.04.1+deb.sury.org+1 -&gt; PHP PHP
+                </plugin_output>
+            </ReportItem>
+            <ReportItem port="0" svc_name="general" protocol="tcp" severity="0" pluginID="19506"
+                        pluginName="Nessus Scan Information" pluginFamily="Settings">
+                <agent>all</agent>
+                <always_run>1</always_run>
+                <description>This plugin displays, for each tested host, information about the scan itself :
+
+                    - The version of the plugin set.
+                    - The type of scanner (Nessus or Nessus Home).
+                    - The version of the Nessus Engine.
+                    - The port scanner(s) used.
+                    - The port range scanned.
+                    - The ping round trip time
+                    - Whether credentialed or third-party patch management checks are possible.
+                    - Whether the display of superseded patches is enabled
+                    - The date of the scan.
+                    - The duration of the scan.
+                    - The number of hosts scanned in parallel.
+                    - The number of checks done in parallel.
+                </description>
+                <fname>scan_info.nasl</fname>
+                <plugin_modification_date>2021/09/27</plugin_modification_date>
+                <plugin_name>Nessus Scan Information</plugin_name>
+                <plugin_publication_date>2005/08/26</plugin_publication_date>
+                <plugin_type>summary</plugin_type>
+                <risk_factor>None</risk_factor>
+                <script_version>1.106</script_version>
+                <solution>n/a</solution>
+                <synopsis>This plugin displays information about the Nessus scan.</synopsis>
+                <plugin_output>Information about this scan :
+
+                    Nessus version : 10.1.1
+                    Nessus build : X20061
+                    Plugin feed version : 202203230748
+                    Scanner edition used : Nessus
+                    Scanner OS : LINUX
+                    Scanner distribution : ubuntu910-x86-64
+                    Scan type : Normal
+                    Scan name : dummy scan
+                    Scan policy used : Basic Network Scan
+                    Scanner IP : 10.20.0.0.1
+                    Port scanner(s) : nessus_syn_scanner
+                    Port range : default
+                    Ping RTT : 184.503 ms
+                    Thorough tests : no
+                    Experimental tests : no
+                    Paranoia level : 1
+                    Report verbosity : 1
+                    Safe checks : yes
+                    Optimize the test : yes
+                    Credentialed checks : no
+                    Patch management checks : None
+                    Display superseded patches : yes (supersedence plugin launched)
+                    CGI scanning : enabled
+                    Web application tests : disabled
+                    Max hosts : 30
+                    Max checks : 4
+                    Recv timeout : 5
+                    Backports : None
+                    Allow post-scan editing: Yes
+                    Scan Start Date : 2022/3/23 14:32 CET
+                    Scan duration : 2151 sec
+                </plugin_output>
+            </ReportItem>
+            <ReportItem port="0" svc_name="general" protocol="tcp" severity="0" pluginID="66334"
+                        pluginName="Patch Report" pluginFamily="General">
+                <agent>all</agent>
+                <description>The remote host is missing one or more security patches. This plugin lists the newest
+                    version of each patch to install to make sure the remote host is up-to-date.
+                </description>
+                <fname>patches_summary.nbin</fname>
+                <plugin_modification_date>2022/03/08</plugin_modification_date>
+                <plugin_name>Patch Report</plugin_name>
+                <plugin_publication_date>2013/07/08</plugin_publication_date>
+                <plugin_type>combined</plugin_type>
+                <risk_factor>None</risk_factor>
+                <script_version>1.204</script_version>
+                <solution>Install the patches listed below.</solution>
+                <synopsis>The remote host is missing several patches.</synopsis>
+                <plugin_output>
+
+                    . You need to take the following action :
+
+                    [ PHP &lt; 5.3.12 / 5.4.2 CGI Query String Code Execution (58988) ]
+
+                    + Action to take : Upgrade to PHP version 5.3.12 / 5.4.2 or later. A &apos;mod_rewrite&apos;
+                    workaround is available as well.
+
+                    +Impact : Taking this action will resolve 110 different vulnerabilities (CVEs).
+
+
+                </plugin_output>
+            </ReportItem>
+            <ReportItem port="80" svc_name="www" protocol="tcp" severity="3" pluginID="58988"
+                        pluginName="PHP &lt; 5.3.12 / 5.4.2 CGI Query String Code Execution" pluginFamily="CGI abuses">
+                <age_of_vuln>730 days +</age_of_vuln>
+                <bid>53388</bid>
+                <canvas_package>CANVAS</canvas_package>
+                <cert>520827</cert>
+                <cpe>cpe:/a:php:php</cpe>
+                <cve>CVE-2012-1823</cve>
+                <cvssV3_impactScore>5.9</cvssV3_impactScore>
+                <cvss_base_score>7.5</cvss_base_score>
+                <cvss_score_source>CVE-2012-1823</cvss_score_source>
+                <cvss_temporal_score>6.5</cvss_temporal_score>
+                <cvss_temporal_vector>CVSS2#E:H/RL:OF/RC:C</cvss_temporal_vector>
+                <cvss_vector>CVSS2#AV:N/AC:L/Au:N/C:P/I:P/A:P</cvss_vector>
+                <description>According to its banner, the version of PHP installed on the remote host is earlier than
+                    5.3.12 / 5.4.2, and as such is potentially affected by a remote code execution and information
+                    disclosure vulnerability.
+
+                    An error in the file &apos;sapi/cgi/cgi_main.c&apos; can allow a remote attacker to obtain PHP
+                    source code from the web server or to potentially execute arbitrary code. In vulnerable
+                    configurations, PHP treats certain query string parameters as command line arguments including
+                    switches such as &apos;-s&apos;, &apos;-d&apos;, and &apos;-c&apos;.
+
+                    Note that this vulnerability is exploitable only when PHP is used in CGI-based configurations.
+                    Apache with &apos;mod_php&apos; is not an exploitable configuration.
+                </description>
+                <exploit_available>true</exploit_available>
+                <exploit_code_maturity>High</exploit_code_maturity>
+                <exploit_framework_canvas>true</exploit_framework_canvas>
+                <exploit_framework_core>true</exploit_framework_core>
+                <exploit_framework_metasploit>true</exploit_framework_metasploit>
+                <exploitability_ease>Exploits are available</exploitability_ease>
+                <exploited_by_malware>true</exploited_by_malware>
+                <fname>php_5_4_2.nasl</fname>
+                <metasploit_name>PHP CGI Argument Injection</metasploit_name>
+                <patch_publication_date>2012/05/03</patch_publication_date>
+                <plugin_modification_date>2021/09/27</plugin_modification_date>
+                <plugin_name>PHP &lt; 5.3.12 / 5.4.2 CGI Query String Code Execution</plugin_name>
+                <plugin_publication_date>2012/05/04</plugin_publication_date>
+                <plugin_type>remote</plugin_type>
+                <product_coverage>Low</product_coverage>
+                <risk_factor>High</risk_factor>
+                <script_version>1.24</script_version>
+                <see_also>http://eindbazen.net/2012/05/php-cgi-advisory-cve-2012-1823/
+                    https://bugs.php.net/bug.php?id=61910
+                    http://www.php.net/archive/2012.php#id2012-05-03-1
+                    http://www.php.net/ChangeLog-5.php#5.3.12
+                    http://www.php.net/ChangeLog-5.php#5.4.2
+                </see_also>
+                <solution>Upgrade to PHP version 5.3.12 / 5.4.2 or later. A &apos;mod_rewrite&apos; workaround is
+                    available as well.
+                </solution>
+                <synopsis>The remote web server uses a version of PHP that is affected by a remote code execution
+                    vulnerability.
+                </synopsis>
+                <threat_intensity_last_28>Very Low</threat_intensity_last_28>
+                <threat_recency>30 to 120 days</threat_recency>
+                <threat_sources_last_28>No recorded events</threat_sources_last_28>
+                <vpr_score>9.0</vpr_score>
+                <vuln_publication_date>2012/05/03</vuln_publication_date>
+                <xref>CERT:520827</xref>
+                <plugin_output>
+                    Version source : http://testphp.vulnweb.com/secured/phpinfo.php
+                    Installed version : 5.1.6
+                    Fixed version : 5.3.12 / 5.4.2
+                </plugin_output>
+            </ReportItem>
+        </ReportHost>
+    </Report>
+</NessusClientData_v2>
