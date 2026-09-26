@@ -1,0 +1,13 @@
+<?xml version="1.0"?>
+<!-- Fictional lab scan (host-only network). Not a real target. -->
+<nmaprun scanner="nmap" start="1767225600" version="7.94">
+  <host>
+    <address addr="10.10.0.5" addrtype="ipv4"/>
+    <hostnames><hostname name="lab-web" type="user"/></hostnames>
+    <ports>
+      <port protocol="tcp" portid="22"><state state="open"/><service name="ssh" product="OpenSSH" version="8.9"/></port>
+      <port protocol="tcp" portid="80"><state state="open"/><service name="http" product="nginx" version="1.18"/></port>
+      <port protocol="tcp" portid="23"><state state="closed"/><service name="telnet"/></port>
+    </ports>
+  </host>
+</nmaprun>
