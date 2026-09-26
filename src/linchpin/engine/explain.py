@@ -46,7 +46,14 @@ def explain_remediation(r: Remediation, store, paths: list[AttackPath] | None = 
         return (f"{name} on {a.get('host_id')} (CVSS {a.get('cvss_base')}, EPSS {a.get('epss')}{kev}) "
                 f"is a step on {r.paths_broken} attack paths; {tail}")
     if label == "Credential":
-        return f"Credential {r.target_node} is reused across hosts and enables lateral movement; {tail}"
+        g = store.g
+        cached = sorted(u.split(":", 1)[1] for u in g.predecessors(r.target_node)
+                        if g.edges[u, r.target_node].get("rel") == "STORED_ON")
+        grants = sorted(v.split("@", 1)[-1] for v in g.successors(r.target_node)
+                        if g.edges[r.target_node, v].get("rel") == "GRANTS")
+        where = f"is recoverable on {', '.join(cached)}" if cached else "is exposed"
+        what = f"grants admin on {len(grants)} host(s) ({', '.join(grants[:4])}{', ...' if len(grants) > 4 else ''})"
+        return f"Credential {r.target_node.split(':', 1)[1]} {where} and {what}; {tail}"
     return tail
 
 
