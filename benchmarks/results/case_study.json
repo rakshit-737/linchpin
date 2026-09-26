@@ -7,9 +7,9 @@
       "scans/nessus/nessus_with_cvssv3.nessus": 25,
       "scans/nmap/nmap_script_vulners.xml": 2,
       "scans/nmap/nmap_multiple_port.xml": 13,
-      "bloodhound/v6": 17
+      "bloodhound/v6": 20
     },
-    "findings": 132,
+    "findings": 135,
     "intel": {
       "cve_findings": 69,
       "enriched": 43,
@@ -20,8 +20,8 @@
     }
   },
   "intel": {
-    "nodes": 123,
-    "edges": 218,
+    "nodes": 128,
+    "edges": 224,
     "vulns": 69,
     "vulns_granting_privilege": 33,
     "kev_vulns": 2,
@@ -148,8 +148,8 @@
     }
   },
   "learned": {
-    "nodes": 123,
-    "edges": 218,
+    "nodes": 128,
+    "edges": 224,
     "vulns": 69,
     "vulns_granting_privilege": 33,
     "kev_vulns": 2,
@@ -276,8 +276,8 @@
     }
   },
   "scanner_only": {
-    "nodes": 124,
-    "edges": 214,
+    "nodes": 129,
+    "edges": 220,
     "vulns": 69,
     "vulns_granting_privilege": 28,
     "kev_vulns": 0,

@@ -111,8 +111,29 @@ def run_one(family: str, seed: int, n_hosts: int, budget: int, k: int = 100) -> 
     return row
 
 
+def wilson_ci(k: int, n: int, z: float = 1.96) -> tuple[float, float]:
+    """95% Wilson score interval for a binomial proportion k/n."""
+    if n == 0:
+        return (0.0, 1.0)
+    p = k / n
+    den = 1 + z * z / n
+    mid = (p + z * z / (2 * n)) / den
+    half = z * math.sqrt(p * (1 - p) / n + z * z / (4 * n * n)) / den
+    return (round(max(0.0, mid - half), 4), round(min(1.0, mid + half), 4))
+
+
+def bootstrap_ci(xs: list[float], reps: int = 2000, seed: int = 0) -> tuple[float, float] | None:
+    """Percentile-bootstrap 95% CI of the mean (seeded)."""
+    if not xs:
+        return None
+    rng = random.Random(seed)
+    n = len(xs)
+    ms = sorted(sum(rng.choice(xs) for _ in range(n)) / n for _ in range(reps))
+    return (round(ms[int(0.025 * reps)], 4), round(ms[int(0.975 * reps) - 1], 4))
+
+
 def summarise(rows: list[dict]) -> dict:
-    """Per-family aggregates (means with standard error)."""
+    """Per-family aggregates: means with s.e., Wilson 95% CIs for rates, bootstrap CIs for gains."""
     out: dict = {}
     for fam in sorted({r["family"] for r in rows}):
         rs = [r for r in rows if r["family"] == fam]
@@ -123,8 +144,12 @@ def summarise(rows: list[dict]) -> dict:
         agg["mean_min_cut"] = statistics.mean(cuts) if cuts else None
         for s in STRATEGIES:
             resid = [r[f"{s}_resid"] / max(r["baseline_residual"], 1) for r in rs]
+            k_disc = sum(bool(r[f"{s}_disc"]) for r in rs)
+            gains = [r[f"{s}_gain"] for r in rs if math.isfinite(r[f"{s}_gain"])]
             agg[s] = {
-                "disconnect_rate": sum(r[f"{s}_disc"] for r in rs) / n,
+                "disconnect_rate": k_disc / n,
+                "disconnect_ci95": wilson_ci(k_disc, n),
+                "cost_gain_ci95": bootstrap_ci(gains),
                 "residual_frac": statistics.mean(resid),
                 "residual_frac_se": statistics.pstdev(resid) / math.sqrt(n),
                 "mean_ms": statistics.mean(r[f"{s}_ms"] for r in rs),

@@ -22,13 +22,21 @@ LABEL = {"linchpin": "LINCHPIN (exact+greedy)", "greedy": "LINCHPIN greedy only"
          "epss": "EPSS-first", "kev_epss": "KEV then EPSS", "betweenness": "Betweenness", "random": "Random"}
 
 
-def _gain(x) -> str:
-    return "n/a (all disconnected)" if x is None else f"{x:+.3f}"
+def _gain(x, ci=None) -> str:
+    if x is None:
+        return "n/a (all disconnected)"
+    return f"{x:+.3f}" + (f" [{ci[0]:+.3f}, {ci[1]:+.3f}]" if ci else "")
+
+
+def _rate(a) -> str:
+    lo, hi = a.get("disconnect_ci95") or (None, None)
+    return f"{a['disconnect_rate']:.0%}" + (f" [{lo:.0%}, {hi:.0%}]" if lo is not None else "")
 
 
 def md_table(summ: dict, budget: int) -> str:
     lines = [f"Budget = {budget} fixes per topology. Disconnect = no crown jewel reachable afterwards. "
-             "Residual = attack paths still enumerated (capped at k=100) as a fraction of before (mean ± s.e.).", ""]
+             "Residual = attack paths still enumerated (capped at k=100) as a fraction of before (mean ± s.e.). "
+             "Brackets: 95% Wilson interval (rates) and 95% seeded bootstrap interval (cost gain).", ""]
     for fam, agg in summ.items():
         mc = agg["mean_min_cut"]
         lines.append(f"**{fam}** — n={agg['n']}, mean graph size {agg['mean_nodes']:.0f} nodes, "
@@ -39,8 +47,9 @@ def md_table(summ: dict, budget: int) -> str:
         lines.append("| --- | ---: | ---: | ---: | ---: |")
         for s in STRATEGIES:
             a = agg[s]
-            lines.append(f"| {LABEL[s]} | {a['disconnect_rate']:.0%} | {a['residual_frac']:.2f} ± "
-                         f"{a['residual_frac_se']:.2f} | {_gain(a['cost_gain_connected'])} | {a['mean_ms']:.0f} |")
+            lines.append(f"| {LABEL[s]} | {_rate(a)} | {a['residual_frac']:.2f} ± "
+                         f"{a['residual_frac_se']:.2f} | {_gain(a['cost_gain_connected'], a.get('cost_gain_ci95'))} "
+                         f"| {a['mean_ms']:.0f} |")
         extra = []
         if agg.get("greedy_mean_ratio") is not None:
             extra.append(f"greedy fixes-to-disconnect / exact min cut = {agg['greedy_mean_ratio']:.2f} "
@@ -113,7 +122,7 @@ def main(argv=None) -> int:
             "runtime_s": round(time.time() - t0, 1)}
     (out / "summary.json").write_text(json.dumps({"meta": meta, "families": summ}, indent=2,
                                                  default=str), encoding="utf-8")
-    (out / "summary.md").write_text(md_table(summ, a.budget) + "\n")
+    (out / "summary.md").write_text(md_table(summ, a.budget) + "\n", encoding="utf-8")
     plot(summ, out)
     print(md_table(summ, a.budget))
     return 0

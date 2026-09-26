@@ -1,5 +1,5 @@
-Findings: 132 from 6 real exports; 43/69 vuln findings carry a CVE found in NVD (the rest are CVE-less checks) (EPSS 2026-09-25), 2 in CISA KEV.
-Attack graph: 123 nodes, 218 edges; 69 vuln nodes of which 33 grant code execution; 200 crown-jewel paths enumerated (k cap 200); cheapest path cost 0.422.
+Findings: 135 from 6 real exports; 43/69 vuln findings carry a CVE found in NVD (the rest are CVE-less checks) (EPSS 2026-09-25), 2 in CISA KEV.
+Attack graph: 128 nodes, 224 edges; 69 vuln nodes of which 33 grant code execution; 200 crown-jewel paths enumerated (k cap 200); cheapest path cost 0.422.
 Single-node chokepoints: vuln:NVT-836484@app-win:42, host:app-win, cred:svc_deploy, host:win10.testlab.local, cred:ADMINISTRATOR@TESTLAB.LOCAL. Exact min cut: ['cred:ADMINISTRATOR@TESTLAB.LOCAL'].
 
 | strategy (budget 3) | fixes chosen | crown jewel cut off? | residual paths |
