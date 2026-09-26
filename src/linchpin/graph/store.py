@@ -82,8 +82,18 @@ class GraphStore:
             d = f.detail or {}
             if f.kind == "config" and d.get("issue") == "inventory":
                 host(f.host_id)
-                hosts[f.host_id].update(segment=d.get("segment", "default"), os=d.get("os"),
-                                        internet_facing=bool(d.get("internet_facing")))
+                # Topology-overlay facts (source=inventory) take precedence over what a
+                # collector (e.g. BloodHound) guessed; only keys actually present are applied.
+                upd = {k: d[k] for k in ("segment", "os", "internet_facing") if d.get(k) is not None}
+                if "internet_facing" in upd:
+                    upd["internet_facing"] = bool(upd["internet_facing"])
+                if f.source == "inventory":
+                    hosts[f.host_id]["_overlay"] = set(upd)
+                else:
+                    upd = {k: v for k, v in upd.items() if k not in hosts[f.host_id].get("_overlay", ())}
+                hosts[f.host_id].update(upd)
+                if d.get("is_dc"):
+                    hosts[f.host_id]["is_dc"] = True
                 for ds in d.get("datastores", []):
                     dsid = f"ds:{ds['name']}"
                     g.add_node(dsid, label="DataStore", sensitivity=ds.get("sensitivity", "low"),
@@ -91,15 +101,21 @@ class GraphStore:
                     self._add(g, host(f.host_id), "HOLDS", dsid)
             elif f.kind == "service" and f.port is not None:
                 service(f.host_id, f.port, f)
-            elif f.kind == "cve" and f.cve_id:
+            elif f.kind == "cve" and (f.cve_id or d.get("vuln_id")):
                 svc = service(f.host_id, f.port or 0, f)
-                vid = f"vuln:{f.cve_id}@{f.host_id}:{f.port or 0}"
+                key = d.get("vuln_id") or f.cve_id
+                vid = f"vuln:{key}@{f.host_id}:{f.port or 0}"
+                impact = d.get("impact_class")
                 g.add_node(vid, label="Vuln", cve=f.cve_id, cvss_base=f.cvss_base, epss=f.epss,
                            exploit_maturity=d.get("exploit_maturity"), kev=bool(d.get("kev")),
-                           host_id=f.host_id)
+                           name=d.get("name"), cves=d.get("cves") or ([f.cve_id] if f.cve_id else []),
+                           impact_class=impact, host_id=f.host_id)
                 self._add(g, svc, "HAS_VULN", vid)
-                self._add(g, vid, "ENABLES", priv(f.host_id), cvss_base=f.cvss_base, epss=f.epss,
-                          cvss_exploitability=d.get("cvss_exploitability"), kev=bool(d.get("kev")))
+                # Only vulns that plausibly yield code execution grant a privilege. Unknown
+                # impact (no CVSS vector) is treated conservatively as code execution.
+                if impact in (None, "rce"):
+                    self._add(g, vid, "ENABLES", priv(f.host_id), cvss_base=f.cvss_base, epss=f.epss,
+                              cvss_exploitability=d.get("cvss_exploitability"), kev=bool(d.get("kev")))
             elif f.kind == "credential":
                 cid = f"cred:{d['principal']}"
                 g.add_node(cid, label="Credential", principal=d["principal"],
@@ -116,6 +132,7 @@ class GraphStore:
                 reach.append(d)
 
         for hid, props in hosts.items():
+            props.pop("_overlay", None)
             g.nodes[f"host:{hid}"].update(props)
 
         # Reachability: same segment always; cross-segment only via explicit rules.

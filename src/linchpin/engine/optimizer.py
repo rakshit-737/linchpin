@@ -12,7 +12,10 @@ def action_for(store, node_id: str) -> str:
     a = store.g.nodes[node_id]
     lbl = a.get("label")
     if lbl == "Vuln":
-        return f"patch {a['cve']} on {a['host_id']}"
+        if a.get("cve") and len(a.get("cves") or []) <= 1:
+            return f"patch {a['cve']} on {a['host_id']}"
+        what = a.get("name") or a.get("cve") or node_id
+        return f"apply fix for '{what}' on {a['host_id']}"
     if lbl == "Credential":
         return f"rotate credential {a['principal']} (remove cached copies)"
     if lbl == "Host":

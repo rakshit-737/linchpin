@@ -12,7 +12,12 @@ def enrich(findings: list[NormalizedFinding], intel: CveIntel, prefer_intel: boo
            ) -> tuple[list[NormalizedFinding], dict]:
     out, hit, miss, kev = [], 0, 0, 0
     for f in findings:
-        rec = intel.get(f.cve_id) if f.kind == "cve" else None
+        rec = None
+        if f.kind == "cve":
+            ids = [c for c in [f.cve_id, *((f.detail or {}).get("cves") or [])] if c]
+            recs = [r for r in (intel.get(c) for c in dict.fromkeys(ids)) if r is not None]
+            # multi-CVE plugin: the most exploitable member drives the edge (KEV first, then EPSS)
+            rec = max(recs, key=lambda r: (r.kev, r.epss or 0.0, r.cvss_base or 0.0), default=None)
         if rec is None:
             if f.kind == "cve":
                 miss += 1
@@ -33,6 +38,12 @@ def enrich(findings: list[NormalizedFinding], intel: CveIntel, prefer_intel: boo
             detail["cvss_exploitability"] = rec.cvss_exploitability
         if rec.kev:
             detail["exploit_maturity"] = "high"
+        if not f.cvss_vector and rec.cvss_vector:  # scanner gave no vector: use NVD's
+            from linchpin.connectors._common import impact_class
+            detail["impact_class"] = impact_class(rec.cvss_vector)
+        if rec.kev and detail.get("impact_class") == "info":
+            detail["impact_class"] = "rce"  # exploited in the wild beats a vector-based guess
+        detail["intel_cve"] = rec.cve
         upd["detail"] = detail
         out.append(f.model_copy(update=upd))
     return out, {"cve_findings": hit + miss, "enriched": hit, "unknown_cve": miss, "kev": kev,

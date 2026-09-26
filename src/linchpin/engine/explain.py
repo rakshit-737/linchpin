@@ -41,7 +41,9 @@ def explain_remediation(r: Remediation, store, paths: list[AttackPath] | None = 
                 f"to {', '.join(sorted(after)) or '?'}; {tail}")
     if label == "Vuln":
         a = store.g.nodes[r.target_node]
-        return (f"{a.get('cve')} on {a.get('host_id')} (CVSS {a.get('cvss_base')}, EPSS {a.get('epss')}) "
+        kev = ", CISA KEV" if a.get("kev") else ""
+        name = a.get("cve") or a.get("name")
+        return (f"{name} on {a.get('host_id')} (CVSS {a.get('cvss_base')}, EPSS {a.get('epss')}{kev}) "
                 f"is a step on {r.paths_broken} attack paths; {tail}")
     if label == "Credential":
         return f"Credential {r.target_node} is reused across hosts and enables lateral movement; {tail}"

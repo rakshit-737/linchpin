@@ -95,7 +95,8 @@ class CveIntel:
                    {"epss_date": epss_date, "n": len(rows), "kev": len(kev)})
 
     @classmethod
-    def load(cls, path: str | Path) -> "CveIntel":
+    def load(cls, path: str | Path, only: set[str] | None = None) -> "CveIntel":
+        """Load the cache; `only` restricts to a CVE-id subset (much less memory)."""
         recs: dict[str, CveRecord] = {}
         meta: dict = {}
         opener = gzip.open if str(path).endswith(".gz") else open
@@ -107,6 +108,7 @@ class CveIntel:
             else:
                 reader = csv.DictReader(fh, fieldnames=next(csv.reader([first])))
             for r in reader:
-                recs[r["cve"]] = _rec(r)
+                if only is None or r["cve"] in only:
+                    recs[r["cve"]] = _rec(r)
         meta["n"] = len(recs)
         return cls(recs, meta)

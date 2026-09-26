@@ -1,38 +1,73 @@
-"""nmap -oX parser (stdlib ElementTree; defusedxml recommended for untrusted input)."""
+"""nmap ``-oX`` parser: open services (+ OS guess) and, when the ``vulners`` NSE script ran,
+its CVE list as ``cve`` findings (one per service, all CVEs kept in ``detail.cves``)."""
 from __future__ import annotations
 
-import xml.etree.ElementTree as ET
+from linchpin.connectors._common import epoch_iso, finding, parse_xml, rep_cve
+from linchpin.models import NormalizedFinding
 
-from linchpin.models import NormalizedFinding, make_finding_id
+SOURCE = "nmap"
 
 
-def parse(path: str) -> list[NormalizedFinding]:
-    root = ET.parse(path).getroot()
-    observed = "1970-01-01T00:00:00+00:00" if not root.get("start") else _epoch(root.get("start"))
-    out: list[NormalizedFinding] = []
-    for h in root.findall("host"):
-        addr = h.find("address")
-        if addr is None:
+def _vulners(port_el) -> list[tuple[str, float | None, bool]]:
+    out = []
+    for script in port_el.findall("script"):
+        if script.get("id") != "vulners":
             continue
-        host_id = addr.get("addr")
-        hn = h.find("hostnames/hostname")
-        if hn is not None and hn.get("name"):
-            host_id = hn.get("name")
-        for p in h.findall("ports/port"):
-            st = p.find("state")
-            if st is None or st.get("state") != "open":
-                continue
-            port = int(p.get("portid"))
-            s = p.find("service")
-            out.append(NormalizedFinding(
-                finding_id=make_finding_id(host_id, "service", str(port)), host_id=host_id, kind="service",
-                port=port, service=s.get("name") if s is not None else None,
-                software=s.get("product") if s is not None else None,
-                version=s.get("version") if s is not None else None,
-                detail={"proto": p.get("protocol")}, source="nmap", observed_at=observed))
+        for tbl in script.iter("table"):
+            elems = {e.get("key"): (e.text or "") for e in tbl.findall("elem")}
+            if elems.get("type") == "cve" and elems.get("id", "").startswith("CVE-"):
+                try:
+                    cvss = float(elems.get("cvss", ""))
+                except ValueError:
+                    cvss = None
+                out.append((elems["id"], cvss, elems.get("is_exploit") == "true"))
     return out
 
 
-def _epoch(s: str) -> str:
-    from datetime import datetime, timezone
-    return datetime.fromtimestamp(int(s), tz=timezone.utc).isoformat()
+def parse(path: str) -> list[NormalizedFinding]:
+    root = parse_xml(path)
+    observed = epoch_iso(root.get("start"))
+    out: list[NormalizedFinding] = []
+    for h in root.findall("host"):
+        st = h.find("status")
+        if st is not None and st.get("state") not in (None, "up"):
+            continue
+        addr = h.find("address")
+        if addr is None:
+            continue
+        ip = addr.get("addr")
+        host_id = ip
+        hn = h.find("hostnames/hostname")
+        if hn is not None and hn.get("name"):
+            host_id = hn.get("name")
+        osm = h.find("os/osmatch")
+        os_name = osm.get("name") if osm is not None else None
+        for p in h.findall("ports/port"):
+            pst = p.find("state")
+            if pst is None or pst.get("state") != "open":
+                continue
+            port = int(p.get("portid"))
+            s = p.find("service")
+            detail = {"proto": p.get("protocol"), "ip": ip}
+            if os_name:
+                detail["os"] = os_name
+            cpe = s.findtext("cpe") if s is not None else None
+            if cpe:
+                detail["cpe"] = cpe
+            out.append(finding(
+                host_id, "service", str(port), SOURCE, observed, port=port,
+                service=s.get("name") if s is not None else None,
+                software=s.get("product") if s is not None else None,
+                version=s.get("version") if s is not None else None, detail=detail))
+            vul = _vulners(p)
+            if vul:
+                cves = sorted({c for c, _, _ in vul})
+                best = max((c for _, c, _ in vul if c is not None), default=None)
+                out.append(finding(
+                    host_id, "cve", f"vulners:{port}", SOURCE, observed, cve_id=rep_cve(cves), port=port,
+                    cvss_base=best, software=s.get("product") if s is not None else None,
+                    version=s.get("version") if s is not None else None,
+                    detail={"vuln_id": f"VULNERS-{port}", "cves": cves, "ip": ip,
+                            "name": f"{len(cves)} CVEs matched by vulners.nse for {cpe or 'service'}",
+                            "exploit_available": any(x for _, _, x in vul)}))
+    return out
