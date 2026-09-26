@@ -7,6 +7,7 @@ A scenario YAML ties together::
       - scans/openvas/many_vuln.xml
       - {path: bloodhound/v6, connector: bloodhound}
     intel: derived/cve_intel.csv.gz   # optional; built by `linchpin intel-build`
+    model: derived/exploit_model.npz  # optional M11 model (benchmarks/ml_exploitability.py)
     hosts: [...]                   # topology overlay (see connectors/inventory.py)
     reachability: [...]
     credentials: [...]
@@ -66,9 +67,15 @@ def load_scenario(path: str | Path, data_dir: str | Path | None = None, use_inte
             from linchpin.intel import CveIntel
             from linchpin.intel.enrich import enrich
             wanted = {c for f in out for c in [f.cve_id, *((f.detail or {}).get("cves") or [])] if c}
-            out, est = enrich(out, CveIntel.load(ip, only=wanted))
+            model = None
+            if doc.get("model") and (base / doc["model"]).exists():
+                from linchpin.ml.exploitability import ExploitModel
+                model = ExploitModel.load(base / doc["model"])
+            out, est = enrich(out, CveIntel.load(ip, only=wanted), model=model)
+            est["learned_model"] = model is not None
             stats["intel"] = est
         else:
             stats["intel"] = {"missing": str(ip)}
-    cfg_over = {k: doc[k] for k in ("crown_jewels", "entrypoints", "k_shortest") if k in doc}
+    cfg_over = {k: doc[k] for k in ("crown_jewels", "entrypoints", "k_shortest", "exploitability_source")
+                if k in doc}
     return out, Config(**cfg_over), stats

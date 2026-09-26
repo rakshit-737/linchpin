@@ -13,6 +13,7 @@
 # data, not what a real enterprise's exposure is.
 name: composite-lab
 intel: derived/cve_intel.csv.gz
+model: derived/exploit_model.npz   # optional; used only when exploitability_source: learned
 sources:
   - scans/openvas/many_vuln.xml
   - scans/openvas/report_detail_v2.xml

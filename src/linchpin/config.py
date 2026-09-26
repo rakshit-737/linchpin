@@ -20,6 +20,8 @@ class Config(BaseModel):
     entrypoints: list[str] = Field(default_factory=lambda: ["auto:internet_facing"])
     crown_jewels: list[str] = Field(default_factory=lambda: ["auto:sensitivity=high"])
     k_shortest: int = 10
+    # "intel": CVSS sub-score + EPSS + KEV floor (default); "learned": M11 model score when present
+    exploitability_source: str = "intel"
     neo4j: dict[str, str] = Field(default_factory=lambda: {"uri": "bolt://localhost:7687", "user": "neo4j"})
 
 

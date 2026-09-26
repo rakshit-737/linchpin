@@ -114,8 +114,11 @@ class GraphStore:
                 # Only vulns that plausibly yield code execution grant a privilege. Unknown
                 # impact (no CVSS vector) is treated conservatively as code execution.
                 if impact in (None, "rce"):
+                    learned = (d.get("exploitability_learned")
+                               if self.cfg.exploitability_source == "learned" else None)
                     self._add(g, vid, "ENABLES", priv(f.host_id), cvss_base=f.cvss_base, epss=f.epss,
-                              cvss_exploitability=d.get("cvss_exploitability"), kev=bool(d.get("kev")))
+                              cvss_exploitability=d.get("cvss_exploitability"), kev=bool(d.get("kev")),
+                              exploitability=learned)
             elif f.kind == "credential":
                 cid = f"cred:{d['principal']}"
                 g.add_node(cid, label="Credential", principal=d["principal"],
@@ -164,7 +167,8 @@ class GraphStore:
     def _add(self, g: nx.DiGraph, u: str, rel: str, v: str, **props) -> None:
         ctx = EdgeContext(rel=rel, transition_class=CLASS_BY_REL.get(rel),
                           cvss_base=props.get("cvss_base"), epss=props.get("epss"),
-                          cvss_exploitability=props.get("cvss_exploitability"), kev=bool(props.get("kev")))
+                          cvss_exploitability=props.get("cvss_exploitability"), kev=bool(props.get("kev")),
+                          exploitability=props.pop("exploitability", None))
         g.add_edge(u, v, rel=rel, id=edge_id(u, rel, v), cost=edge_cost(ctx, self.cfg), **props)
 
     # --------------------------------------------------------- entry / crown

@@ -8,6 +8,7 @@
     "entrypoints": { "type": "array", "items": { "type": "string" } },
     "crown_jewels": { "type": "array", "items": { "type": "string" } },
     "k_shortest": { "type": "integer", "minimum": 1 },
+    "exploitability_source": { "type": "string", "enum": ["intel", "learned"], "description": "additive in v1.1" },
     "neo4j": { "type": "object", "properties": { "uri": {"type": "string"}, "user": {"type": "string"} } }
   }
 }

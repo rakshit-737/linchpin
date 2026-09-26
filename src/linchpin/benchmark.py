@@ -129,8 +129,8 @@ def summarise(rows: list[dict]) -> dict:
                 "residual_frac_se": statistics.pstdev(resid) / math.sqrt(n),
                 "mean_ms": statistics.mean(r[f"{s}_ms"] for r in rs),
                 # attacker-effort gain on still-connected topologies (edge-cost units)
-                "cost_gain_connected": statistics.mean(
-                    [r[f"{s}_gain"] for r in rs if math.isfinite(r[f"{s}_gain"])] or [0.0]),
+                "cost_gain_connected": (statistics.mean(g) if (g := [
+                    r[f"{s}_gain"] for r in rs if math.isfinite(r[f"{s}_gain"])]) else None),
             }
         opt = [(r["greedy_fixes"], r["min_cut"]) for r in rs if r["greedy_fixes"] and r["min_cut"]]
         agg["greedy_optimal_rate"] = (sum(g == m for g, m in opt) / len(opt)) if opt else None

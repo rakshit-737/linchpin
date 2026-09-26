@@ -8,8 +8,9 @@ from linchpin.intel.store import CveIntel
 from linchpin.models import NormalizedFinding
 
 
-def enrich(findings: list[NormalizedFinding], intel: CveIntel, prefer_intel: bool = False
-           ) -> tuple[list[NormalizedFinding], dict]:
+def enrich(findings: list[NormalizedFinding], intel: CveIntel, prefer_intel: bool = False,
+           model=None) -> tuple[list[NormalizedFinding], dict]:
+    """`model` (optional, linchpin.ml.exploitability.ExploitModel) adds detail.exploitability_learned."""
     out, hit, miss, kev = [], 0, 0, 0
     for f in findings:
         rec = None
@@ -44,6 +45,8 @@ def enrich(findings: list[NormalizedFinding], intel: CveIntel, prefer_intel: boo
         if rec.kev and detail.get("impact_class") == "info":
             detail["impact_class"] = "rce"  # exploited in the wild beats a vector-based guess
         detail["intel_cve"] = rec.cve
+        if model is not None:
+            detail["exploitability_learned"] = round(max(model.score(r) for r in recs), 5)
         upd["detail"] = detail
         out.append(f.model_copy(update=upd))
     return out, {"cve_findings": hit + miss, "enriched": hit, "unknown_cve": miss, "kev": kev,
