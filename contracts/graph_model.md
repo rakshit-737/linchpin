@@ -11,6 +11,7 @@ Node ids are prefixed by label so they are globally unique:
 | Credential | `cred:<principal>` | principal, cred_type |
 | Privilege | `priv:admin@<host_id>` | principal, level |
 | DataStore | `ds:<name>` | sensitivity |
+| Ace (v1.2, additive) | `ace:<principal>-><target>` | principal, target, target_kind, rights |
 
 Attack edges are stored **in attacker-traversal direction** (a path is a walk the attacker takes):
 
@@ -23,6 +24,8 @@ Attack edges are stored **in attacker-traversal direction** (a path is a walk th
 | `STORED_ON` | Host -> Credential | cred recoverable from a controlled host (privesc); stored reversed vs. spec text |
 | `GRANTS` | Credential -> Privilege | using cred yields privilege on a host it is VALID_ON (lateral) |
 | `HOLDS` | Host -> DataStore | crown-jewel data on host (objective); stored reversed vs. spec text |
+| `HAS_ACE` (v1.2) | Credential -> Ace | principal holds an abusable AD ACL entry (lateral) |
+| `ABUSES` (v1.2) | Ace -> Credential / Privilege / DataStore | abusing the ACE yields a user, local admin, or DCSync of the NTDS (privesc, class `acl_abuse`) |
 
 Deviation from the original spec draft: `CAN_REACH` terminates on the target's *Service* (not the Host)
 so that simple paths never revisit a host, and `RUNS` / `VALID_ON` are kept as node attributes

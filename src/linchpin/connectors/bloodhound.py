@@ -12,7 +12,14 @@ Only the attacker-relevant subset is modelled:
 * each computer                                                   -> ``config`` inventory
   (segment ``ad``; domain controllers flagged and given an ``ntds`` datastore)
 
-ACE-based edges (GenericAll, WriteDacl, DCSync, ADCS ...) are out of scope; see docs/.
+* abusable ACEs (``Aces`` on users / groups / computers / domains)  -> ``acl`` findings with
+  ``ace=True``: control of a user (GenericAll, ForceChangePassword, ...) -> that user's
+  credential; write access to a group -> the group's effective admin rights (and the NTDS if
+  the group is privileged); control of a computer (GenericAll, AddAllowedToAct/RBCD,
+  AllExtendedRights/LAPS ...) -> admin on it; DCSync (GetChanges + GetChangesAll) or full
+  control of the domain -> the domain controllers' NTDS.
+
+ADCS (ESC1-8), GPO links, shadow credentials and trust edges are not modelled.
 """
 from __future__ import annotations
 
@@ -26,6 +33,13 @@ from linchpin.models import NormalizedFinding
 SOURCE = "bloodhound"
 PRIV_RIDS = ("-512", "-519", "-544")  # Domain Admins, Enterprise Admins, BUILTIN\Administrators
 LOCAL_GROUP_RIGHT = {"-544": "AdminTo", "-555": "CanRDP", "-580": "CanPSRemote"}
+_CONTROL = {"GenericAll", "WriteDacl", "WriteOwner", "Owns"}
+ABUSABLE = {
+    "user": _CONTROL | {"GenericWrite", "ForceChangePassword", "AllExtendedRights"},
+    "group": _CONTROL | {"GenericWrite", "AddMember", "AddSelf", "AllExtendedRights"},
+    "computer": _CONTROL | {"GenericWrite", "AllExtendedRights", "AddAllowedToAct", "ReadLAPSPassword"},
+    "domain": _CONTROL | {"AllExtendedRights", "GetChangesAll"},
+}
 
 
 def _load(d: Path, name: str) -> list[dict]:
@@ -58,11 +72,12 @@ def parse(path: str) -> list[NormalizedFinding]:
     if p.is_file() and not (p.stem == "computers" or p.stem.endswith("_computers")):
         return []  # consumed together with computers.json
     computers, users, groups = _load(d, "computers"), _load(d, "users"), _load(d, "groups")
+    domains = _load(d, "domains")
     observed = epoch_iso(None)
 
     names: dict[str, str] = {}
     enabled: dict[str, bool] = {}
-    for obj in users + computers + groups:
+    for obj in users + computers + groups + domains:
         sid = obj["ObjectIdentifier"]
         names[sid] = obj.get("Properties", {}).get("name") or sid
         enabled[sid] = obj.get("Properties", {}).get("enabled", True) is not False
@@ -90,6 +105,7 @@ def parse(path: str) -> list[NormalizedFinding]:
 
     hosts = {c["ObjectIdentifier"]: host_name(names[c["ObjectIdentifier"]]) for c in computers}
     rights: dict[tuple[str, str], set[str]] = defaultdict(set)  # (user_sid, right) -> host ids
+    direct_admin: dict[str, set[str]] = defaultdict(set)  # any principal sid -> hosts it is local admin on
     for c in computers:
         hid = hosts[c["ObjectIdentifier"]]
         for lg in c.get("LocalGroups", []) or []:
@@ -98,6 +114,8 @@ def parse(path: str) -> list[NormalizedFinding]:
             if not right:
                 continue
             for m in lg.get("Results", []):
+                if right == "AdminTo":
+                    direct_admin[m["ObjectIdentifier"]].add(hid)
                 for u in expand(m["ObjectIdentifier"], m.get("ObjectType", "")):
                     rights[(u, right)].add(hid)
         for u in domain_admins:
@@ -133,4 +151,77 @@ def parse(path: str) -> list[NormalizedFinding]:
                 "principal": names.get(u, u), "cred_type": "hash", "sid": u,
                 "valid_on": sorted(rights.get((u, "AdminTo"), set())),
                 "domain_admin": u in domain_admins}))
+    out += _ace_findings(users, groups, computers, domains, names, enabled, members, expand,
+                         domain_admins, hosts, direct_admin, observed)
+    return out
+
+
+def _ace_findings(users, groups, computers, domains, names, enabled, members, expand, domain_admins,
+                  hosts, direct_admin, observed) -> list[NormalizedFinding]:
+    parents: dict[str, set[str]] = defaultdict(set)
+    for g, ms in members.items():
+        for m, _ in ms:
+            parents[m].add(g)
+
+    def closure(sid: str) -> set[str]:  # sid plus every group it is (transitively) a member of
+        seen, stack = {sid}, [sid]
+        while stack:
+            for p in parents.get(stack.pop(), ()):
+                if p not in seen:
+                    seen.add(p)
+                    stack.append(p)
+        return seen
+
+    all_hosts = sorted(hosts.values())
+    ntds = sorted(f"ntds@{hosts[c['ObjectIdentifier']]}" for c in computers
+                  if c.get("IsDC") or c.get("Properties", {}).get("isdc"))
+    grants: dict[tuple[str, str], dict] = {}  # (user sid, target sid) -> accumulated finding detail
+
+    def add(target: dict, kind: str) -> None:
+        tsid = target["ObjectIdentifier"]
+        if kind in ("user", "group", "computer") and not enabled.get(tsid, True):
+            return
+        by_principal: dict[str, set[str]] = defaultdict(set)
+        for ace in target.get("Aces", []) or []:
+            if ace.get("RightName") in ABUSABLE[kind]:
+                by_principal[ace["PrincipalSID"]].add(ace["RightName"])
+        if kind == "domain":  # DCSync needs both replication rights
+            for p, rs in by_principal.items():
+                if "GetChangesAll" in rs and not any(a.get("PrincipalSID") == p and a.get("RightName") == "GetChanges"
+                                                     for a in target.get("Aces", [])):
+                    rs.discard("GetChangesAll")
+        for p, rs in by_principal.items():
+            if not rs:
+                continue
+            ptype = next((a.get("PrincipalType", "") for a in target["Aces"] if a["PrincipalSID"] == p), "")
+            for u in expand(p, ptype):
+                if u in domain_admins or u == tsid:
+                    continue  # already all-powerful / self-control adds nothing
+                det = grants.setdefault((u, tsid), {
+                    "ace": True, "right": "ACE", "principal": names.get(u, u), "sid": u, "rights": set(), "target_kind": kind,
+                    "target_name": names.get(tsid, tsid), "grants_creds": [], "grants_hosts": [],
+                    "grants_datastores": []})
+                det["rights"] |= rs
+                if kind == "user":
+                    det["grants_creds"] = [names.get(tsid, tsid)]
+                elif kind == "computer" and tsid in hosts:
+                    det["grants_hosts"] = [hosts[tsid]]
+                elif kind == "group":
+                    anc = closure(tsid)
+                    priv = any(g.endswith(PRIV_RIDS) for g in anc)
+                    det["grants_hosts"] = all_hosts if priv else sorted(
+                        set().union(*(direct_admin.get(g, set()) for g in anc)))
+                    det["grants_datastores"] = ntds if priv else []
+                elif kind == "domain":
+                    det["grants_datastores"] = ntds
+
+    for kind, objs in (("user", users), ("group", groups), ("computer", computers), ("domain", domains)):
+        for o in objs:
+            add(o, kind)
+    out = []
+    for (u, t), det in sorted(grants.items()):
+        det["rights"] = sorted(det["rights"])
+        if not (det["grants_creds"] or det["grants_hosts"] or det["grants_datastores"]):
+            continue
+        out.append(finding("identity", "acl", f"{u}|ACE|{t}", SOURCE, observed, detail=det))
     return out

@@ -2,7 +2,7 @@
 
 * :func:`chokepoints` -- every remediable node that, removed alone, disconnects *all*
   entrypoints from *all* crown jewels (dominators of a virtual sink, O(E alpha(E))).
-* :func:`min_remediation_cut` -- the minimum number of remediable nodes whose removal
+* :func:`min_remediation_cut` -- the minimum number (or, weighted, total effort) of remediable nodes whose removal
   disconnects everything (vertex-split max-flow / min-cut). This is the optimum the greedy
   optimizer approximates, used by the benchmark to report an optimality gap.
 
@@ -46,9 +46,17 @@ def chokepoints(store, candidates: list[str] | None = None) -> list[str]:
     return out[::-1]  # ordered entry -> crown jewel
 
 
-def min_remediation_cut(store, candidates: list[str] | None = None) -> list[str] | None:
+def fix_cost(store, node_id: str) -> float:
+    """Remediation effort of one candidate node (config ``fix_cost`` by label, default 1)."""
+    a = store.g.nodes[node_id]
+    return float(a.get("fix_cost") or store.cfg.fix_cost.get(a.get("label"), 1.0))
+
+
+def min_remediation_cut(store, candidates: list[str] | None = None, weighted: bool = False) -> list[str] | None:
     """Minimum set of remediable nodes disconnecting all crown jewels.
 
+    ``weighted=False`` minimises the number of fixes; ``weighted=True`` minimises total
+    remediation effort (:func:`fix_cost`, e.g. a segmentation rule costs 3 patches).
     Returns [] if nothing is reachable already, or None if no finite cut exists (e.g. an
     entrypoint service leads straight to a crown jewel with nothing remediable in between).
     """
@@ -57,10 +65,11 @@ def min_remediation_cut(store, candidates: list[str] | None = None) -> list[str]
     if g is None:
         return []
     cand = set(candidates if candidates is not None else _cands(store))
-    big = float(len(cand) + 1)
+    cap = {n: (fix_cost(store, n) if weighted else 1.0) for n in cand}
+    big = float(sum(cap.values()) + 1)
     h = nx.DiGraph()
     for n in g.nodes:
-        h.add_edge((n, "i"), (n, "o"), capacity=1.0 if n in cand else big)
+        h.add_edge((n, "i"), (n, "o"), capacity=cap[n] if n in cand else big)
     for u, v in g.edges:
         h.add_edge((u, "o"), (v, "i"), capacity=big)
     value, (reach, _) = nx.minimum_cut(h, (_S, "o"), (_T, "i"))

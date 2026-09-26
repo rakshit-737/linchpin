@@ -5,7 +5,7 @@ from linchpin.config import Config
 from linchpin.engine.explain import explain_remediation
 from linchpin.models import AttackPath, Remediation
 
-CANDIDATE_LABELS = {"Vuln", "Credential", "Host"}
+CANDIDATE_LABELS = {"Vuln", "Credential", "Host", "Ace"}
 
 
 def action_for(store, node_id: str) -> str:
@@ -18,6 +18,8 @@ def action_for(store, node_id: str) -> str:
         return f"apply fix for '{what}' on {a['host_id']}"
     if lbl == "Credential":
         return f"rotate credential {a['principal']} (remove cached copies)"
+    if lbl == "Ace":
+        return f"remove {'/'.join(a.get('rights') or ['ACL'])} of {a['principal']} on {a['target']}"
     if lbl == "Host":
         return f"add segmentation rule isolating {a['host_id']}"
     return f"remediate {node_id}"
@@ -25,10 +27,11 @@ def action_for(store, node_id: str) -> str:
 
 def candidates(store) -> list[str]:
     out = []
+    entry = set(store.entrypoints())  # configured entry hosts are not flagged is_entrypoint
     for n, a in store.g.nodes(data=True):
         if a.get("label") not in CANDIDATE_LABELS:
             continue
-        if a.get("label") == "Host" and (a.get("is_entrypoint") or a.get("is_crown_jewel")):
+        if a.get("label") == "Host" and (a.get("is_entrypoint") or a.get("is_crown_jewel") or n in entry):
             continue
         out.append(n)
     return sorted(out)

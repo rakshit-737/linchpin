@@ -26,8 +26,11 @@ STAGE_BY_REL = {
     "STORED_ON": "privesc",
     "GRANTS": "lateral",
     "HOLDS": "objective",
+    "HAS_ACE": "lateral",
+    "ABUSES": "privesc",
 }
-CLASS_BY_REL = {"ENABLES": "network_exploit", "GRANTS": "cred_reuse", "STORED_ON": "privesc"}
+CLASS_BY_REL = {"ENABLES": "network_exploit", "GRANTS": "cred_reuse", "STORED_ON": "privesc",
+                "ABUSES": "acl_abuse"}
 
 
 def edge_id(u: str, rel: str, v: str) -> str:
@@ -52,6 +55,7 @@ class GraphStore:
         hosts: dict[str, dict] = {}
         services: dict[str, list[tuple[int, str]]] = {}
         reach: list[dict] = []
+        aces: list[dict] = []
         fs = sorted(self.findings.values(), key=lambda f: f.finding_id)
 
         def host(hid: str) -> str:
@@ -126,6 +130,8 @@ class GraphStore:
                 self._add(g, host(f.host_id), "STORED_ON", cid)
                 for target in d.get("valid_on", []):
                     self._add(g, cid, "GRANTS", priv(target))
+            elif f.kind == "acl" and d.get("ace"):
+                aces.append(d)
             elif f.kind == "acl" and d.get("right") == "AdminTo":
                 cid = f"cred:{d['principal']}"
                 if cid not in g:
@@ -133,6 +139,26 @@ class GraphStore:
                 self._add(g, cid, "GRANTS", priv(d["target"]))
             elif f.kind == "reachability" and d.get("allowed", True):
                 reach.append(d)
+
+        # Abusable AD ACEs (BloodHound): principal -HAS_ACE-> Ace -ABUSES-> credential / admin / NTDS.
+        for d in aces:
+            pid = f"cred:{d['principal']}"
+            if pid not in g:
+                g.add_node(pid, label="Credential", principal=d["principal"], cred_type="unknown")
+            aid = f"ace:{d['principal']}->{d['target_name']}"
+            g.add_node(aid, label="Ace", principal=d["principal"], target=d["target_name"],
+                       target_kind=d.get("target_kind"), rights=list(d.get("rights") or []))
+            self._add(g, pid, "HAS_ACE", aid)
+            for c in d.get("grants_creds", []):
+                cid = f"cred:{c}"
+                if cid not in g:
+                    g.add_node(cid, label="Credential", principal=c, cred_type="unknown")
+                self._add(g, aid, "ABUSES", cid)
+            for h in d.get("grants_hosts", []):
+                self._add(g, aid, "ABUSES", priv(h))
+            for ds in d.get("grants_datastores", []):
+                if f"ds:{ds}" in g:
+                    self._add(g, aid, "ABUSES", f"ds:{ds}")
 
         for hid, props in hosts.items():
             props.pop("_overlay", None)

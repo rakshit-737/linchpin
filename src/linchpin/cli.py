@@ -152,10 +152,16 @@ def cmd_scenario(args) -> int:
 
 
 def cmd_cuts(args) -> int:
-    from linchpin.engine.cuts import chokepoints, min_remediation_cut
+    from linchpin.engine.cuts import chokepoints, fix_cost, min_remediation_cut
     store = _load_store(args)
     mc = min_remediation_cut(store)
-    _emit({"chokepoints": chokepoints(store), "min_cut": mc, "min_cut_size": None if mc is None else len(mc)})
+    out = {"chokepoints": chokepoints(store), "min_cut": mc, "min_cut_size": None if mc is None else len(mc)}
+    if getattr(args, "weighted", False):
+        wc = min_remediation_cut(store, weighted=True)
+        out["weighted_cut"] = wc
+        out["weighted_cut_effort"] = None if wc is None else sum(fix_cost(store, n) for n in wc)
+        out["min_cut_effort"] = None if mc is None else sum(fix_cost(store, n) for n in mc)
+    _emit(out)
     return 0
 
 
@@ -220,7 +226,9 @@ def build_parser() -> argparse.ArgumentParser:
     s.add_argument("--data-dir")
     s.add_argument("--no-intel", action="store_true")
     s.set_defaults(fn=cmd_scenario)
-    sub.add_parser("cuts", help="exact min remediation cut and single-node chokepoints").set_defaults(fn=cmd_cuts)
+    cu = sub.add_parser("cuts", help="exact min remediation cut and single-node chokepoints")
+    cu.add_argument("--weighted", action="store_true", help="also the minimum-effort cut (config fix_cost)")
+    cu.set_defaults(fn=cmd_cuts)
     s = sub.add_parser("export", help="export the attack graph (Neo4j .cypher script or GraphML)")
     s.add_argument("--format", choices=["cypher", "graphml"], default="cypher")
     s.add_argument("--out", required=True)

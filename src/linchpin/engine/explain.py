@@ -45,6 +45,10 @@ def explain_remediation(r: Remediation, store, paths: list[AttackPath] | None = 
         name = a.get("cve") or a.get("name")
         return (f"{name} on {a.get('host_id')} (CVSS {a.get('cvss_base')}, EPSS {a.get('epss')}{kev}) "
                 f"is a step on {r.paths_broken} attack paths; {tail}")
+    if label == "Ace":
+        a = store.g.nodes[r.target_node]
+        return (f"{a.get('principal')} holds {', '.join(a.get('rights') or [])} on {a.get('target_kind')} "
+                f"{a.get('target')} (abusable AD ACL); {tail}")
     if label == "Credential":
         g = store.g
         cached = sorted(u.split(":", 1)[1] for u in g.predecessors(r.target_node)

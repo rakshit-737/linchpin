@@ -20,7 +20,7 @@ import networkx as nx
 from linchpin.config import Config
 from linchpin.graph.store import GraphStore
 
-LABELS = {"Host", "Service", "Vuln", "Credential", "Privilege", "DataStore", "Internet"}
+LABELS = {"Host", "Service", "Vuln", "Credential", "Privilege", "DataStore", "Internet", "Ace"}
 BATCH = 500
 
 

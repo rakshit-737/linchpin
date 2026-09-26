@@ -45,7 +45,7 @@ def _load(store: GraphStore, findings, cfg: Config | None = None) -> GraphStore:
 
 
 def create_app(store: GraphStore | None = None, loaded: str = "") -> FastAPI:
-    app = FastAPI(title="LINCHPIN API", version="1.1",
+    app = FastAPI(title="LINCHPIN API", version="1.2",
                   description="Read-only attack-path reasoning. Consumes exported findings; sends no packets.")
     app.state.store = store or GraphStore(Config())
     app.state.loaded = loaded
@@ -109,9 +109,12 @@ def create_app(store: GraphStore | None = None, loaded: str = "") -> FastAPI:
         return {"nodes": nodes, "edges": edges}
 
     @app.get("/chokepoints")
-    def chokes():
+    def chokes(weighted: bool = False):
         mc = min_remediation_cut(S())
-        return {"chokepoints": chokepoints(S()), "min_cut": mc, "min_cut_size": None if mc is None else len(mc)}
+        out = {"chokepoints": chokepoints(S()), "min_cut": mc, "min_cut_size": None if mc is None else len(mc)}
+        if weighted:
+            out["weighted_cut"] = min_remediation_cut(S(), weighted=True)
+        return out
 
     @app.get("/criticality")
     def criticality(k: int = 50, top: int = 15):

@@ -15,13 +15,18 @@ class Weights(BaseModel):
 class Config(BaseModel):
     weights: Weights = Field(default_factory=Weights)
     skill_penalty: dict[str, float] = Field(
-        default_factory=lambda: {"network_exploit": 0.1, "cred_reuse": 0.2, "client_side": 0.4, "privesc": 0.3}
+        default_factory=lambda: {"network_exploit": 0.1, "cred_reuse": 0.2, "client_side": 0.4, "privesc": 0.3,
+                                 "acl_abuse": 0.25}
     )
     entrypoints: list[str] = Field(default_factory=lambda: ["auto:internet_facing"])
     crown_jewels: list[str] = Field(default_factory=lambda: ["auto:sensitivity=high"])
     k_shortest: int = 10
     # "intel": CVSS sub-score + EPSS + KEV floor (default); "learned": M11 model score when present
     exploitability_source: str = "intel"
+    # Relative effort per remediation type, used by the weighted (cost-aware) min cut:
+    # patching / rotating / removing an ACE is cheap, a new segmentation rule is expensive.
+    fix_cost: dict[str, float] = Field(
+        default_factory=lambda: {"Vuln": 1.0, "Credential": 1.0, "Ace": 1.0, "Host": 3.0})
     neo4j: dict[str, str] = Field(default_factory=lambda: {"uri": "bolt://localhost:7687", "user": "neo4j"})
 
 
