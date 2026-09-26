@@ -1,0 +1,22 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "NormalizedFinding",
+  "type": "object",
+  "required": ["finding_id", "host_id", "kind", "source", "observed_at"],
+  "properties": {
+    "finding_id": { "type": "string", "description": "stable hash of (host_id, kind, key)" },
+    "host_id":    { "type": "string" },
+    "kind":       { "type": "string", "enum": ["cve", "service", "credential", "acl", "config", "reachability"] },
+    "cve_id":     { "type": ["string", "null"], "pattern": "^CVE-\\d{4}-\\d+$" },
+    "cvss_base":  { "type": ["number", "null"], "minimum": 0, "maximum": 10 },
+    "cvss_vector":{ "type": ["string", "null"] },
+    "epss":       { "type": ["number", "null"], "minimum": 0, "maximum": 1 },
+    "port":       { "type": ["integer", "null"] },
+    "service":    { "type": ["string", "null"] },
+    "software":   { "type": ["string", "null"] },
+    "version":    { "type": ["string", "null"] },
+    "detail":     { "type": "object" },
+    "source":     { "type": "string" },
+    "observed_at":{ "type": "string", "format": "date-time" }
+  }
+}
