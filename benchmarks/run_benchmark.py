@@ -76,8 +76,9 @@ def plot(summ: dict, out: Path) -> None:
         ax.set_title(t, fontsize=10)
         ax.set_ylim(0, 1.05)
         ax.spines[["top", "right"]].set_visible(False)
-    axes[0].legend(fontsize=7, frameon=False, loc="upper right")
-    fig.tight_layout()
+    handles, labels = axes[0].get_legend_handles_labels()
+    fig.legend(handles, labels, fontsize=8, frameon=False, loc="lower center", ncol=len(STRATEGIES))
+    fig.tight_layout(rect=(0, 0.08, 1, 1))
     fig.savefig(out / "strategies.png", dpi=110)
     plt.close(fig)
 
@@ -89,9 +90,13 @@ def main(argv=None) -> int:
     ap.add_argument("--k", type=int, default=100)
     ap.add_argument("--families", default=",".join(FAMILIES))
     ap.add_argument("--out", default="benchmarks/results")
+    ap.add_argument("--replot", action="store_true", help="only redraw figures from summary.json")
     a = ap.parse_args(argv)
     out = Path(a.out)
     out.mkdir(parents=True, exist_ok=True)
+    if a.replot:
+        plot(json.loads((out / "summary.json").read_text(encoding="utf-8"))["families"], out)
+        return 0
     rows = []
     t0 = time.time()
     for fam in a.families.split(","):
