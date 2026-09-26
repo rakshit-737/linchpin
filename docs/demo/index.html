@@ -3,6 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
+<script>window.LINCHPIN_STATIC = 'data/'; window.LINCHPIN_STATIC_DEFAULT = 'case_study';</script>
 <title>LINCHPIN Path Explorer</title>
 <script src="https://cdn.jsdelivr.net/npm/cytoscape@3.30.2/dist/cytoscape.min.js" integrity="sha384-IWROdLKRsN1UuJywMlWl7/blXQ8GEooN2n7dzTxfEPd7ybYIKCUJ2Ol/1Gpf3YV4" crossorigin="anonymous"></script>
 <style>
@@ -36,12 +37,12 @@ tr.rem{cursor:pointer}tr.rem:hover,tr.rem.sel{background:color-mix(in srgb,var(-
     <select id="family">
       <option value="single">single chokepoint</option><option value="multi">multiple pivots</option>
       <option value="none">no chokepoint</option><option value="ad">Active Directory tiers</option>
-      <option value="scenario">server scenario (LINCHPIN_SCENARIO)</option>
+      <option value="scenario">real-export case study</option>
     </select></label>
   <label>seed <input id="seed" type="number" value="0" style="width:64px"></label>
   <label>budget <input id="budget" type="number" value="3" min="1" max="10" style="width:56px"></label>
   <button class="primary" id="load">Load</button>
-  <span class="stat" id="stats"></span>
+  <span class="stat" id="stats"></span><span class="stat">static demo: seed 0 only; what-if counts the enumerated paths</span>
 </header>
 <main>
   <div id="cy" aria-label="attack graph"></div>
