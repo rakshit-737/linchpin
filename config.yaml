@@ -1,0 +1,6 @@
+weights: { w1: 0.5, w2: 0.3, w3: 0.2 }
+skill_penalty: { network_exploit: 0.1, cred_reuse: 0.2, client_side: 0.4, privesc: 0.3 }
+entrypoints: ["auto:internet_facing"]
+crown_jewels: ["auto:sensitivity=high"]
+k_shortest: 10
+neo4j: { uri: "bolt://localhost:7687", user: "neo4j" }  # unused by the MVP (in-memory backend)
