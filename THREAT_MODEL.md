@@ -36,3 +36,13 @@ The tool could be pointed at stolen scan data to plan an attack. Its output (ran
 ## Model-correctness risks
 
 The cost model is heuristic. `prerequisite_match` is fixed, credential reuse ignores network reachability, and reachability is modelled per segment. Every recommendation lists its evidence path ids so an analyst can verify it. Treat the output as decision support, not ground truth.
+
+## v0.2 additions
+
+| Asset / entry point | Threat | Mitigation |
+| --- | --- | --- |
+| XML exports (OpenVAS, Nessus, nmap) | XXE, billion laughs | `defusedxml` by default; entity declarations refused without it |
+| Dataset downloader | tampered sample files | commit-pinned URLs plus SHA-256 verification; HTTPS only; reports only, never binaries |
+| Web UI (`/ui`) | CDN compromise, XSS from finding strings | Cytoscape pinned with SRI; all finding text HTML-escaped before insertion |
+| `/demo/load` scenario path | reading arbitrary server files | parsed only as scenario YAML plus known export formats; API binds to localhost and must not be exposed |
+| Neo4j mirror | credential leakage | password only via `NEO4J_PASSWORD`, never in config; the compose file binds to localhost |
