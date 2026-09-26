@@ -227,7 +227,7 @@ class GraphStore:
                 pairs = list(zip(nodes, nodes[1:]))
                 rels = [g.edges[u, v]["rel"] for u, v in pairs]
                 out.append(AttackPath(
-                    path_id=hashlib.sha1("|".join(nodes).encode()).hexdigest()[:12],
+                    path_id=hashlib.sha1("|".join(nodes).encode(), usedforsecurity=False).hexdigest()[:12],
                     nodes=nodes,
                     edges=[g.edges[u, v]["id"] for u, v in pairs],
                     stages=[("recon" if u == INTERNET else STAGE_BY_REL[r]) for (u, _), r in zip(pairs, rels)],

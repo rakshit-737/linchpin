@@ -2,7 +2,9 @@
 from __future__ import annotations
 
 import re
-import xml.etree.ElementTree as ET  # nosec B405 - DTDs/entities rejected below; defusedxml used if present
+# stdlib parser is only a fallback: defusedxml is used when installed, and entity
+# declarations are refused otherwise (see parse_xml).
+import xml.etree.ElementTree as ET  # nosec B405
 from datetime import datetime, timezone
 from pathlib import Path
 
@@ -22,7 +24,7 @@ def parse_xml(path: str | Path) -> ET.Element:
     head = Path(path).read_bytes()[:4096]
     if b"<!ENTITY" in head:
         raise ValueError(f"{path}: XML entity declarations are not accepted")
-    return ET.parse(str(path)).getroot()  # nosec B314 - see check above
+    return ET.parse(str(path)).getroot()  # nosec B314
 
 
 def epoch_iso(s: str | int | None) -> str:

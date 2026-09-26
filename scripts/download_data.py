@@ -73,7 +73,7 @@ def fetch(url: str, dest: Path, force: bool = False) -> None:
     dest.parent.mkdir(parents=True, exist_ok=True)
     req = urllib.request.Request(url, headers={"User-Agent": "linchpin-dataset-fetch/1.0"})
     tmp = dest.with_suffix(dest.suffix + ".part")
-    with urllib.request.urlopen(req, timeout=300) as r, tmp.open("wb") as fh:  # nosec B310 - fixed https URLs
+    with urllib.request.urlopen(req, timeout=300) as r, tmp.open("wb") as fh:  # nosec B310
         while chunk := r.read(1 << 20):
             fh.write(chunk)
     tmp.replace(dest)
