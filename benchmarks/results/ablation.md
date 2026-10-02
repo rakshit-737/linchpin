@@ -1,5 +1,3 @@
-# Ablation: what makes the plans work
-
 Budget 3 fixes, 50 seeds per family. Each planner runs the same optimiser on a degraded view of the findings; its plan is scored on the **full** ground-truth graph. Cells: share of topologies where the crown jewel is cut off, 95% Wilson interval, and the exact McNemar p-value of the paired difference to the fused planner (omitted when the two never differ). The fused planner plans on the very graph it is scored on, so its 100% is guaranteed whenever the exact min cut fits the budget (max-flow / min-cut); the evidence is how far each degraded view falls short of it.
 
 | planner (view of the data) | ad | multi | none | single | pooled (ad+multi+single, n=150) |
@@ -18,7 +16,7 @@ Budget 3 fixes, 50 seeds per family. Each planner runs the same optimiser on a d
 
 `none` has a mean exact min cut of about 7 fixes, so no 3-fix plan can disconnect it; it is excluded from the pooled column, and its rows are compared by attacker cost gain below.
 
-## Fixes needed on the real graph
+### Fixes needed on the real graph
 
 Each planner again with a generous budget (12): how many of its fixes, taken in its own order, the *real* graph needs before every crown jewel is cut off, as a multiple of the exact minimum cut (1.00 = optimal; mean with 95% bootstrap interval). "never" = share of topologies its plan does not disconnect at all. Views that over-approximate the network (flat, every CVE = RCE) always disconnect it eventually, because a cut of a super-graph also cuts the real graph; their cost is extra fixes.
 
@@ -36,7 +34,7 @@ Each planner again with a generous budget (12): how many of its fixes, taken in 
 | identity data only (BloodHound-style view) | 1.00x [1.00, 1.00], never 46% | n/a, never 100% | n/a, never 100% | n/a, never 100% |
 | no graph: KEV then EPSS queue | 7.58x [6.16, 8.84], never 62% | 4.25x, never 92% | n/a, never 100% | 8.30x [6.90, 9.55], never 60% |
 
-## Attacker cost gain where nothing disconnects
+### Attacker cost gain where nothing disconnects
 
 Rise of the attacker's cheapest-path cost (edge-cost units) after the 3 fixes, on topologies that stay connected (mean, 95% bootstrap interval, n).
 
@@ -54,7 +52,7 @@ Rise of the attacker's cheapest-path cost (edge-cost units) after the 3 fixes, o
 | identity data only (BloodHound-style view) | +0.000 [+0.000, +0.000] (n=23) | +0.000 [+0.000, +0.000] (n=50) | +0.019 [+0.009, +0.032] (n=50) | +0.000 [+0.000, +0.000] (n=50) |
 | no graph: KEV then EPSS queue | +0.101 [+0.067, +0.141] (n=49) | +0.080 [+0.055, +0.108] (n=49) | +0.037 [+0.022, +0.056] (n=50) | +0.078 [+0.051, +0.113] (n=48) |
 
-## How much the exploit intel moves the path ranking
+### How much the exploit intel moves the path ranking
 
 Uniform-cost view vs real costs on the same graph: Kendall tau between the real top-100 paths' real costs and their uniform-view costs, and the overlap of the two top-10 path sets (mean, 95% bootstrap interval).
 

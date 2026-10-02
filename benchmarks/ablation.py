@@ -257,8 +257,6 @@ def md(summ: dict, budget: int, seeds: int) -> str:
     pooled_label = f"pooled ({'+'.join(pooled['families'])}, n={pooled['n']})" if pooled else ""
     head = "| planner (view of the data) | " + " | ".join(fams) + (f" | {pooled_label} |" if pooled else " |")
     lines = [
-        "# Ablation: what makes the plans work",
-        "",
         (f"Budget {budget} fixes, {seeds} seeds per family. Each planner runs the same optimiser on a degraded "
          "view of the findings; its plan is scored on the **full** ground-truth graph. Cells: share of topologies "
          "where the crown jewel is cut off, 95% Wilson interval, and the exact McNemar p-value of the paired "
@@ -276,7 +274,7 @@ def md(summ: dict, budget: int, seeds: int) -> str:
     if "none" in summ:
         lines += ["", ("`none` has a mean exact min cut of about 7 fixes, so no 3-fix plan can disconnect it; it is "
                        "excluded from the pooled column, and its rows are compared by attacker cost gain below.")]
-    lines += ["", "## Fixes needed on the real graph", "",
+    lines += ["", "### Fixes needed on the real graph", "",
               (f"Each planner again with a generous budget ({LONG_BUDGET}): how many of its fixes, taken in its own "
                "order, the *real* graph needs before every crown jewel is cut off, as a multiple of the exact minimum "
                "cut (1.00 = optimal; mean with 95% bootstrap interval). \"never\" = share of topologies its plan does "
@@ -295,7 +293,7 @@ def md(summ: dict, budget: int, seeds: int) -> str:
                 txt += f", never {a['never_rate']:.0%}"
             cells.append(txt)
         lines.append(f"| {LABEL[name]} | " + " | ".join(cells) + " |")
-    lines += ["", "## Attacker cost gain where nothing disconnects", "",
+    lines += ["", "### Attacker cost gain where nothing disconnects", "",
               ("Rise of the attacker's cheapest-path cost (edge-cost units) after the 3 fixes, on topologies that stay "
                "connected (mean, 95% bootstrap interval, n)."), "",
               "| planner | " + " | ".join(fams) + " |", "| --- |" + " ---: |" * len(fams)]
@@ -310,7 +308,7 @@ def md(summ: dict, budget: int, seeds: int) -> str:
             cells.append(f"{a['cost_gain']:+.3f}" + (f" [{ci[0]:+.3f}, {ci[1]:+.3f}]" if ci else "")
                          + f" (n={a['cost_gain_n']})")
         lines.append(f"| {LABEL[name]} | " + " | ".join(cells) + " |")
-    lines += ["", "## How much the exploit intel moves the path ranking", "",
+    lines += ["", "### How much the exploit intel moves the path ranking", "",
               ("Uniform-cost view vs real costs on the same graph: Kendall tau between the real top-100 paths' real "
                "costs and their uniform-view costs, and the overlap of the two top-10 path sets (mean, 95% bootstrap "
                "interval)."), "", "| family | Kendall tau | top-10 overlap |", "| --- | ---: | ---: |"]

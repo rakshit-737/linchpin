@@ -28,8 +28,8 @@ Only feed it data from environments you own or are explicitly authorised to asse
 
 ## Reporting a vulnerability
 
-Please open a private security advisory on the repository, or email the maintainer, instead of filing a public issue. Include reproduction steps. The maintainer aims to reply within 7 days.
+Use GitHub's private vulnerability reporting: [Report a vulnerability](https://github.com/rakshit-737/linchpin/security/advisories/new) (Security tab), instead of filing a public issue. Include reproduction steps on synthetic or trimmed, anonymised data. The maintainer aims to reply within 7 days.
 
 ## Supply chain
 
-CI runs `bandit` (SAST) and `pip-audit` (dependency CVEs) on every push. Runtime dependencies are limited to pydantic, networkx, PyYAML and defusedxml; FastAPI/uvicorn, neo4j, scikit-learn and matplotlib are optional extras. The web UI loads Cytoscape.js from jsDelivr pinned by version with a Subresource-Integrity hash.
+CI runs `bandit` (SAST) and `pip-audit` on every push and weekly: on the Docker image's hash-pinned `requirements.lock` and on the lowest dependency versions `pyproject.toml` allows. GitHub secret scanning with push protection, Dependabot alerts and security updates, and CodeQL code scanning are enabled; workflow actions are pinned to commit SHAs and `main` rejects force-pushes and deletion. Runtime dependencies are limited to pydantic, networkx, PyYAML and defusedxml; FastAPI/uvicorn, neo4j, scikit-learn and matplotlib are optional extras. The web UI loads Cytoscape.js from jsDelivr pinned by version with a Subresource-Integrity hash.
