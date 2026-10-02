@@ -25,6 +25,8 @@ from linchpin.config import Config
 from linchpin.connectors import CONNECTORS, detect, inventory
 from linchpin.models import NormalizedFinding, make_finding_id
 
+CONFIG_KEYS = ("crown_jewels", "entrypoints", "k_shortest", "exploitability_source")
+
 
 def _rename(f: NormalizedFinding, alias: dict[str, str]) -> NormalizedFinding:
     d = dict(f.detail or {})
@@ -113,6 +115,5 @@ def load_scenario(path: str | Path, data_dir: str | Path | None = None, use_inte
             stats["intel"] = est
         else:
             stats["intel"] = {"missing": doc["intel"]}
-    cfg_over = {k: doc[k] for k in ("crown_jewels", "entrypoints", "k_shortest", "exploitability_source")
-                if k in doc}
+    cfg_over = {k: doc[k] for k in CONFIG_KEYS if k in doc}
     return out, Config(**cfg_over), stats

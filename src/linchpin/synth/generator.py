@@ -1,6 +1,7 @@
 """M9: synthetic-enterprise generator with a ground-truth answer key.
 
-Topology (all fictional, RFC-free hostnames, CVE ids are synthetic placeholders):
+Topology (all fictional, RFC-free hostnames; CVE ids are CVE-2099-* placeholders with random scores --
+use :mod:`linchpin.synth.topologies` for real CVE parameters):
 
     internet -> dmz (web hosts) -> mgmt (single jump host = planted linchpin) -> internal
              -> secure (DB host holding the high-sensitivity datastore)
@@ -24,7 +25,9 @@ def _f(host_id: str, kind: str, key: str, **kw) -> NormalizedFinding:
 
 
 def _cve(rng: random.Random) -> str:
-    return f"CVE-{rng.randint(2015, 2025)}-{rng.randint(10000, 99999)}"
+    """Placeholder id in the CVE-2099 range, so it is never mistaken for a real CVE."""
+    rng.randint(2015, 2025)  # draw kept so seeded topologies stay identical to earlier versions
+    return f"CVE-2099-{rng.randint(10000, 99999)}"
 
 
 def generate(n_hosts: int = 20, n_segments: int = 5, seed: int = 0
