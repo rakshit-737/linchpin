@@ -1,23 +1,28 @@
 """Fetch the public datasets LINCHPIN's real-data pipeline uses (never committed to git).
 
-Usage:  python scripts/download_data.py [--out DIR] [--years 2002-2026] [--skip-nvd]
+Usage:  python scripts/download_data.py [--out DIR] [--years 2002-2026] [--skip-nvd] [--force]
 
 Sources (all public, no auth):
   * CISA Known Exploited Vulnerabilities catalog (CC0 / US-gov public domain)
-  * FIRST EPSS daily scores (free to use, attribution to FIRST.org / Empirical Security)
+  * FIRST EPSS daily scores (free to use, attribution to FIRST.org / Empirical Security), plus
+    the archived scores of 2022-12-01 (EPSS v2, model v2022.01.01) for the reproduction of
+    Jacobs et al. 2023 (benchmarks/repro_epss.py)
   * NVD CVE JSON 2.0 yearly feeds (US-gov public domain; "This product uses the NVD API
     but is not endorsed or certified by the NVD")
   * Sample OpenVAS / Nessus / nmap exports from DefectDojo's unit-test corpus (BSD-3-Clause),
     pinned to a commit
   * SharpHound v6 JSON ingest fixtures from SpecterOps/BloodHound (Apache-2.0), pinned
 
-A SHA-256 manifest (`MANIFEST.sha256`) is written next to the data. Pinned (commit-addressed)
-files are verified against the checksums in PINNED below; rolling feeds (KEV/EPSS/NVD) change
-daily, so their hashes are recorded rather than enforced.
+Integrity: commit-pinned and archived files are checked against the SHA-256 values in PINNED
+*before* they are moved into place (a mismatching download is deleted). NVD feeds are checked
+against the size and SHA-256 that NVD publishes in each feed's ``.meta`` file. The rolling
+KEV / EPSS feeds change daily, so their hashes are only recorded. Everything ends up in
+``MANIFEST.sha256`` next to the data. Existing files are kept unless ``--force`` is given.
 """
 from __future__ import annotations
 
 import argparse
+import gzip
 import hashlib
 import sys
 import urllib.request
@@ -25,6 +30,7 @@ from pathlib import Path
 
 DD = "https://raw.githubusercontent.com/DefectDojo/django-DefectDojo/a8fd87fc0820d5a581e16552f1407a08b5e7cccf/unittests/scans"
 BH = "https://raw.githubusercontent.com/SpecterOps/BloodHound/ca1be93f3d53f1df349459f37c632fce3acb2b31/cmd/api/src/test/fixtures/fixtures/v6/ingest"
+NVD = "https://nvd.nist.gov/feeds/json/cve/2.0"
 
 ROLLING = {
     "kev/known_exploited_vulnerabilities.json": "https://www.cisa.gov/sites/default/files/feeds/known_exploited_vulnerabilities.json",
@@ -39,8 +45,10 @@ PINNED_URLS = {
     "scans/nmap/nmap_script_vulners.xml": f"{DD}/nmap/nmap_script_vulners.xml",
     **{f"bloodhound/v6/{n}.json": f"{BH}/{n}.json"
        for n in ("computers", "users", "groups", "domains", "sessions", "ous", "gpos", "containers")},
+    # archived EPSS scores as published on the paper's scoring date (EPSS v2)
+    "epss/history/epss_scores-2022-12-01.csv.gz": "https://epss.empiricalsecurity.com/epss_scores-2022-12-01.csv.gz",
 }
-# SHA-256 of commit-pinned files (verified on every run).
+# SHA-256 of commit-pinned / archived files (verified on every download).
 PINNED: dict[str, str] = {
     "bloodhound/v6/computers.json": "e970efba667e7d8fe4c60bcb0f211c70f450eda867725504f3a7eb89bf1ee046",
     "bloodhound/v6/containers.json": "acd82547a0dd660055325dde79e80c4379191d4683aecb1507c823705a092a73",
@@ -56,56 +64,89 @@ PINNED: dict[str, str] = {
     "scans/nmap/nmap_script_vulners.xml": "f9ee8cc4d133bc4a3d803e9bf47255dbf419205eaac1b53286c702cb38f9ed8e",
     "scans/openvas/many_vuln.xml": "135edfa30a4eb39bbe548d7e5f8373d2b27b5b6841b6d2506ec39fa94aee3c6b",
     "scans/openvas/report_detail_v2.xml": "3a0876e30d45f4f462c165112fc3250eb56a7fc6aaa1b81d4083f8dca118cc15",
+    "epss/history/epss_scores-2022-12-01.csv.gz": "4ede8cf0b188a4e1752e89ab69458434fa239f9b381c793462658ac82617bc7a",
 }
 
 
-def sha256(p: Path) -> str:
+def sha256(p: Path, gunzip: bool = False) -> str:
     h = hashlib.sha256()
-    with p.open("rb") as fh:
+    opener = gzip.open if gunzip else open
+    with opener(p, "rb") as fh:
         for chunk in iter(lambda: fh.read(1 << 20), b""):
             h.update(chunk)
     return h.hexdigest()
 
 
-def fetch(url: str, dest: Path, force: bool = False) -> None:
-    if dest.exists() and dest.stat().st_size > 0 and not force:
-        return
-    dest.parent.mkdir(parents=True, exist_ok=True)
-    req = urllib.request.Request(url, headers={"User-Agent": "linchpin-dataset-fetch/1.0"})
-    tmp = dest.with_suffix(dest.suffix + ".part")
-    with urllib.request.urlopen(req, timeout=300) as r, tmp.open("wb") as fh:  # nosec B310
+def _get(url: str, dest: Path) -> None:
+    req = urllib.request.Request(url, headers={"User-Agent": "linchpin-dataset-fetch/1.1"})
+    with urllib.request.urlopen(req, timeout=300) as r, dest.open("wb") as fh:  # nosec B310 (fixed https URLs)
         while chunk := r.read(1 << 20):
             fh.write(chunk)
+
+
+def _nvd_meta(url: str) -> dict[str, str]:
+    req = urllib.request.Request(url.removesuffix(".json.gz") + ".meta",
+                                 headers={"User-Agent": "linchpin-dataset-fetch/1.1"})
+    with urllib.request.urlopen(req, timeout=60) as r:  # nosec B310
+        text = r.read().decode("ascii", "replace")
+    return dict(line.split(":", 1) for line in text.splitlines() if ":" in line)
+
+
+def fetch(rel: str, url: str, out: Path, force: bool = False) -> str | None:
+    """Download ``url`` to ``out/rel`` (verified first); returns an error message or None."""
+    dest = out / rel
+    if dest.exists() and dest.stat().st_size > 0 and not force:
+        return None
+    dest.parent.mkdir(parents=True, exist_ok=True)
+    tmp = dest.with_suffix(dest.suffix + ".part")
+    _get(url, tmp)
+    want = PINNED.get(rel)
+    if want and sha256(tmp) != want:
+        tmp.unlink()
+        return f"CHECKSUM MISMATCH {rel}: expected {want}; download discarded"
+    if rel.startswith("nvd/"):
+        meta = _nvd_meta(url)
+        if meta.get("gzSize") and int(meta["gzSize"]) != tmp.stat().st_size:
+            tmp.unlink()
+            return f"SIZE MISMATCH {rel}: NVD .meta says {meta['gzSize']} bytes; download discarded"
+        if meta.get("sha256") and sha256(tmp, gunzip=True).lower() != meta["sha256"].strip().lower():
+            tmp.unlink()
+            return f"CHECKSUM MISMATCH {rel}: differs from NVD's .meta sha256; download discarded"
     tmp.replace(dest)
     print(f"  fetched {dest} ({dest.stat().st_size / 1e6:.1f} MB)")
+    return None
 
 
 def main(argv: list[str] | None = None) -> int:
-    ap = argparse.ArgumentParser()
+    ap = argparse.ArgumentParser(description=__doc__.split("\n\n")[0])
     ap.add_argument("--out", default="../../datasets/linchpin")
     ap.add_argument("--years", default="2002-2026")
     ap.add_argument("--skip-nvd", action="store_true")
+    ap.add_argument("--force", action="store_true", help="re-download files that already exist (rolling feeds)")
     a = ap.parse_args(argv)
     out = Path(a.out)
     items = dict(ROLLING) | dict(PINNED_URLS)
     if not a.skip_nvd:
         y0, y1 = (int(x) for x in a.years.split("-"))
         for y in range(y0, y1 + 1):
-            items[f"nvd/nvdcve-2.0-{y}.json.gz"] = f"https://nvd.nist.gov/feeds/json/cve/2.0/nvdcve-2.0-{y}.json.gz"
-    bad = 0
-    lines = []
+            items[f"nvd/nvdcve-2.0-{y}.json.gz"] = f"{NVD}/nvdcve-2.0-{y}.json.gz"
+    errors, lines = [], []
     for rel, url in items.items():
+        err = fetch(rel, url, out, force=a.force and (rel in ROLLING or rel.startswith("nvd/")))
+        if err:
+            print(err, file=sys.stderr)
+            errors.append(err)
+            continue
         dest = out / rel
-        fetch(url, dest)
         digest = sha256(dest)
-        want = PINNED.get(rel)
-        if want and want != digest:
-            print(f"CHECKSUM MISMATCH {rel}: {digest} != {want}", file=sys.stderr)
-            bad += 1
+        if PINNED.get(rel) and PINNED[rel] != digest:  # a file kept from an earlier run
+            err = f"CHECKSUM MISMATCH {rel}: existing file differs from the pinned hash (re-download with --force)"
+            print(err, file=sys.stderr)
+            errors.append(err)
         lines.append(f"{digest}  {rel}")
-    (out / "MANIFEST.sha256").write_text("\n".join(lines) + "\n")
-    print(f"{len(items)} files under {out}; manifest written")
-    return 1 if bad else 0
+    (out / "MANIFEST.sha256").write_text("\n".join(lines) + "\n", encoding="utf-8")
+    print(f"{len(items)} files under {out}; manifest written; {len(errors)} error(s)")
+    return 1 if errors else 0
 
 
 if __name__ == "__main__":

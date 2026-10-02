@@ -1,71 +1,454 @@
 {
-  "population": 379082,
-  "kev_total": 1726,
-  "kev_base_rate_pct": 0.455,
-  "note": "exploited label = CISA KEV (public subset of real exploitation); the paper uses proprietary exploitation telemetry, so coverage differs by design.",
-  "strategies": {
-    "cvss>=7": {
-      "effort": 50.74,
-      "flagged": 192338,
-      "coverage": 88.82,
-      "efficiency": 0.797
+  "paper": {
+    "kev_list": {
+      "fig": "3",
+      "threshold": "Site:KEV",
+      "effort": 0.5,
+      "coverage": 5.9,
+      "efficiency": 53.2
     },
     "cvss>=9.1": {
-      "effort": 13.56,
-      "flagged": 51408,
-      "coverage": 35.4,
-      "efficiency": 1.189
+      "fig": "4",
+      "threshold": "9.1+",
+      "effort": 15.1,
+      "coverage": 33.5,
+      "efficiency": 6.1
     },
-    "epss>=0.1": {
-      "effort": 4.55,
-      "flagged": 17261,
-      "coverage": 73.75,
-      "efficiency": 7.375
+    "epss_v1_eq_effort": {
+      "fig": "4",
+      "threshold": "0.062+",
+      "effort": 15.1,
+      "coverage": 57.0,
+      "efficiency": 15.4
     },
-    "kev-only": {
-      "effort": 0.46,
-      "flagged": 1726,
-      "coverage": 100.0,
-      "efficiency": 100.0
+    "epss_v2_eq_effort": {
+      "fig": "4",
+      "threshold": "0.037+",
+      "effort": 15.4,
+      "coverage": 69.9,
+      "efficiency": 18.5
     },
-    "epss>=0.0267 (=coverage cvss>=7)": {
-      "effort": 14.88,
-      "flagged": 56402,
-      "coverage": 88.88,
-      "efficiency": 2.72
+    "epss_v3_eq_effort": {
+      "fig": "4",
+      "threshold": "0.022+",
+      "effort": 15.3,
+      "coverage": 90.4,
+      "efficiency": 24.1
     },
-    "ours>=0.2935 (=coverage cvss>=7)": {
-      "effort": 71.62,
-      "flagged": 271484,
-      "coverage": 88.88,
-      "efficiency": 0.565
+    "cvss>=7": {
+      "fig": "5",
+      "threshold": "7+",
+      "effort": 58.1,
+      "coverage": 82.1,
+      "efficiency": 3.9
+    },
+    "epss_v1_eq_cov": {
+      "fig": "5",
+      "threshold": "0.015+",
+      "effort": 44.3,
+      "coverage": 82.2,
+      "efficiency": 7.6
+    },
+    "epss_v2_eq_cov": {
+      "fig": "5",
+      "threshold": "0.012+",
+      "effort": 39.0,
+      "coverage": 84.7,
+      "efficiency": 8.9
+    },
+    "epss_v3_eq_cov": {
+      "fig": "5",
+      "threshold": "0.088+",
+      "effort": 7.3,
+      "coverage": 82.0,
+      "efficiency": 45.5
     }
   },
-  "paper": {
-    "cvss>=7": {
-      "coverage": 82.1,
-      "efficiency": null,
-      "effort": 58.1
+  "paper_effort_ratio": 0.126,
+  "setups": {
+    "paper_like_asof": "published <= 2022-12-01, NVD CVSS v3.x, EPSS v2022.01.01 scores of 2022-12-01; label = in KEV on 2022-12-01 (EPSS ingests KEV: circular, optimistic)",
+    "paper_like_future": "same population minus CVEs already in KEV; label = added to KEV in (2022-12-01, 2023-12-01] (prospective, few positives)",
+    "current": "every EPSS-scored CVE, EPSS v2026.06.15 of 2026-09-25, CVSS any version; label = in today's KEV (the v1 analysis)"
+  },
+  "results": {
+    "paper_like_asof": {
+      "n": 117141,
+      "positives": 854,
+      "base_rate_pct": 0.729,
+      "rows": [
+        {
+          "name": "cvss>=7",
+          "threshold": 7.0,
+          "effort": 58.178,
+          "coverage": 89.578,
+          "efficiency": 1.123,
+          "flagged": 68150,
+          "tp": 765,
+          "effort_ci95": [
+            57.928,
+            58.495
+          ],
+          "coverage_ci95": [
+            87.699,
+            91.335
+          ],
+          "efficiency_ci95": [
+            1.1,
+            1.143
+          ]
+        },
+        {
+          "name": "epss_eq_cov",
+          "threshold": 0.0106,
+          "effort": 40.762,
+          "coverage": 90.047,
+          "efficiency": 1.611,
+          "flagged": 47749,
+          "tp": 769,
+          "effort_ci95": [
+            40.494,
+            41.022
+          ],
+          "coverage_ci95": [
+            88.056,
+            92.04
+          ],
+          "efficiency_ci95": [
+            1.577,
+            1.646
+          ]
+        },
+        {
+          "name": "ours_eq_cov",
+          "threshold": 0.3115,
+          "effort": 68.759,
+          "coverage": 89.578,
+          "efficiency": 0.95,
+          "flagged": 80545,
+          "tp": 765,
+          "effort_ci95": [
+            68.508,
+            68.997
+          ],
+          "coverage_ci95": [
+            87.348,
+            91.101
+          ],
+          "efficiency_ci95": [
+            0.927,
+            0.966
+          ]
+        },
+        {
+          "name": "cvss>=9.1",
+          "threshold": 9.1,
+          "effort": 15.025,
+          "coverage": 31.616,
+          "efficiency": 1.534,
+          "flagged": 17600,
+          "tp": 270,
+          "effort_ci95": [
+            14.831,
+            15.234
+          ],
+          "coverage_ci95": [
+            28.689,
+            34.663
+          ],
+          "efficiency_ci95": [
+            1.395,
+            1.676
+          ]
+        },
+        {
+          "name": "epss_eq_effort",
+          "threshold": 0.0161,
+          "effort": 15.098,
+          "coverage": 71.429,
+          "efficiency": 3.449,
+          "flagged": 17686,
+          "tp": 610,
+          "effort_ci95": [
+            14.912,
+            15.265
+          ],
+          "coverage_ci95": [
+            68.378,
+            74.476
+          ],
+          "efficiency_ci95": [
+            3.307,
+            3.595
+          ]
+        }
+      ],
+      "epss_needed_for_equal_coverage": 0.01055,
+      "positives_at_or_below_needed": 119,
+      "population_share_at_needed_value": 0.0786,
+      "equal_coverage_reachable": true,
+      "effort_ratio_epss_vs_cvss7": 0.701,
+      "coverage_gain_at_cvss91_effort": 39.81
     },
-    "cvss>=9.1": {
-      "coverage": 33.5,
-      "efficiency": 6.1,
-      "effort": null
+    "paper_like_future": {
+      "n": 116287,
+      "positives": 62,
+      "base_rate_pct": 0.0533,
+      "rows": [
+        {
+          "name": "cvss>=7",
+          "threshold": 7.0,
+          "effort": 57.947,
+          "coverage": 77.419,
+          "efficiency": 0.071,
+          "flagged": 67385,
+          "tp": 48,
+          "effort_ci95": [
+            57.663,
+            58.214
+          ],
+          "coverage_ci95": [
+            67.702,
+            87.137
+          ],
+          "efficiency_ci95": [
+            0.062,
+            0.08
+          ]
+        },
+        {
+          "name": "epss_eq_cov",
+          "threshold": 0.0089,
+          "effort": 99.999,
+          "coverage": 100.0,
+          "efficiency": 0.053,
+          "flagged": 116286,
+          "tp": 62,
+          "effort_ci95": [
+            99.997,
+            100.0
+          ],
+          "coverage_ci95": [
+            100.0,
+            100.0
+          ],
+          "efficiency_ci95": [
+            0.053,
+            0.053
+          ]
+        },
+        {
+          "name": "ours_eq_cov",
+          "threshold": 0.3318,
+          "effort": 67.733,
+          "coverage": 77.419,
+          "efficiency": 0.061,
+          "flagged": 78765,
+          "tp": 48,
+          "effort_ci95": [
+            67.478,
+            68.038
+          ],
+          "coverage_ci95": [
+            67.742,
+            87.137
+          ],
+          "efficiency_ci95": [
+            0.053,
+            0.069
+          ]
+        },
+        {
+          "name": "cvss>=9.1",
+          "threshold": 9.1,
+          "effort": 14.903,
+          "coverage": 29.032,
+          "efficiency": 0.104,
+          "flagged": 17330,
+          "tp": 18,
+          "effort_ci95": [
+            14.683,
+            15.124
+          ],
+          "coverage_ci95": [
+            17.702,
+            41.935
+          ],
+          "efficiency_ci95": [
+            0.063,
+            0.149
+          ]
+        },
+        {
+          "name": "epss_eq_effort",
+          "threshold": 0.016,
+          "effort": 14.915,
+          "coverage": 53.226,
+          "efficiency": 0.19,
+          "flagged": 17344,
+          "tp": 33,
+          "effort_ci95": [
+            14.743,
+            15.087
+          ],
+          "coverage_ci95": [
+            41.895,
+            64.556
+          ],
+          "efficiency_ci95": [
+            0.148,
+            0.233
+          ]
+        }
+      ],
+      "epss_needed_for_equal_coverage": 0.00885,
+      "positives_at_or_below_needed": 16,
+      "population_share_at_needed_value": 0.4195,
+      "equal_coverage_reachable": false,
+      "effort_ratio_epss_vs_cvss7": null,
+      "coverage_gain_at_cvss91_effort": 24.19
     },
-    "epss v2": {
-      "coverage": 69.9,
-      "efficiency": 18.5,
-      "effort": null
+    "current": {
+      "n": 379082,
+      "positives": 1726,
+      "base_rate_pct": 0.4553,
+      "rows": [
+        {
+          "name": "cvss>=7",
+          "threshold": 7.0,
+          "effort": 50.738,
+          "coverage": 88.818,
+          "efficiency": 0.797,
+          "flagged": 192338,
+          "tp": 1533,
+          "effort_ci95": [
+            50.583,
+            50.904
+          ],
+          "coverage_ci95": [
+            87.196,
+            90.623
+          ],
+          "efficiency_ci95": [
+            0.784,
+            0.812
+          ]
+        },
+        {
+          "name": "epss_eq_cov",
+          "threshold": 0.0269,
+          "effort": 14.739,
+          "coverage": 88.818,
+          "efficiency": 2.744,
+          "flagged": 55873,
+          "tp": 1533,
+          "effort_ci95": [
+            14.616,
+            14.835
+          ],
+          "coverage_ci95": [
+            87.486,
+            90.324
+          ],
+          "efficiency_ci95": [
+            2.695,
+            2.792
+          ]
+        },
+        {
+          "name": "ours_eq_cov",
+          "threshold": 0.2937,
+          "effort": 71.609,
+          "coverage": 88.818,
+          "efficiency": 0.565,
+          "flagged": 271456,
+          "tp": 1533,
+          "effort_ci95": [
+            71.464,
+            71.765
+          ],
+          "coverage_ci95": [
+            87.37,
+            90.324
+          ],
+          "efficiency_ci95": [
+            0.555,
+            0.574
+          ]
+        },
+        {
+          "name": "cvss>=9.1",
+          "threshold": 9.1,
+          "effort": 13.561,
+          "coverage": 35.4,
+          "efficiency": 1.189,
+          "flagged": 51408,
+          "tp": 611,
+          "effort_ci95": [
+            13.46,
+            13.669
+          ],
+          "coverage_ci95": [
+            33.313,
+            38.007
+          ],
+          "efficiency_ci95": [
+            1.119,
+            1.272
+          ]
+        },
+        {
+          "name": "epss_eq_effort",
+          "threshold": 0.0291,
+          "effort": 13.562,
+          "coverage": 87.949,
+          "efficiency": 2.953,
+          "flagged": 51412,
+          "tp": 1518,
+          "effort_ci95": [
+            13.455,
+            13.662
+          ],
+          "coverage_ci95": [
+            86.443,
+            89.515
+          ],
+          "efficiency_ci95": [
+            2.899,
+            3.005
+          ]
+        }
+      ],
+      "epss_needed_for_equal_coverage": 0.0269,
+      "positives_at_or_below_needed": 194,
+      "population_share_at_needed_value": 0.0001,
+      "equal_coverage_reachable": true,
+      "effort_ratio_epss_vs_cvss7": 0.29,
+      "coverage_gain_at_cvss91_effort": 52.55
+    }
+  },
+  "provenance": {
+    "epss_history": {
+      "model_version": "v2022.01.01",
+      "score_date": "2022-12-01T00:00:00+0000",
+      "file": "epss_scores-2022-12-01.csv.gz",
+      "sha256": "4ede8cf0b188a4e1752e89ab69458434fa239f9b381c793462658ac82617bc7a",
+      "rows": 189643
     },
-    "epss v3": {
-      "coverage": 90.4,
-      "efficiency": 24.1,
-      "effort": null
+    "epss_current": {
+      "model_version": "v2026.06.15",
+      "score_date": "2026-09-25T12:03:13Z",
+      "file": "epss_scores-current.csv.gz",
+      "sha256": "b301f4bb31b0c3054ced61d5537769912c68dca496773ad065df173199f18fa5",
+      "rows": 379145
     },
-    "epss>=0.088 (v3, matched to cvss>=7 coverage)": {
-      "coverage": 82.0,
-      "efficiency": null,
-      "effort": 7.3
+    "kev": {
+      "catalogVersion": "2026.09.25",
+      "dateReleased": "2026-09-25T18:58:16.5029Z",
+      "count": 1726
+    },
+    "intel_cache": {
+      "file": "cve_intel.csv.gz",
+      "sha256": "55da128b0c4dac17a10cddbbb385eb4fbf980737f66f6a6582399339dc80ba0e"
     }
   }
 }
