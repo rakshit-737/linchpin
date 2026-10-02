@@ -79,6 +79,7 @@ def _diagnose(store: GraphStore) -> None:
 
 
 def cmd_synth(args) -> int:
+    """``linchpin synth``: write a seeded synthetic topology and its ground truth."""
     if args.family == "legacy":
         from linchpin.synth.generator import generate
         findings, gt = generate(args.hosts, 5, args.seed)
@@ -92,6 +93,7 @@ def cmd_synth(args) -> int:
 
 
 def cmd_ingest(args) -> int:
+    """``linchpin ingest``: parse exports (and a topology YAML) into the state file."""
     from linchpin.connectors import bloodhound, inventory
     from linchpin.scenario import CONFIG_KEYS, apply_aliases
     files: list[str] = []
@@ -168,6 +170,7 @@ def cmd_ingest(args) -> int:
 
 
 def cmd_build(args) -> int:
+    """``linchpin build``: build the attack graph and print its size."""
     store = GraphStore(_config(args))
     store.upsert_findings(_findings(args))
     _emit(store.build_attack_graph().model_dump())
@@ -175,6 +178,7 @@ def cmd_build(args) -> int:
 
 
 def cmd_paths(args) -> int:
+    """``linchpin paths``: the k cheapest entry-to-crown-jewel attack paths."""
     store = _load_store(args)
     paths = rank_paths(store, k=args.k)
     if not paths:
@@ -188,6 +192,7 @@ def cmd_paths(args) -> int:
 
 
 def cmd_fix(args) -> int:
+    """``linchpin fix``: the budgeted remediation plan with rationale and evidence."""
     store = _load_store(args)
     plan = recommend(store, budget=args.budget)
     if not plan:
@@ -197,6 +202,7 @@ def cmd_fix(args) -> int:
 
 
 def cmd_whatif(args) -> int:
+    """``linchpin whatif``: path statistics with nodes removed."""
     store = _load_store(args)
     ids = [i if ":" in i or i == "internet" else f"host:{i}" for i in args.remove]
     _emit(store.remove_nodes_view(ids).model_dump())
@@ -204,6 +210,7 @@ def cmd_whatif(args) -> int:
 
 
 def cmd_node(args) -> int:
+    """``linchpin node``: one node with its attack edges."""
     store = _load_store(args)
     try:
         _emit(store.node(args.id).model_dump())
@@ -215,6 +222,7 @@ def cmd_node(args) -> int:
 
 
 def cmd_intel_build(args) -> int:
+    """``linchpin intel-build``: build the NVD / EPSS / KEV lookup cache."""
     from linchpin.intel import CveIntel
     if not (Path(args.data_dir) / "nvd").is_dir():
         raise SystemExit(f"intel-build: {args.data_dir} has no nvd/ folder; run scripts/download_data.py first")
@@ -225,6 +233,7 @@ def cmd_intel_build(args) -> int:
 
 
 def cmd_scenario(args) -> int:
+    """``linchpin scenario``: load a scenario YAML (exports, topology, intel) as the state."""
     from linchpin.scenario import load_scenario
     if not os.path.isfile(args.path):
         raise SystemExit(f"scenario: no such file: {args.path}")
@@ -242,6 +251,7 @@ def cmd_scenario(args) -> int:
 
 
 def cmd_cuts(args) -> int:
+    """``linchpin cuts``: chokepoints and the exact (optionally effort-weighted) minimum cut."""
     from linchpin.engine.cuts import chokepoints, fix_cost, min_remediation_cut
     store = _load_store(args)
     mc = min_remediation_cut(store)
@@ -256,6 +266,7 @@ def cmd_cuts(args) -> int:
 
 
 def cmd_export(args) -> int:
+    """``linchpin export``: write the attack graph as a Cypher script or GraphML."""
     from linchpin.graph.neo4j_store import to_cypher
     store = _load_store(args)
     if args.format == "cypher":
@@ -279,6 +290,7 @@ def cmd_export(args) -> int:
 
 
 def cmd_neo4j_push(args) -> int:
+    """``linchpin neo4j-push``: mirror the attack graph into Neo4j."""
     try:
         import neo4j  # noqa: F401  (optional dependency, imported only to give a clear error)
 
@@ -304,6 +316,7 @@ def cmd_neo4j_push(args) -> int:
 
 
 def cmd_serve(args) -> int:
+    """``linchpin serve``: run the API and web UI (localhost by default)."""
     try:
         import uvicorn
     except ImportError:
@@ -329,6 +342,7 @@ def _positive(v: str) -> int:
 
 
 def build_parser() -> argparse.ArgumentParser:
+    """The argparse parser for every ``linchpin`` command (also renders docs/reference/cli.md)."""
     ap = argparse.ArgumentParser(
         prog="linchpin",
         description="Read-only attack-path reasoning: rank attack paths and the fixes that cut them, from "
@@ -409,6 +423,7 @@ def build_parser() -> argparse.ArgumentParser:
 
 
 def main(argv: list[str] | None = None) -> int:
+    """CLI entry point; returns the process exit code."""
     args = build_parser().parse_args(argv)
     return args.fn(args)
 

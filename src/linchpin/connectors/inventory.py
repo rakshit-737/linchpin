@@ -32,12 +32,14 @@ TS = "1970-01-01T00:00:00+00:00"
 
 
 def load(path: str | Path) -> dict:
+    """Read a topology / inventory document (YAML, or JSON by extension)."""
     p = Path(path)
     text = p.read_text(encoding="utf-8")
     return (json.loads(text) if p.suffix == ".json" else yaml.safe_load(text)) or {}
 
 
 def is_inventory(path: str | Path) -> bool:
+    """True if ``path`` is a YAML document with a ``hosts`` list."""
     p = Path(path)
     if p.suffix.lower() not in (".yaml", ".yml"):
         return False
@@ -49,6 +51,7 @@ def is_inventory(path: str | Path) -> bool:
 
 
 def aliases(path_or_doc) -> dict[str, str]:
+    """Scanner host id -> canonical host id, from every host's ``match:`` list."""
     doc = path_or_doc if isinstance(path_or_doc, dict) else load(path_or_doc)
     out = {}
     for h in doc.get("hosts", []):
@@ -58,10 +61,12 @@ def aliases(path_or_doc) -> dict[str, str]:
 
 
 def parse(path: str) -> list[NormalizedFinding]:
+    """Inventory, reachability and credential findings of a topology file."""
     return from_doc(load(path))
 
 
 def from_doc(doc: dict) -> list[NormalizedFinding]:
+    """Inventory, reachability and credential findings of an already-loaded topology document."""
     out: list[NormalizedFinding] = []
     for h in doc.get("hosts", []):
         d = {"issue": "inventory", "severity": "low", "datastores": h.get("datastores", [])}

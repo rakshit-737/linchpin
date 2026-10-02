@@ -29,6 +29,7 @@ def parse_xml(path: str | Path) -> ET.Element:
 
 
 def epoch_iso(s: str | int | None) -> str:
+    """ISO-8601 UTC timestamp for a Unix epoch (the epoch itself when missing or invalid)."""
     try:
         return datetime.fromtimestamp(int(s), tz=timezone.utc).isoformat()
     except (TypeError, ValueError):
@@ -75,10 +76,12 @@ def guess_impact(vector: str | None, name: str | None, severity: float | None) -
 
 
 def clean(s: str | None) -> str | None:
+    """Collapse runs of whitespace in report text."""
     return " ".join(s.split()) if s else s
 
 
 def finding(host_id: str, kind: str, key: str, source: str, observed_at: str, **kw) -> NormalizedFinding:
+    """Build a :class:`NormalizedFinding` with its stable id ``sha256(host|kind|key)[:16]``."""
     return NormalizedFinding(finding_id=make_finding_id(host_id, kind, key), host_id=host_id, kind=kind,
                              source=source, observed_at=observed_at, **kw)
 

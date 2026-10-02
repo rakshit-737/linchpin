@@ -10,6 +10,7 @@ from linchpin.models import AttackPath
 
 
 def rank_paths(store, cfg: Config | None = None, k: int | None = None) -> list[AttackPath]:
+    """The k cheapest entry-to-crown-jewel paths, ordered by (cost, length, path id)."""
     cfg = cfg or store.cfg
     paths = store.k_shortest_paths(k=k or cfg.k_shortest)
     return sorted(paths, key=lambda p: (p.total_cost, len(p.nodes), p.path_id))

@@ -30,6 +30,11 @@ def _segments_around(store, node_id: str, paths: list[AttackPath]) -> tuple[set[
 
 def explain_remediation(r: Remediation, store, paths: list[AttackPath] | None = None,
                         cuts_all: bool = False) -> str:
+    """Plain-English rationale for one remediation, from templates (no LLM).
+
+    Names what the fix removes (pivot host, credential cache, vuln, ACE), where it sits,
+    and how many of the enumerated paths to which crown jewels it breaks.
+    """
     paths = paths or []
     crowns = sorted({p.crown_jewel for p in paths if p.path_id in set(r.evidence)}) or ["the crown jewels"]
     crown = ", ".join(crowns)
@@ -68,6 +73,7 @@ def explain_remediation(r: Remediation, store, paths: list[AttackPath] | None = 
 
 
 def explain_path(p: AttackPath, store) -> str:
+    """One-line hop list of an attack path with relation and kill-chain stage per hop."""
     hops = [f"{u} -[{e.split('|')[1]}/{s}]-> {v}"
             for (u, v), e, s in zip(itertools.pairwise(p.nodes), p.edges, p.stages, strict=True)]
     return (f"Path {p.path_id} (cost {p.total_cost:.3f}) reaches {p.crown_jewel} in {len(p.edges)} hops: "

@@ -112,6 +112,7 @@ def evaluate(store: GraphStore, removed: list[str], k: int) -> dict:
 
 
 def fixes_to_disconnect(store: GraphStore, k: int, cap: int = 25) -> int | None:
+    """Fixes the greedy set cover needs to disconnect every crown jewel (None: not within ``cap``)."""
     recs = recommend(store, budget=cap, k=k, exact=False)
     removed = [r.target_node for r in recs]
     return len(removed) if not store.reachable_crown_jewels(exclude=removed) else None

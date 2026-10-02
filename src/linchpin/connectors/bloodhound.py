@@ -53,6 +53,7 @@ def _load(d: Path, name: str) -> list[dict]:
 
 
 def is_bloodhound(path: str | Path) -> bool:
+    """True if ``path`` is a SharpHound/BloodHound JSON file or a folder of them."""
     p = Path(path)
     if p.is_dir():
         return (p / "computers.json").exists() or any(p.glob("*_computers.json"))
@@ -63,10 +64,12 @@ def is_bloodhound(path: str | Path) -> bool:
 
 
 def host_name(computer_name: str) -> str:
+    """Lower-cased computer name used as the host id."""
     return computer_name.lower()
 
 
 def parse(path: str) -> list[NormalizedFinding]:
+    """Parse a SharpHound v5/v6 collection (file or folder) into admin rights, sessions, credentials and ACEs."""
     p = Path(path)
     d = p if p.is_dir() else p.parent
     if p.is_file() and not (p.stem == "computers" or p.stem.endswith("_computers")):

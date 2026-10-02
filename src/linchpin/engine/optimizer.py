@@ -9,6 +9,7 @@ CANDIDATE_LABELS = {"Vuln", "Credential", "Host", "Ace"}
 
 
 def action_for(store, node_id: str) -> str:
+    """The remediation verb for a node: patch / upgrade, rotate credential, remove ACE, segment host."""
     a = store.g.nodes[node_id]
     lbl = a.get("label")
     if lbl == "Vuln":
@@ -28,6 +29,7 @@ def action_for(store, node_id: str) -> str:
 
 
 def candidates(store) -> list[str]:
+    """Remediable nodes: vulns, credentials, ACEs and hosts that are neither entry points nor crown jewels."""
     out = []
     entry = set(store.entrypoints())  # configured entry hosts are not flagged is_entrypoint
     for n, a in store.g.nodes(data=True):

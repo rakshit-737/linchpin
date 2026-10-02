@@ -60,8 +60,12 @@ def _tokens(v: str) -> list[int | str]:
 
 
 def compare_versions(a: str, b: str) -> int:
-    """-1 / 0 / 1. Numbers compare numerically; 1.0 == 1.0.0; pre-release words (rc, beta, M)
-    sort before the release they precede (1.0rc1 < 1.0); patch words (p1) sort after it."""
+    """Compare two version strings: -1, 0 or 1.
+
+    Numbers compare numerically and trailing zeros do not matter (1.0 == 1.0.0); pre-release
+    words (rc, beta, M) sort before the release they precede (1.0rc1 < 1.0); patch words
+    (OpenSSH's p1) sort after it.
+    """
     ta, tb = _tokens(a), _tokens(b)
     for x, y in zip(ta, tb, strict=False):
         if x == y:
@@ -83,7 +87,7 @@ def compare_versions(a: str, b: str) -> int:
     return sign
 
 
-def version_key(v: str):
+def version_key(v: str) -> object:
     """Sort / comparison key for :func:`compare_versions`."""
     return cmp_to_key(compare_versions)(v)
 
@@ -108,6 +112,7 @@ def parse_cpe(cpe: str) -> tuple[str, str, str] | None:
 
 @dataclass(frozen=True)
 class CpeRow:
+    """One vulnerable ``cpeMatch`` of a CVE: a product, an exact version or a range, and the CVE's scores."""
     vendor_product: str
     cve: str
     version: str
@@ -124,6 +129,7 @@ class CpeRow:
     impact_class: str | None
 
     def covers(self, version: str) -> bool:
+        """True if ``version`` satisfies this row's exact version or range bounds."""
         k = version_key(version)
         if self.version != "*":
             return k == version_key(self.version)
@@ -152,6 +158,7 @@ class CpeIndex:
     @classmethod
     @lru_cache(maxsize=2)
     def load(cls, path: str | None = None) -> CpeIndex:
+        """Load the packaged index (or ``path``); cached per path."""
         p = Path(path) if path else INDEX
         rows: list[CpeRow] = []
         meta: list[str] = []

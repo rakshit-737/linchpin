@@ -310,6 +310,7 @@ class GraphStore:
 
     # --------------------------------------------------------- entry / crown
     def entrypoints(self) -> list[str]:
+        """Entry nodes from ``cfg.entrypoints`` (``auto:internet_facing`` -> the virtual internet node)."""
         out: list[str] = []
         for e in self.cfg.entrypoints:
             if e == "auto:internet_facing":
@@ -322,6 +323,7 @@ class GraphStore:
         return sorted(set(out))
 
     def crown_jewels(self) -> list[str]:
+        """Crown-jewel nodes from ``cfg.crown_jewels`` (``auto:sensitivity=high`` -> high datastores)."""
         out: list[str] = []
         for c in self.cfg.crown_jewels:
             if c.startswith("auto:sensitivity="):
@@ -388,6 +390,7 @@ class GraphStore:
 
     # ------------------------------------------------------------ inspection
     def node(self, node_id: str) -> NodeDetail:
+        """One node with its properties and inbound / outbound attack edges."""
         if node_id not in self.g:
             raise KeyError(node_id)
         a = dict(self.g.nodes[node_id])

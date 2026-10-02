@@ -9,6 +9,7 @@ KEV_FLOOR = 0.95  # known-exploited-in-the-wild => near-maximal exploitability
 
 
 class EdgeContext(BaseModel):
+    """Everything the cost of one attacker transition depends on (contracts/edge_cost.md)."""
     rel: str
     transition_class: str | None = None  # key into cfg.skill_penalty, None => 0 penalty
     cvss_base: float | None = None
@@ -20,6 +21,12 @@ class EdgeContext(BaseModel):
 
 
 def exploitability(ctx: EdgeContext) -> float:
+    """Exploitability in [0, 1] of an edge.
+
+    An explicit override (e.g. the learned model) wins; non-``ENABLES`` edges are 1.0;
+    otherwise 0.6 x CVSS exploitability sub-score + 0.4 x EPSS, with whichever is known
+    alone, 0.5 when neither is, and a floor of 0.95 for CISA KEV entries.
+    """
     if ctx.exploitability is not None:
         return ctx.exploitability
     if ctx.rel != "ENABLES":
@@ -38,6 +45,11 @@ def exploitability(ctx: EdgeContext) -> float:
 
 
 def edge_cost(ctx: EdgeContext, cfg: Config) -> float:
+    """Cost in [0, 1] of one attacker transition; lower means easier.
+
+    ``(w1 (1 - exploitability) + w2 (1 - prerequisite_match) + w3 skill_penalty) / (w1 + w2 + w3)``,
+    clamped and rounded to 6 decimals. Pure: same inputs, same output.
+    """
     w = cfg.weights
     total = (w.w1 + w.w2 + w.w3) or 1.0
     skill = cfg.skill_penalty.get(ctx.transition_class, 0.0) if ctx.transition_class else 0.0

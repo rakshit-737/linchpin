@@ -43,4 +43,5 @@ def detect(path: str) -> str:
 
 
 def parse_any(path: str) -> list[NormalizedFinding]:
+    """Parse ``path`` with the connector :func:`detect` picks for it."""
     return CONNECTORS[detect(path)](path)

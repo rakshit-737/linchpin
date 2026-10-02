@@ -4,6 +4,7 @@ from __future__ import annotations
 import csv
 import gzip
 import logging
+from collections.abc import Iterable
 from dataclasses import dataclass
 from pathlib import Path
 
@@ -18,6 +19,7 @@ DEFAULT_CACHE = Path("derived") / "cve_intel.csv.gz"
 
 @dataclass(frozen=True)
 class CveRecord:
+    """One CVE's public intel: CVSS (version, vector, sub-score), EPSS, KEV status and date, text."""
     cve: str
     cvss_base: float | None = None
     cvss_vector: str | None = None
@@ -64,13 +66,16 @@ class CveIntel:
         return len(self.records)
 
     def get(self, cve: str | None) -> CveRecord | None:
+        """The record of ``cve``, or None."""
         return self.records.get(cve) if cve else None
 
-    def rows(self):
+    def rows(self) -> Iterable[CveRecord]:
+        """Every loaded record."""
         return self.records.values()
 
     @classmethod
     def build(cls, data_dir: str | Path, out: str | Path | None = None) -> CveIntel:
+        """Build the lookup from the downloaded NVD / EPSS / KEV feeds and optionally write the cache."""
         d = Path(data_dir)
         epss_file = next((d / "epss").glob("epss_scores-*.csv*"))
         epss, epss_date = load_epss(epss_file)

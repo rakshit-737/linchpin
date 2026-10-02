@@ -20,11 +20,11 @@ class PathNotAllowed(ValueError):
 
 
 def relative_parts(name: str) -> list[str]:
-    """Validate ``name`` as a plain relative path by its text alone and return its parts.
+    r"""Validate ``name`` as a plain relative path by its text alone and return its parts.
 
     Raises:
         PathNotAllowed: empty, too long, NUL byte, absolute, drive-qualified, UNC/device
-            (``\\\\server``, ``//server``), a Windows device name, or any ``..`` component.
+            (``\\server``, ``//server``), a Windows device name, or any ``..`` component.
     """
     if not name or len(name) > 1024 or "\x00" in name:
         raise PathNotAllowed("empty or malformed path")

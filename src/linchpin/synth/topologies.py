@@ -96,15 +96,18 @@ class _B:
         self.out: list[NormalizedFinding] = []
 
     def f(self, host: str, kind: str, key: str, **kw) -> None:
+        """Append one finding."""
         self.out.append(NormalizedFinding(finding_id=make_finding_id(host, kind, key), host_id=host, kind=kind,
                                           source="synth", observed_at=TS, **kw))
 
     def host(self, h, seg, facing=False, datastores=None, os="linux"):
+        """Inventory finding for a host (segment, OS, internet exposure, datastores)."""
         self.f(h, "config", "inventory", detail={"issue": "inventory", "severity": "low", "segment": seg,
                                                    "os": os, "internet_facing": facing,
                                                    "datastores": datastores or []})
 
     def svc(self, h, port, name):
+        """Service finding (synthetic software name)."""
         self.f(h, "service", str(port), port=port, service=name, software=f"synth-{name}", version="1")
 
     def vuln(self, h, port, cls="rce", kev: bool | None = None, min_cvss=0.0, max_cvss=10.0) -> str:
@@ -125,10 +128,12 @@ class _B:
         return f"vuln:{r['cve']}@{h}:{port}"
 
     def cred(self, stored_on, principal, valid_on):
+        """Credential stored on one host and valid on others."""
         self.f(stored_on, "credential", principal, detail={"principal": principal, "cred_type": "hash",
                                                             "valid_on": list(valid_on)})
 
     def reach(self, a, b, ports):
+        """Allow rule between two segments."""
         self.f("net", "reachability", f"{a}->{b}",
                detail={"from_segment": a, "to_segment": b, "ports": ports, "allowed": True})
 
@@ -139,6 +144,7 @@ class _B:
                 self.vuln(h, port, "info", min_cvss=6.5)
 
     def decoys(self, n=2):
+        """Isolated hosts with a KEV-listed RCE of CVSS >= 9 that nothing can reach; returns the first vuln id."""
         first = ""
         for i in range(n):
             h = f"legacy-{i:02d}"

@@ -12,14 +12,17 @@ Stage = Literal["recon", "exploit", "privesc", "lateral", "objective"]
 
 
 def make_finding_id(host_id: str, kind: str, key: str) -> str:
+    """Stable finding id: the first 16 hex digits of ``sha256(host_id|kind|key)``."""
     return hashlib.sha256(f"{host_id}|{kind}|{key}".encode()).hexdigest()[:16]
 
 
 def now_iso() -> str:
+    """Current UTC time in ISO-8601."""
     return datetime.now(timezone.utc).isoformat()
 
 
 class NormalizedFinding(BaseModel):
+    """The one schema every connector emits (contracts/finding.schema.json)."""
     finding_id: str
     host_id: str
     kind: Kind
@@ -76,6 +79,7 @@ def detail_problem(f: NormalizedFinding) -> str | None:
 
 
 class AttackPath(BaseModel):
+    """An entry-to-crown-jewel path: node and edge ids in order, total cost, kill-chain stage per hop."""
     path_id: str
     nodes: list[str]
     edges: list[str]
@@ -85,6 +89,7 @@ class AttackPath(BaseModel):
 
 
 class Remediation(BaseModel):
+    """One fix in a plan: target node, action, paths broken out of the total, rationale and evidence."""
     target_node: str
     action: str
     paths_broken: int
@@ -96,12 +101,14 @@ class Remediation(BaseModel):
 
 
 class BuildStats(BaseModel):
+    """Size and build time of an attack graph."""
     nodes: int
     edges: int
     build_ms: float
 
 
 class NodeDetail(BaseModel):
+    """A node's properties and its inbound / outbound attack edges."""
     id: str
     label: str
     props: dict[str, Any]
@@ -110,6 +117,7 @@ class NodeDetail(BaseModel):
 
 
 class PathStats(BaseModel):
+    """What-if result: paths and reachable crown jewels before and after removing nodes."""
     removed: list[str]
     paths_before: int
     paths_after: int
@@ -120,6 +128,7 @@ class PathStats(BaseModel):
 
 
 class GroundTruth(BaseModel):
+    """Answer key of a synthetic topology: planted linchpin / cut, entry points, crown jewels, provenance."""
     linchpin: str  # planted single-node cut ("" when the topology has none by design)
     entrypoints: list[str]
     crown_jewels: list[str]

@@ -70,5 +70,16 @@ target-version = "py310"
 extend-exclude = ["data", ".linchpin", "site", "paper"]
 
 [tool.ruff.lint]
-# Explicit rule set so the result does not depend on the ruff version's defaults.
-select = ["E", "F", "W", "I", "UP", "B", "SIM", "RUF"]
+# Explicit rule set so the result does not depend on the ruff version's defaults. Docstrings (Google
+# style) and return annotations are required on the package's public API, not in tests or scripts.
+select = ["E", "F", "W", "I", "UP", "B", "SIM", "RUF", "D", "ANN201"]
+ignore = ["D105", "D107"]
+
+[tool.ruff.lint.pydocstyle]
+convention = "google"
+
+[tool.ruff.lint.per-file-ignores]
+"tests/**" = ["D", "ANN201"]
+"benchmarks/**" = ["D", "ANN201"]
+"scripts/**" = ["D", "ANN201"]
+"lab/**" = ["D", "ANN201"]

@@ -68,10 +68,12 @@ def _env_int(name: str, default: int) -> int:
 
 
 class WhatIf(BaseModel):
+    """Body of ``POST /whatif``: node ids to remove (nothing is persisted)."""
     remove_nodes: list[str] = Field(max_length=REMOVE_MAX)
 
 
 class DemoLoad(BaseModel):
+    """Body of ``POST /demo/load``: a synthetic family and seed, or the server's scenario."""
     family: str = Field("single", max_length=32)  # single | multi | none | ad | scenario
     seed: int = Field(0, ge=0, le=1_000_000)
     n_hosts: int = Field(20, ge=1, le=10_000)  # clamped to 8..200 below
@@ -95,7 +97,7 @@ class HostAllowList:
         self.allowed = {_host_of(h) for h in allowed if h.strip()}
         self.any = "*" in self.allowed
 
-    async def __call__(self, scope: Scope, receive: Receive, send: Send) -> None:
+    async def __call__(self, scope: Scope, receive: Receive, send: Send) -> None:  # noqa: D102 - ASGI entry
         if self.any or scope["type"] not in ("http", "websocket"):
             return await self.app(scope, receive, send)
         host = _host_of(dict(scope.get("headers") or []).get(b"host", b"").decode("latin-1"))
@@ -111,7 +113,7 @@ class BodySizeLimit:
         self.app = app
         self.max_bytes = max_bytes
 
-    async def __call__(self, scope: Scope, receive: Receive, send: Send) -> None:
+    async def __call__(self, scope: Scope, receive: Receive, send: Send) -> None:  # noqa: D102 - ASGI entry
         if scope["type"] != "http":
             return await self.app(scope, receive, send)
         declared = dict(scope.get("headers") or []).get(b"content-length")

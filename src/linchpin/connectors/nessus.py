@@ -20,6 +20,7 @@ def _num(x: str | None) -> float | None:
 
 
 def parse(path: str, min_severity: int = 2) -> list[NormalizedFinding]:
+    """Parse a ``.nessus`` (v2) report into service and vuln findings at or above ``min_severity``."""
     root = parse_xml(path)
     out: dict[str, NormalizedFinding] = {}
     for rh in root.iter("ReportHost"):

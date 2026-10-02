@@ -1,5 +1,9 @@
-"""nmap ``-oX`` parser: open services (+ OS guess) and, when the ``vulners`` NSE script ran,
-its CVE list as ``cve`` findings (one per service, all CVEs kept in ``detail.cves``)."""
+"""nmap ``-oX`` parser.
+
+Open services (product, version, CPE, OS guess) become ``service`` findings. When the
+``vulners`` NSE script ran, its CVE list becomes one ``cve`` finding per service (all CVEs kept
+in ``detail.cves``); without it, ``linchpin ingest --match-cpe`` maps versions to CVEs offline.
+"""
 from __future__ import annotations
 
 from linchpin.connectors._common import epoch_iso, finding, parse_xml, rep_cve
@@ -25,6 +29,7 @@ def _vulners(port_el) -> list[tuple[str, float | None, bool]]:
 
 
 def parse(path: str) -> list[NormalizedFinding]:
+    """Parse nmap ``-oX`` output: open services (product, version, CPE) and ``vulners`` CVEs if present."""
     root = parse_xml(path)
     observed = epoch_iso(root.get("start"))
     out: list[NormalizedFinding] = []

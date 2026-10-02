@@ -26,7 +26,7 @@ import networkx as nx
 
 from linchpin.config import Config
 from linchpin.graph.store import GraphStore, path_from_nodes
-from linchpin.models import AttackPath
+from linchpin.models import AttackPath, BuildStats
 
 LABELS = {"Host", "Service", "Vuln", "Credential", "Privilege", "DataStore", "Internet", "Ace"}
 BATCH = 500
@@ -60,6 +60,7 @@ def _props(d: dict[str, Any]) -> dict[str, Any]:
 
 
 def graph_rows(g: nx.DiGraph) -> tuple[dict[str, list[dict]], dict[str, list[dict]]]:
+    """Group nodes by label and edges by relationship type, with Neo4j-safe properties."""
     nodes: dict[str, list[dict]] = {}
     for n, a in g.nodes(data=True):
         lbl = a.get("label", "Node")
@@ -159,8 +160,9 @@ class Neo4jGraphStore(GraphStore):
                 n += 1
         return n
 
-    def build_attack_graph(self):
-        stats = super().build_attack_graph()
+    def build_attack_graph(self, max_edges: int | None = None) -> BuildStats:
+        """Build in memory (same code as GraphStore), then mirror into Neo4j when connected."""
+        stats = super().build_attack_graph(max_edges=max_edges)
         if self._driver is not None:
             self.push()
         return stats
@@ -237,5 +239,6 @@ class Neo4jGraphStore(GraphStore):
         return [path_from_nodes(self.g, nodes, cost) for cost, nodes in rows[:k]]
 
     def close(self) -> None:
+        """Close the driver."""
         if self._driver is not None:
             self._driver.close()

@@ -31,6 +31,7 @@ def _port(text: str | None) -> tuple[int | None, str]:
 
 
 def parse(path: str, min_severity: float = 4.0) -> list[NormalizedFinding]:
+    """Parse an OpenVAS / Greenbone XML report into vuln findings at or above ``min_severity``."""
     root = parse_xml(path)
     rep = root.find("report") if root.find("report") is not None else root
     observed = (rep.findtext("scan_start") or root.findtext("creation_time") or "").strip() or epoch_iso(None)
