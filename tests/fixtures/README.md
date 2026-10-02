@@ -9,3 +9,4 @@
 | `bloodhound/*.json` | SpecterOps BloodHound `cmd/api/src/test/fixtures/fixtures/v6/ingest/` @ `ca1be93` | Apache-2.0 |
 | `intel/*` | 3 NVD records, 3 EPSS rows, 1 KEV row, abridged | public domain / FIRST terms |
 | `scenario_mini.yaml` | hand-written topology over the fixtures above | MIT |
+| `lab/networks.json`, `lab/scan-lp-*.xml` | hand-written in the shape of the CI lab's `docker network inspect` and `nmap -sV -oX` output (lab/scan.sh); the measured scans are in `benchmarks/results/lab/` | MIT (this repo) |

@@ -3,26 +3,47 @@
     "seeds_per_family": 50,
     "budget": 3,
     "k_cap": 100,
-    "hosts": "12..60",
-    "runtime_s": 3783.7
+    "hosts": "12..60 (49 sizes, 12 + seed mod 49)",
+    "nodes": "58..317",
+    "cve_pool": "sha256:f14a3fe5e3a1717d",
+    "runtime_s": 693.0,
+    "workers": 8,
+    "platform": {
+      "python": "3.14.3",
+      "machine": "AMD64",
+      "processor": "Intel64 Family 6 Model 186 Stepping 2, GenuineIntel",
+      "cpus": 16
+    }
   },
   "families": {
     "ad": {
       "n": 50,
-      "mean_nodes": 135.56,
-      "with_chokepoint": 0.62,
-      "mean_min_cut": 1.38,
+      "mean_nodes": 144.3,
+      "nodes_range": [
+        58,
+        225
+      ],
+      "hosts_range": [
+        12,
+        60
+      ],
+      "with_chokepoint": 0.66,
+      "mean_min_cut": 1.34,
       "linchpin": {
         "disconnect_rate": 1.0,
         "disconnect_ci95": [
           0.9286,
           1.0
         ],
-        "cost_gain_ci95": null,
         "residual_frac": 0.0,
         "residual_frac_se": 0.0,
-        "mean_ms": 663.8583139999537,
-        "cost_gain_connected": null
+        "mean_ms": 1842.5344180001412,
+        "cost_gain_connected": null,
+        "cost_gain_n": 0,
+        "cost_gain_ci95": null,
+        "share_of_optimal_gain": null,
+        "share_of_optimal_gain_n": 0,
+        "share_of_optimal_gain_ci95": null
       },
       "greedy": {
         "disconnect_rate": 1.0,
@@ -30,94 +51,270 @@
           0.9286,
           1.0
         ],
-        "cost_gain_ci95": null,
         "residual_frac": 0.0,
         "residual_frac_se": 0.0,
-        "mean_ms": 540.9500420003315,
-        "cost_gain_connected": null
+        "mean_ms": 1443.261915999974,
+        "cost_gain_connected": null,
+        "cost_gain_n": 0,
+        "cost_gain_ci95": null,
+        "share_of_optimal_gain": null,
+        "share_of_optimal_gain_n": 0,
+        "share_of_optimal_gain_ci95": null,
+        "vs_linchpin": {
+          "only_linchpin": 0,
+          "only_greedy": 0,
+          "p_mcnemar": 1.0
+        }
+      },
+      "milp_interdiction": {
+        "disconnect_rate": 1.0,
+        "disconnect_ci95": [
+          0.9286,
+          1.0
+        ],
+        "residual_frac": 0.0,
+        "residual_frac_se": 0.0,
+        "mean_ms": 259.6251819995814,
+        "cost_gain_connected": null,
+        "cost_gain_n": 0,
+        "cost_gain_ci95": null,
+        "share_of_optimal_gain": null,
+        "share_of_optimal_gain_n": 0,
+        "share_of_optimal_gain_ci95": null,
+        "vs_linchpin": {
+          "only_linchpin": 0,
+          "only_milp_interdiction": 0,
+          "p_mcnemar": 1.0
+        }
+      },
+      "greedy_interdiction": {
+        "disconnect_rate": 1.0,
+        "disconnect_ci95": [
+          0.9286,
+          1.0
+        ],
+        "residual_frac": 0.0,
+        "residual_frac_se": 0.0,
+        "mean_ms": 45.32914199960942,
+        "cost_gain_connected": null,
+        "cost_gain_n": 0,
+        "cost_gain_ci95": null,
+        "share_of_optimal_gain": null,
+        "share_of_optimal_gain_n": 0,
+        "share_of_optimal_gain_ci95": null,
+        "vs_linchpin": {
+          "only_linchpin": 0,
+          "only_greedy_interdiction": 0,
+          "p_mcnemar": 1.0
+        }
       },
       "cvss": {
-        "disconnect_rate": 0.14,
+        "disconnect_rate": 0.08,
         "disconnect_ci95": [
-          0.0695,
-          0.2619
+          0.0315,
+          0.1884
         ],
+        "residual_frac": 0.809,
+        "residual_frac_se": 0.051773545368266984,
+        "mean_ms": 1.1618680001993198,
+        "cost_gain_connected": 0.08872069565217391,
+        "cost_gain_n": 46,
         "cost_gain_ci95": [
-          0.0549,
-          0.1387
+          0.0585,
+          0.1225
         ],
-        "residual_frac": 0.7125854280776694,
-        "residual_frac_se": 0.0587269917948978,
-        "mean_ms": 0.3258960004313849,
-        "cost_gain_connected": 0.09273293023255814
+        "share_of_optimal_gain": null,
+        "share_of_optimal_gain_n": 0,
+        "share_of_optimal_gain_ci95": null,
+        "vs_linchpin": {
+          "only_linchpin": 46,
+          "only_cvss": 0,
+          "p_mcnemar": 2.842170943040401e-14
+        }
+      },
+      "cvss_reach": {
+        "disconnect_rate": 0.22,
+        "disconnect_ci95": [
+          0.1275,
+          0.3524
+        ],
+        "residual_frac": 0.5824,
+        "residual_frac_se": 0.06570817909514766,
+        "mean_ms": 3.4319080002751434,
+        "cost_gain_connected": 0.12009666666666667,
+        "cost_gain_n": 39,
+        "cost_gain_ci95": [
+          0.0805,
+          0.163
+        ],
+        "share_of_optimal_gain": null,
+        "share_of_optimal_gain_n": 0,
+        "share_of_optimal_gain_ci95": null,
+        "vs_linchpin": {
+          "only_linchpin": 39,
+          "only_cvss_reach": 0,
+          "p_mcnemar": 3.637978807091713e-12
+        }
       },
       "epss": {
-        "disconnect_rate": 0.06,
-        "disconnect_ci95": [
-          0.0206,
-          0.1622
-        ],
-        "cost_gain_ci95": [
-          0.0642,
-          0.1338
-        ],
-        "residual_frac": 0.8349260547477418,
-        "residual_frac_se": 0.04579352369367427,
-        "mean_ms": 0.16811800029245205,
-        "cost_gain_connected": 0.09775787234042554
-      },
-      "kev_epss": {
         "disconnect_rate": 0.04,
         "disconnect_ci95": [
           0.011,
           0.1346
         ],
+        "residual_frac": 0.8349490196078432,
+        "residual_frac_se": 0.048285082724243554,
+        "mean_ms": 0.17376800009515136,
+        "cost_gain_connected": 0.08865283333333333,
+        "cost_gain_n": 48,
         "cost_gain_ci95": [
-          0.0726,
-          0.1459
+          0.0534,
+          0.1301
         ],
-        "residual_frac": 0.8549260547477417,
-        "residual_frac_se": 0.04267441819738043,
-        "mean_ms": 0.3643719994579442,
-        "cost_gain_connected": 0.10912375
+        "share_of_optimal_gain": null,
+        "share_of_optimal_gain_n": 0,
+        "share_of_optimal_gain_ci95": null,
+        "vs_linchpin": {
+          "only_linchpin": 48,
+          "only_epss": 0,
+          "p_mcnemar": 7.105427357601002e-15
+        }
+      },
+      "epss_reach": {
+        "disconnect_rate": 0.2,
+        "disconnect_ci95": [
+          0.1124,
+          0.3304
+        ],
+        "residual_frac": 0.5937882352941176,
+        "residual_frac_se": 0.06398887913760638,
+        "mean_ms": 3.551676000133739,
+        "cost_gain_connected": 0.1729763,
+        "cost_gain_n": 40,
+        "cost_gain_ci95": [
+          0.1274,
+          0.2187
+        ],
+        "share_of_optimal_gain": null,
+        "share_of_optimal_gain_n": 0,
+        "share_of_optimal_gain_ci95": null,
+        "vs_linchpin": {
+          "only_linchpin": 40,
+          "only_epss_reach": 0,
+          "p_mcnemar": 1.8189894035458565e-12
+        }
+      },
+      "kev_epss": {
+        "disconnect_rate": 0.02,
+        "disconnect_ci95": [
+          0.0035,
+          0.105
+        ],
+        "residual_frac": 0.8441490196078432,
+        "residual_frac_se": 0.045903542068900925,
+        "mean_ms": 0.7720040001004236,
+        "cost_gain_connected": 0.1007555918367347,
+        "cost_gain_n": 49,
+        "cost_gain_ci95": [
+          0.0667,
+          0.1409
+        ],
+        "share_of_optimal_gain": null,
+        "share_of_optimal_gain_n": 0,
+        "share_of_optimal_gain_ci95": null,
+        "vs_linchpin": {
+          "only_linchpin": 49,
+          "only_kev_epss": 0,
+          "p_mcnemar": 3.552713678800501e-15
+        }
+      },
+      "kev_epss_reach": {
+        "disconnect_rate": 0.2,
+        "disconnect_ci95": [
+          0.1124,
+          0.3304
+        ],
+        "residual_frac": 0.6115882352941177,
+        "residual_frac_se": 0.06372301491421907,
+        "mean_ms": 4.037030000035884,
+        "cost_gain_connected": 0.19012905,
+        "cost_gain_n": 40,
+        "cost_gain_ci95": [
+          0.1433,
+          0.2393
+        ],
+        "share_of_optimal_gain": null,
+        "share_of_optimal_gain_n": 0,
+        "share_of_optimal_gain_ci95": null,
+        "vs_linchpin": {
+          "only_linchpin": 40,
+          "only_kev_epss_reach": 0,
+          "p_mcnemar": 1.8189894035458565e-12
+        }
       },
       "betweenness": {
-        "disconnect_rate": 0.4,
+        "disconnect_rate": 0.3,
         "disconnect_ci95": [
-          0.2761,
-          0.5382
+          0.191,
+          0.4375
         ],
+        "residual_frac": 0.6042,
+        "residual_frac_se": 0.06562017372729213,
+        "mean_ms": 649.4146339999133,
+        "cost_gain_connected": 0.08723405714285715,
+        "cost_gain_n": 35,
         "cost_gain_ci95": [
-          0.0457,
-          0.1271
+          0.0491,
+          0.1307
         ],
-        "residual_frac": 0.5312896551724138,
-        "residual_frac_se": 0.06948454267239866,
-        "mean_ms": 274.82023599979584,
-        "cost_gain_connected": 0.08309326666666667
+        "share_of_optimal_gain": null,
+        "share_of_optimal_gain_n": 0,
+        "share_of_optimal_gain_ci95": null,
+        "vs_linchpin": {
+          "only_linchpin": 35,
+          "only_betweenness": 0,
+          "p_mcnemar": 5.820766091346741e-11
+        }
       },
       "random": {
-        "disconnect_rate": 0.12,
+        "disconnect_rate": 0.08,
         "disconnect_ci95": [
-          0.0562,
-          0.2381
+          0.0315,
+          0.1884
         ],
+        "residual_frac": 0.864061559507524,
+        "residual_frac_se": 0.045121190734691285,
+        "mean_ms": 1.011164000374265,
+        "cost_gain_connected": 0.014557956521739131,
+        "cost_gain_n": 46,
         "cost_gain_ci95": [
-          0.0035,
-          0.0413
+          0.0022,
+          0.031
         ],
-        "residual_frac": 0.7991971618358547,
-        "residual_frac_se": 0.0531937556121616,
-        "mean_ms": 0.3465880001022015,
-        "cost_gain_connected": 0.02102009090909091
+        "share_of_optimal_gain": null,
+        "share_of_optimal_gain_n": 0,
+        "share_of_optimal_gain_ci95": null,
+        "vs_linchpin": {
+          "only_linchpin": 46,
+          "only_random": 0,
+          "p_mcnemar": 2.842170943040401e-14
+        }
       },
-      "greedy_optimal_rate": 1.0,
-      "greedy_mean_ratio": 1.0,
+      "greedy_optimal_rate": 0.98,
+      "greedy_mean_ratio": 1.01,
       "top1_chokepoint_rate": 1.0
     },
     "multi": {
       "n": 50,
-      "mean_nodes": 171.64,
+      "mean_nodes": 185.84,
+      "nodes_range": [
+        69,
+        317
+      ],
+      "hosts_range": [
+        12,
+        60
+      ],
       "with_chokepoint": 0.0,
       "mean_min_cut": 2,
       "linchpin": {
@@ -126,26 +323,78 @@
           0.9286,
           1.0
         ],
-        "cost_gain_ci95": null,
         "residual_frac": 0.0,
         "residual_frac_se": 0.0,
-        "mean_ms": 5363.859993999795,
-        "cost_gain_connected": null
+        "mean_ms": 5113.707554000066,
+        "cost_gain_connected": null,
+        "cost_gain_n": 0,
+        "cost_gain_ci95": null,
+        "share_of_optimal_gain": null,
+        "share_of_optimal_gain_n": 0,
+        "share_of_optimal_gain_ci95": null
       },
       "greedy": {
-        "disconnect_rate": 0.96,
+        "disconnect_rate": 0.94,
         "disconnect_ci95": [
-          0.8654,
-          0.989
+          0.8378,
+          0.9794
         ],
-        "cost_gain_ci95": [
-          0.4324,
-          0.491
+        "residual_frac": 0.06,
+        "residual_frac_se": 0.03358571124749333,
+        "mean_ms": 4085.8408119999513,
+        "cost_gain_connected": 0.3069426666666667,
+        "cost_gain_n": 3,
+        "cost_gain_ci95": null,
+        "share_of_optimal_gain": null,
+        "share_of_optimal_gain_n": 0,
+        "share_of_optimal_gain_ci95": null,
+        "vs_linchpin": {
+          "only_linchpin": 3,
+          "only_greedy": 0,
+          "p_mcnemar": 0.25
+        }
+      },
+      "milp_interdiction": {
+        "disconnect_rate": 1.0,
+        "disconnect_ci95": [
+          0.9286,
+          1.0
         ],
-        "residual_frac": 0.04,
-        "residual_frac_se": 0.027712812921102038,
-        "mean_ms": 4365.023035999475,
-        "cost_gain_connected": 0.461711
+        "residual_frac": 0.0,
+        "residual_frac_se": 0.0,
+        "mean_ms": 2345.987143999664,
+        "cost_gain_connected": null,
+        "cost_gain_n": 0,
+        "cost_gain_ci95": null,
+        "share_of_optimal_gain": null,
+        "share_of_optimal_gain_n": 0,
+        "share_of_optimal_gain_ci95": null,
+        "vs_linchpin": {
+          "only_linchpin": 0,
+          "only_milp_interdiction": 0,
+          "p_mcnemar": 1.0
+        }
+      },
+      "greedy_interdiction": {
+        "disconnect_rate": 0.9,
+        "disconnect_ci95": [
+          0.7864,
+          0.9565
+        ],
+        "residual_frac": 0.1,
+        "residual_frac_se": 0.04242640687119285,
+        "mean_ms": 110.25523799966322,
+        "cost_gain_connected": 0.39878840000000004,
+        "cost_gain_n": 5,
+        "cost_gain_ci95": null,
+        "share_of_optimal_gain": null,
+        "share_of_optimal_gain_n": 0,
+        "share_of_optimal_gain_ci95": null,
+        "vs_linchpin": {
+          "only_linchpin": 5,
+          "only_greedy_interdiction": 0,
+          "p_mcnemar": 0.0625
+        }
       },
       "cvss": {
         "disconnect_rate": 0.02,
@@ -153,59 +402,167 @@
           0.0035,
           0.105
         ],
+        "residual_frac": 0.98,
+        "residual_frac_se": 0.019798989873223333,
+        "mean_ms": 0.5497640000248794,
+        "cost_gain_connected": 0.06657534693877552,
+        "cost_gain_n": 49,
         "cost_gain_ci95": [
-          0.0276,
-          0.0836
+          0.0364,
+          0.0989
+        ],
+        "share_of_optimal_gain": null,
+        "share_of_optimal_gain_n": 0,
+        "share_of_optimal_gain_ci95": null,
+        "vs_linchpin": {
+          "only_linchpin": 49,
+          "only_cvss": 0,
+          "p_mcnemar": 3.552713678800501e-15
+        }
+      },
+      "cvss_reach": {
+        "disconnect_rate": 0.02,
+        "disconnect_ci95": [
+          0.0035,
+          0.105
         ],
         "residual_frac": 0.98,
         "residual_frac_se": 0.019798989873223333,
-        "mean_ms": 0.4976799992437009,
-        "cost_gain_connected": 0.05373048979591837
+        "mean_ms": 4.097874000144657,
+        "cost_gain_connected": 0.07095016326530613,
+        "cost_gain_n": 49,
+        "cost_gain_ci95": [
+          0.0394,
+          0.1031
+        ],
+        "share_of_optimal_gain": null,
+        "share_of_optimal_gain_n": 0,
+        "share_of_optimal_gain_ci95": null,
+        "vs_linchpin": {
+          "only_linchpin": 49,
+          "only_cvss_reach": 0,
+          "p_mcnemar": 3.552713678800501e-15
+        }
       },
       "epss": {
-        "disconnect_rate": 0.0,
+        "disconnect_rate": 0.02,
         "disconnect_ci95": [
-          0.0,
-          0.0714
+          0.0035,
+          0.105
         ],
+        "residual_frac": 0.98,
+        "residual_frac_se": 0.019798989873223333,
+        "mean_ms": 0.5468259996996494,
+        "cost_gain_connected": 0.07262934693877551,
+        "cost_gain_n": 49,
         "cost_gain_ci95": [
-          0.0576,
-          0.1116
+          0.0482,
+          0.0989
         ],
-        "residual_frac": 1.0,
-        "residual_frac_se": 0.0,
-        "mean_ms": 1.0412600002018735,
-        "cost_gain_connected": 0.08309583999999999
+        "share_of_optimal_gain": null,
+        "share_of_optimal_gain_n": 0,
+        "share_of_optimal_gain_ci95": null,
+        "vs_linchpin": {
+          "only_linchpin": 49,
+          "only_epss": 0,
+          "p_mcnemar": 3.552713678800501e-15
+        }
+      },
+      "epss_reach": {
+        "disconnect_rate": 0.02,
+        "disconnect_ci95": [
+          0.0035,
+          0.105
+        ],
+        "residual_frac": 0.98,
+        "residual_frac_se": 0.019798989873223333,
+        "mean_ms": 4.267110000437242,
+        "cost_gain_connected": 0.1336944897959184,
+        "cost_gain_n": 49,
+        "cost_gain_ci95": [
+          0.0994,
+          0.1701
+        ],
+        "share_of_optimal_gain": null,
+        "share_of_optimal_gain_n": 0,
+        "share_of_optimal_gain_ci95": null,
+        "vs_linchpin": {
+          "only_linchpin": 49,
+          "only_epss_reach": 0,
+          "p_mcnemar": 3.552713678800501e-15
+        }
       },
       "kev_epss": {
-        "disconnect_rate": 0.0,
+        "disconnect_rate": 0.02,
         "disconnect_ci95": [
-          0.0,
-          0.0714
+          0.0035,
+          0.105
         ],
+        "residual_frac": 0.98,
+        "residual_frac_se": 0.019798989873223333,
+        "mean_ms": 0.6779140002618078,
+        "cost_gain_connected": 0.0801862448979592,
+        "cost_gain_n": 49,
         "cost_gain_ci95": [
-          0.0584,
-          0.1135
+          0.0546,
+          0.1078
         ],
-        "residual_frac": 1.0,
-        "residual_frac_se": 0.0,
-        "mean_ms": 1.038568000367377,
-        "cost_gain_connected": 0.08419367999999999
+        "share_of_optimal_gain": null,
+        "share_of_optimal_gain_n": 0,
+        "share_of_optimal_gain_ci95": null,
+        "vs_linchpin": {
+          "only_linchpin": 49,
+          "only_kev_epss": 0,
+          "p_mcnemar": 3.552713678800501e-15
+        }
+      },
+      "kev_epss_reach": {
+        "disconnect_rate": 0.02,
+        "disconnect_ci95": [
+          0.0035,
+          0.105
+        ],
+        "residual_frac": 0.98,
+        "residual_frac_se": 0.019798989873223333,
+        "mean_ms": 4.127025999914622,
+        "cost_gain_connected": 0.14407938775510204,
+        "cost_gain_n": 49,
+        "cost_gain_ci95": [
+          0.1074,
+          0.1844
+        ],
+        "share_of_optimal_gain": null,
+        "share_of_optimal_gain_n": 0,
+        "share_of_optimal_gain_ci95": null,
+        "vs_linchpin": {
+          "only_linchpin": 49,
+          "only_kev_epss_reach": 0,
+          "p_mcnemar": 3.552713678800501e-15
+        }
       },
       "betweenness": {
-        "disconnect_rate": 0.0,
+        "disconnect_rate": 0.02,
         "disconnect_ci95": [
-          0.0,
-          0.0714
+          0.0035,
+          0.105
         ],
+        "residual_frac": 0.98,
+        "residual_frac_se": 0.019798989873223333,
+        "mean_ms": 1236.183411999591,
+        "cost_gain_connected": 0.1542716326530612,
+        "cost_gain_n": 49,
         "cost_gain_ci95": [
-          0.1327,
-          0.1974
+          0.1243,
+          0.1866
         ],
-        "residual_frac": 1.0,
-        "residual_frac_se": 0.0,
-        "mean_ms": 1316.787055999157,
-        "cost_gain_connected": 0.16454935999999998
+        "share_of_optimal_gain": null,
+        "share_of_optimal_gain_n": 0,
+        "share_of_optimal_gain_ci95": null,
+        "vs_linchpin": {
+          "only_linchpin": 49,
+          "only_betweenness": 0,
+          "p_mcnemar": 3.552713678800501e-15
+        }
       },
       "random": {
         "disconnect_rate": 0.0,
@@ -213,38 +570,62 @@
           0.0,
           0.0714
         ],
-        "cost_gain_ci95": [
-          0.0164,
-          0.062
-        ],
         "residual_frac": 1.0,
         "residual_frac_se": 0.0,
-        "mean_ms": 1.5489079999679234,
-        "cost_gain_connected": 0.03636612
+        "mean_ms": 0.5498359999182867,
+        "cost_gain_connected": 0.026410880000000008,
+        "cost_gain_n": 50,
+        "cost_gain_ci95": [
+          0.0116,
+          0.0429
+        ],
+        "share_of_optimal_gain": null,
+        "share_of_optimal_gain_n": 0,
+        "share_of_optimal_gain_ci95": null,
+        "vs_linchpin": {
+          "only_linchpin": 50,
+          "only_random": 0,
+          "p_mcnemar": 1.7763568394002505e-15
+        }
       },
-      "greedy_optimal_rate": 0.7,
-      "greedy_mean_ratio": 1.17,
+      "greedy_optimal_rate": 0.62,
+      "greedy_mean_ratio": 1.22,
       "top1_chokepoint_rate": 0.0
     },
     "none": {
       "n": 50,
-      "mean_nodes": 182.36,
+      "mean_nodes": 195.76,
+      "nodes_range": [
+        78,
+        316
+      ],
+      "hosts_range": [
+        12,
+        60
+      ],
       "with_chokepoint": 0.0,
-      "mean_min_cut": 7.08,
+      "mean_min_cut": 7.32,
       "linchpin": {
         "disconnect_rate": 0.0,
         "disconnect_ci95": [
           0.0,
           0.0714
         ],
-        "cost_gain_ci95": [
-          0.1872,
-          0.2286
-        ],
         "residual_frac": 1.0,
         "residual_frac_se": 0.0,
-        "mean_ms": 2349.693533999962,
-        "cost_gain_connected": 0.20749412
+        "mean_ms": 2392.685157999804,
+        "cost_gain_connected": 0.19278408,
+        "cost_gain_n": 50,
+        "cost_gain_ci95": [
+          0.1687,
+          0.2164
+        ],
+        "share_of_optimal_gain": 0.8291096933882464,
+        "share_of_optimal_gain_n": 50,
+        "share_of_optimal_gain_ci95": [
+          0.7674,
+          0.883
+        ]
       },
       "greedy": {
         "disconnect_rate": 0.0,
@@ -252,14 +633,80 @@
           0.0,
           0.0714
         ],
+        "residual_frac": 1.0,
+        "residual_frac_se": 0.0,
+        "mean_ms": 2064.705888000026,
+        "cost_gain_connected": 0.19278408,
+        "cost_gain_n": 50,
         "cost_gain_ci95": [
-          0.1872,
-          0.2286
+          0.1687,
+          0.2164
+        ],
+        "share_of_optimal_gain": 0.8291096933882464,
+        "share_of_optimal_gain_n": 50,
+        "share_of_optimal_gain_ci95": [
+          0.7674,
+          0.883
+        ],
+        "vs_linchpin": {
+          "only_linchpin": 0,
+          "only_greedy": 0,
+          "p_mcnemar": 1.0
+        }
+      },
+      "milp_interdiction": {
+        "disconnect_rate": 0.0,
+        "disconnect_ci95": [
+          0.0,
+          0.0714
         ],
         "residual_frac": 1.0,
         "residual_frac_se": 0.0,
-        "mean_ms": 2080.637313999905,
-        "cost_gain_connected": 0.20749412
+        "mean_ms": 5038.988064000077,
+        "cost_gain_connected": 0.226962,
+        "cost_gain_n": 50,
+        "cost_gain_ci95": [
+          0.2091,
+          0.2452
+        ],
+        "share_of_optimal_gain": 1.0,
+        "share_of_optimal_gain_n": 50,
+        "share_of_optimal_gain_ci95": [
+          1.0,
+          1.0
+        ],
+        "vs_linchpin": {
+          "only_linchpin": 0,
+          "only_milp_interdiction": 0,
+          "p_mcnemar": 1.0
+        }
+      },
+      "greedy_interdiction": {
+        "disconnect_rate": 0.0,
+        "disconnect_ci95": [
+          0.0,
+          0.0714
+        ],
+        "residual_frac": 1.0,
+        "residual_frac_se": 0.0,
+        "mean_ms": 61.12877999970806,
+        "cost_gain_connected": 0.19198748,
+        "cost_gain_n": 50,
+        "cost_gain_ci95": [
+          0.1681,
+          0.2152
+        ],
+        "share_of_optimal_gain": 0.8231703940629904,
+        "share_of_optimal_gain_n": 50,
+        "share_of_optimal_gain_ci95": [
+          0.7465,
+          0.8875
+        ],
+        "vs_linchpin": {
+          "only_linchpin": 0,
+          "only_greedy_interdiction": 0,
+          "p_mcnemar": 1.0
+        }
       },
       "cvss": {
         "disconnect_rate": 0.0,
@@ -267,14 +714,53 @@
           0.0,
           0.0714
         ],
+        "residual_frac": 1.0,
+        "residual_frac_se": 0.0,
+        "mean_ms": 1.0829039999225643,
+        "cost_gain_connected": 0.020757,
+        "cost_gain_n": 50,
         "cost_gain_ci95": [
-          0.0097,
-          0.0373
+          0.0091,
+          0.0342
+        ],
+        "share_of_optimal_gain": 0.08926904217145351,
+        "share_of_optimal_gain_n": 50,
+        "share_of_optimal_gain_ci95": [
+          0.0383,
+          0.1469
+        ],
+        "vs_linchpin": {
+          "only_linchpin": 0,
+          "only_cvss": 0,
+          "p_mcnemar": 1.0
+        }
+      },
+      "cvss_reach": {
+        "disconnect_rate": 0.0,
+        "disconnect_ci95": [
+          0.0,
+          0.0714
         ],
         "residual_frac": 1.0,
         "residual_frac_se": 0.0,
-        "mean_ms": 0.266567999497056,
-        "cost_gain_connected": 0.022659600000000002
+        "mean_ms": 4.608390000212239,
+        "cost_gain_connected": 0.0252982,
+        "cost_gain_n": 50,
+        "cost_gain_ci95": [
+          0.0134,
+          0.0398
+        ],
+        "share_of_optimal_gain": 0.10553552794181266,
+        "share_of_optimal_gain_n": 50,
+        "share_of_optimal_gain_ci95": [
+          0.055,
+          0.1653
+        ],
+        "vs_linchpin": {
+          "only_linchpin": 0,
+          "only_cvss_reach": 0,
+          "p_mcnemar": 1.0
+        }
       },
       "epss": {
         "disconnect_rate": 0.0,
@@ -282,14 +768,53 @@
           0.0,
           0.0714
         ],
+        "residual_frac": 1.0,
+        "residual_frac_se": 0.0,
+        "mean_ms": 0.1758100001461571,
+        "cost_gain_connected": 0.04417832,
+        "cost_gain_n": 50,
         "cost_gain_ci95": [
-          0.0358,
-          0.0733
+          0.0256,
+          0.0669
+        ],
+        "share_of_optimal_gain": 0.16715246418538016,
+        "share_of_optimal_gain_n": 50,
+        "share_of_optimal_gain_ci95": [
+          0.1028,
+          0.2452
+        ],
+        "vs_linchpin": {
+          "only_linchpin": 0,
+          "only_epss": 0,
+          "p_mcnemar": 1.0
+        }
+      },
+      "epss_reach": {
+        "disconnect_rate": 0.0,
+        "disconnect_ci95": [
+          0.0,
+          0.0714
         ],
         "residual_frac": 1.0,
         "residual_frac_se": 0.0,
-        "mean_ms": 0.41138199987472035,
-        "cost_gain_connected": 0.05423904
+        "mean_ms": 4.612303999965661,
+        "cost_gain_connected": 0.08374064,
+        "cost_gain_n": 50,
+        "cost_gain_ci95": [
+          0.0583,
+          0.1126
+        ],
+        "share_of_optimal_gain": 0.3209979160404551,
+        "share_of_optimal_gain_n": 50,
+        "share_of_optimal_gain_ci95": [
+          0.2353,
+          0.4196
+        ],
+        "vs_linchpin": {
+          "only_linchpin": 0,
+          "only_epss_reach": 0,
+          "p_mcnemar": 1.0
+        }
       },
       "kev_epss": {
         "disconnect_rate": 0.0,
@@ -297,14 +822,53 @@
           0.0,
           0.0714
         ],
+        "residual_frac": 1.0,
+        "residual_frac_se": 0.0,
+        "mean_ms": 1.6637499999342253,
+        "cost_gain_connected": 0.03715076,
+        "cost_gain_n": 50,
         "cost_gain_ci95": [
-          0.0436,
-          0.0825
+          0.022,
+          0.0555
+        ],
+        "share_of_optimal_gain": 0.14759245282939795,
+        "share_of_optimal_gain_n": 50,
+        "share_of_optimal_gain_ci95": [
+          0.0901,
+          0.2187
+        ],
+        "vs_linchpin": {
+          "only_linchpin": 0,
+          "only_kev_epss": 0,
+          "p_mcnemar": 1.0
+        }
+      },
+      "kev_epss_reach": {
+        "disconnect_rate": 0.0,
+        "disconnect_ci95": [
+          0.0,
+          0.0714
         ],
         "residual_frac": 1.0,
         "residual_frac_se": 0.0,
-        "mean_ms": 0.5537339994043577,
-        "cost_gain_connected": 0.0625084
+        "mean_ms": 4.781815999886021,
+        "cost_gain_connected": 0.08919236,
+        "cost_gain_n": 50,
+        "cost_gain_ci95": [
+          0.0636,
+          0.1178
+        ],
+        "share_of_optimal_gain": 0.35028046580579614,
+        "share_of_optimal_gain_n": 50,
+        "share_of_optimal_gain_ci95": [
+          0.2613,
+          0.4472
+        ],
+        "vs_linchpin": {
+          "only_linchpin": 0,
+          "only_kev_epss_reach": 0,
+          "p_mcnemar": 1.0
+        }
       },
       "betweenness": {
         "disconnect_rate": 0.0,
@@ -312,14 +876,26 @@
           0.0,
           0.0714
         ],
-        "cost_gain_ci95": [
-          0.027,
-          0.0652
-        ],
         "residual_frac": 1.0,
         "residual_frac_se": 0.0,
-        "mean_ms": 907.7207059998182,
-        "cost_gain_connected": 0.04577336
+        "mean_ms": 1292.0958960003918,
+        "cost_gain_connected": 0.02475524,
+        "cost_gain_n": 50,
+        "cost_gain_ci95": [
+          0.0117,
+          0.0398
+        ],
+        "share_of_optimal_gain": 0.10034647324873673,
+        "share_of_optimal_gain_n": 50,
+        "share_of_optimal_gain_ci95": [
+          0.0501,
+          0.1579
+        ],
+        "vs_linchpin": {
+          "only_linchpin": 0,
+          "only_betweenness": 0,
+          "p_mcnemar": 1.0
+        }
       },
       "random": {
         "disconnect_rate": 0.0,
@@ -327,22 +903,42 @@
           0.0,
           0.0714
         ],
-        "cost_gain_ci95": [
-          0.006,
-          0.0335
-        ],
         "residual_frac": 1.0,
         "residual_frac_se": 0.0,
-        "mean_ms": 0.9646580001572147,
-        "cost_gain_connected": 0.018653919999999997
+        "mean_ms": 0.6213020000723191,
+        "cost_gain_connected": 0.00242812,
+        "cost_gain_n": 50,
+        "cost_gain_ci95": [
+          0.0,
+          0.0066
+        ],
+        "share_of_optimal_gain": 0.008982003712050596,
+        "share_of_optimal_gain_n": 50,
+        "share_of_optimal_gain_ci95": [
+          0.0,
+          0.0248
+        ],
+        "vs_linchpin": {
+          "only_linchpin": 0,
+          "only_random": 0,
+          "p_mcnemar": 1.0
+        }
       },
-      "greedy_optimal_rate": 0.18,
-      "greedy_mean_ratio": 1.3383333333333334,
+      "greedy_optimal_rate": 0.22,
+      "greedy_mean_ratio": 1.2855238095238095,
       "top1_chokepoint_rate": 0.0
     },
     "single": {
       "n": 50,
-      "mean_nodes": 157.12,
+      "mean_nodes": 169.5,
+      "nodes_range": [
+        65,
+        290
+      ],
+      "hosts_range": [
+        12,
+        60
+      ],
       "with_chokepoint": 1.0,
       "mean_min_cut": 1,
       "linchpin": {
@@ -351,11 +947,15 @@
           0.9286,
           1.0
         ],
-        "cost_gain_ci95": null,
         "residual_frac": 0.0,
         "residual_frac_se": 0.0,
-        "mean_ms": 2906.9311259995447,
-        "cost_gain_connected": null
+        "mean_ms": 2264.5902939997904,
+        "cost_gain_connected": null,
+        "cost_gain_n": 0,
+        "cost_gain_ci95": null,
+        "share_of_optimal_gain": null,
+        "share_of_optimal_gain_n": 0,
+        "share_of_optimal_gain_ci95": null
       },
       "greedy": {
         "disconnect_rate": 1.0,
@@ -363,26 +963,110 @@
           0.9286,
           1.0
         ],
-        "cost_gain_ci95": null,
         "residual_frac": 0.0,
         "residual_frac_se": 0.0,
-        "mean_ms": 2586.9088059992646,
-        "cost_gain_connected": null
+        "mean_ms": 1944.3408820000332,
+        "cost_gain_connected": null,
+        "cost_gain_n": 0,
+        "cost_gain_ci95": null,
+        "share_of_optimal_gain": null,
+        "share_of_optimal_gain_n": 0,
+        "share_of_optimal_gain_ci95": null,
+        "vs_linchpin": {
+          "only_linchpin": 0,
+          "only_greedy": 0,
+          "p_mcnemar": 1.0
+        }
+      },
+      "milp_interdiction": {
+        "disconnect_rate": 1.0,
+        "disconnect_ci95": [
+          0.9286,
+          1.0
+        ],
+        "residual_frac": 0.0,
+        "residual_frac_se": 0.0,
+        "mean_ms": 2154.880036000177,
+        "cost_gain_connected": null,
+        "cost_gain_n": 0,
+        "cost_gain_ci95": null,
+        "share_of_optimal_gain": null,
+        "share_of_optimal_gain_n": 0,
+        "share_of_optimal_gain_ci95": null,
+        "vs_linchpin": {
+          "only_linchpin": 0,
+          "only_milp_interdiction": 0,
+          "p_mcnemar": 1.0
+        }
+      },
+      "greedy_interdiction": {
+        "disconnect_rate": 1.0,
+        "disconnect_ci95": [
+          0.9286,
+          1.0
+        ],
+        "residual_frac": 0.0,
+        "residual_frac_se": 0.0,
+        "mean_ms": 42.46946199986269,
+        "cost_gain_connected": null,
+        "cost_gain_n": 0,
+        "cost_gain_ci95": null,
+        "share_of_optimal_gain": null,
+        "share_of_optimal_gain_n": 0,
+        "share_of_optimal_gain_ci95": null,
+        "vs_linchpin": {
+          "only_linchpin": 0,
+          "only_greedy_interdiction": 0,
+          "p_mcnemar": 1.0
+        }
       },
       "cvss": {
-        "disconnect_rate": 0.04,
+        "disconnect_rate": 0.02,
         "disconnect_ci95": [
-          0.011,
-          0.1346
+          0.0035,
+          0.105
         ],
+        "residual_frac": 0.98,
+        "residual_frac_se": 0.019798989873223333,
+        "mean_ms": 0.5762100001447834,
+        "cost_gain_connected": 0.048199551020408155,
+        "cost_gain_n": 49,
         "cost_gain_ci95": [
-          0.0492,
-          0.1276
+          0.0234,
+          0.0809
         ],
-        "residual_frac": 0.9132,
-        "residual_frac_se": 0.03716927763624146,
-        "mean_ms": 0.5796619998000097,
-        "cost_gain_connected": 0.086127
+        "share_of_optimal_gain": null,
+        "share_of_optimal_gain_n": 0,
+        "share_of_optimal_gain_ci95": null,
+        "vs_linchpin": {
+          "only_linchpin": 49,
+          "only_cvss": 0,
+          "p_mcnemar": 3.552713678800501e-15
+        }
+      },
+      "cvss_reach": {
+        "disconnect_rate": 0.06,
+        "disconnect_ci95": [
+          0.0206,
+          0.1622
+        ],
+        "residual_frac": 0.94,
+        "residual_frac_se": 0.03358571124749333,
+        "mean_ms": 4.417261999842594,
+        "cost_gain_connected": 0.0532895744680851,
+        "cost_gain_n": 47,
+        "cost_gain_ci95": [
+          0.0271,
+          0.0873
+        ],
+        "share_of_optimal_gain": null,
+        "share_of_optimal_gain_n": 0,
+        "share_of_optimal_gain_ci95": null,
+        "vs_linchpin": {
+          "only_linchpin": 47,
+          "only_cvss_reach": 0,
+          "p_mcnemar": 1.4210854715202004e-14
+        }
       },
       "epss": {
         "disconnect_rate": 0.04,
@@ -390,14 +1074,47 @@
           0.011,
           0.1346
         ],
+        "residual_frac": 0.96,
+        "residual_frac_se": 0.027712812921102038,
+        "mean_ms": 0.39695999985269736,
+        "cost_gain_connected": 0.07501450000000001,
+        "cost_gain_n": 48,
         "cost_gain_ci95": [
-          0.0628,
-          0.1377
+          0.047,
+          0.1099
         ],
-        "residual_frac": 0.9378,
-        "residual_frac_se": 0.03161428790910844,
-        "mean_ms": 0.250289999821689,
-        "cost_gain_connected": 0.09939791666666667
+        "share_of_optimal_gain": null,
+        "share_of_optimal_gain_n": 0,
+        "share_of_optimal_gain_ci95": null,
+        "vs_linchpin": {
+          "only_linchpin": 48,
+          "only_epss": 0,
+          "p_mcnemar": 7.105427357601002e-15
+        }
+      },
+      "epss_reach": {
+        "disconnect_rate": 0.06,
+        "disconnect_ci95": [
+          0.0206,
+          0.1622
+        ],
+        "residual_frac": 0.94,
+        "residual_frac_se": 0.03358571124749333,
+        "mean_ms": 3.6761660000047414,
+        "cost_gain_connected": 0.15309217021276597,
+        "cost_gain_n": 47,
+        "cost_gain_ci95": [
+          0.113,
+          0.1969
+        ],
+        "share_of_optimal_gain": null,
+        "share_of_optimal_gain_n": 0,
+        "share_of_optimal_gain_ci95": null,
+        "vs_linchpin": {
+          "only_linchpin": 47,
+          "only_epss_reach": 0,
+          "p_mcnemar": 1.4210854715202004e-14
+        }
       },
       "kev_epss": {
         "disconnect_rate": 0.04,
@@ -405,49 +1122,258 @@
           0.011,
           0.1346
         ],
+        "residual_frac": 0.96,
+        "residual_frac_se": 0.027712812921102038,
+        "mean_ms": 0.5537999999796739,
+        "cost_gain_connected": 0.07840804166666668,
+        "cost_gain_n": 48,
         "cost_gain_ci95": [
-          0.0713,
-          0.1435
+          0.051,
+          0.1125
         ],
-        "residual_frac": 0.9378,
-        "residual_frac_se": 0.03161428790910844,
-        "mean_ms": 0.4303739999886602,
-        "cost_gain_connected": 0.10706058333333335
+        "share_of_optimal_gain": null,
+        "share_of_optimal_gain_n": 0,
+        "share_of_optimal_gain_ci95": null,
+        "vs_linchpin": {
+          "only_linchpin": 48,
+          "only_kev_epss": 0,
+          "p_mcnemar": 7.105427357601002e-15
+        }
+      },
+      "kev_epss_reach": {
+        "disconnect_rate": 0.06,
+        "disconnect_ci95": [
+          0.0206,
+          0.1622
+        ],
+        "residual_frac": 0.94,
+        "residual_frac_se": 0.03358571124749333,
+        "mean_ms": 3.8431339999078773,
+        "cost_gain_connected": 0.17050697872340426,
+        "cost_gain_n": 47,
+        "cost_gain_ci95": [
+          0.1291,
+          0.2167
+        ],
+        "share_of_optimal_gain": null,
+        "share_of_optimal_gain_n": 0,
+        "share_of_optimal_gain_ci95": null,
+        "vs_linchpin": {
+          "only_linchpin": 47,
+          "only_kev_epss_reach": 0,
+          "p_mcnemar": 1.4210854715202004e-14
+        }
       },
       "betweenness": {
-        "disconnect_rate": 0.88,
+        "disconnect_rate": 0.84,
         "disconnect_ci95": [
-          0.7619,
-          0.9438
+          0.7149,
+          0.9166
         ],
-        "cost_gain_ci95": [
-          0.003,
-          0.0587
-        ],
-        "residual_frac": 0.12,
-        "residual_frac_se": 0.04595650117230423,
-        "mean_ms": 1330.314359999902,
-        "cost_gain_connected": 0.030295666666666665
+        "residual_frac": 0.16,
+        "residual_frac_se": 0.05184592558726288,
+        "mean_ms": 1112.24078799969,
+        "cost_gain_connected": 0.08316575000000001,
+        "cost_gain_n": 8,
+        "cost_gain_ci95": null,
+        "share_of_optimal_gain": null,
+        "share_of_optimal_gain_n": 0,
+        "share_of_optimal_gain_ci95": null,
+        "vs_linchpin": {
+          "only_linchpin": 8,
+          "only_betweenness": 0,
+          "p_mcnemar": 0.0078125
+        }
       },
       "random": {
-        "disconnect_rate": 0.08,
+        "disconnect_rate": 0.22,
         "disconnect_ci95": [
-          0.0315,
-          0.1884
+          0.1275,
+          0.3524
         ],
+        "residual_frac": 0.78,
+        "residual_frac_se": 0.05858327406350724,
+        "mean_ms": 0.6416220001119655,
+        "cost_gain_connected": 0.027691743589743592,
+        "cost_gain_n": 39,
         "cost_gain_ci95": [
-          0.0118,
-          0.0485
+          0.0083,
+          0.0552
         ],
-        "residual_frac": 0.898,
-        "residual_frac_se": 0.04081568326023711,
-        "mean_ms": 1.469324000645429,
-        "cost_gain_connected": 0.028591391304347825
+        "share_of_optimal_gain": null,
+        "share_of_optimal_gain_n": 0,
+        "share_of_optimal_gain_ci95": null,
+        "vs_linchpin": {
+          "only_linchpin": 39,
+          "only_random": 0,
+          "p_mcnemar": 3.637978807091713e-12
+        }
       },
       "greedy_optimal_rate": 1.0,
       "greedy_mean_ratio": 1.0,
       "top1_chokepoint_rate": 1.0,
       "top1_planted_rate": 1.0
+    },
+    "pooled": {
+      "families": [
+        "ad",
+        "multi",
+        "single"
+      ],
+      "n": 150,
+      "linchpin": {
+        "disconnect_rate": 1.0,
+        "disconnect_ci95": [
+          0.975,
+          1.0
+        ]
+      },
+      "greedy": {
+        "disconnect_rate": 0.98,
+        "disconnect_ci95": [
+          0.9429,
+          0.9932
+        ],
+        "vs_linchpin": {
+          "only_linchpin": 3,
+          "only_greedy": 0,
+          "p_mcnemar": 0.25
+        }
+      },
+      "milp_interdiction": {
+        "disconnect_rate": 1.0,
+        "disconnect_ci95": [
+          0.975,
+          1.0
+        ],
+        "vs_linchpin": {
+          "only_linchpin": 0,
+          "only_milp_interdiction": 0,
+          "p_mcnemar": 1.0
+        }
+      },
+      "greedy_interdiction": {
+        "disconnect_rate": 0.9666666666666667,
+        "disconnect_ci95": [
+          0.9243,
+          0.9857
+        ],
+        "vs_linchpin": {
+          "only_linchpin": 5,
+          "only_greedy_interdiction": 0,
+          "p_mcnemar": 0.0625
+        }
+      },
+      "cvss": {
+        "disconnect_rate": 0.04,
+        "disconnect_ci95": [
+          0.0185,
+          0.0845
+        ],
+        "vs_linchpin": {
+          "only_linchpin": 144,
+          "only_cvss": 0,
+          "p_mcnemar": 8.96831017167883e-44
+        }
+      },
+      "cvss_reach": {
+        "disconnect_rate": 0.1,
+        "disconnect_ci95": [
+          0.0615,
+          0.1584
+        ],
+        "vs_linchpin": {
+          "only_linchpin": 135,
+          "only_cvss_reach": 0,
+          "p_mcnemar": 4.591774807899561e-41
+        }
+      },
+      "epss": {
+        "disconnect_rate": 0.03333333333333333,
+        "disconnect_ci95": [
+          0.0143,
+          0.0757
+        ],
+        "vs_linchpin": {
+          "only_linchpin": 145,
+          "only_epss": 0,
+          "p_mcnemar": 4.484155085839415e-44
+        }
+      },
+      "epss_reach": {
+        "disconnect_rate": 0.09333333333333334,
+        "disconnect_ci95": [
+          0.0564,
+          0.1506
+        ],
+        "vs_linchpin": {
+          "only_linchpin": 136,
+          "only_epss_reach": 0,
+          "p_mcnemar": 2.2958874039497803e-41
+        }
+      },
+      "kev_epss": {
+        "disconnect_rate": 0.02666666666666667,
+        "disconnect_ci95": [
+          0.0104,
+          0.0666
+        ],
+        "vs_linchpin": {
+          "only_linchpin": 146,
+          "only_kev_epss": 0,
+          "p_mcnemar": 2.2420775429197073e-44
+        }
+      },
+      "kev_epss_reach": {
+        "disconnect_rate": 0.09333333333333334,
+        "disconnect_ci95": [
+          0.0564,
+          0.1506
+        ],
+        "vs_linchpin": {
+          "only_linchpin": 136,
+          "only_kev_epss_reach": 0,
+          "p_mcnemar": 2.2958874039497803e-41
+        }
+      },
+      "betweenness": {
+        "disconnect_rate": 0.38666666666666666,
+        "disconnect_ci95": [
+          0.3125,
+          0.4665
+        ],
+        "vs_linchpin": {
+          "only_linchpin": 92,
+          "only_betweenness": 0,
+          "p_mcnemar": 4.0389678347315804e-28
+        }
+      },
+      "random": {
+        "disconnect_rate": 0.1,
+        "disconnect_ci95": [
+          0.0615,
+          0.1584
+        ],
+        "vs_linchpin": {
+          "only_linchpin": 135,
+          "only_random": 0,
+          "p_mcnemar": 4.591774807899561e-41
+        }
+      }
+    },
+    "residual_reduction_vs_cvss": {
+      "families": [
+        "ad",
+        "multi",
+        "none",
+        "single"
+      ],
+      "n": 200,
+      "mean": 0.69225,
+      "ci95": [
+        0.6275,
+        0.7553
+      ]
     }
   }
 }
