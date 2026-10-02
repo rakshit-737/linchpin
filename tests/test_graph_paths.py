@@ -118,8 +118,10 @@ fs += [f(f"noise-{i:03d}", "config", "i", detail={"issue": "inventory", "segment
 s = GraphStore(); s.upsert_findings(fs); s.build_attack_graph()
 print([p.path_id for p in s.k_shortest_paths(k=2)])
 '''
+    import os
     src = str(Path(__file__).parents[1] / "src")
+    base_env = {k: v for k, v in os.environ.items() if k in ("SYSTEMROOT", "PATH")}  # Windows needs SYSTEMROOT
     outs = {subprocess.run([sys.executable, "-c", code], capture_output=True, text=True, check=True,
-                           env={"PYTHONHASHSEED": str(h), "PYTHONPATH": src, "SYSTEMROOT": "C:\Windows"}).stdout
+                           env={**base_env, "PYTHONHASHSEED": str(h), "PYTHONPATH": src}).stdout
             for h in (1, 2, 3, 4)}
     assert len(outs) == 1, outs
