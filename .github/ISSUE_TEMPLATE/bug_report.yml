@@ -1,0 +1,38 @@
+name: Bug report
+description: Something LINCHPIN computes, parses or serves is wrong
+labels: [bug]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for reporting. **Do not attach real scan exports or identity data** - they describe an
+        organisation's weaknesses. Reduce the problem to a synthetic topology (`linchpin synth`) or a
+        trimmed, anonymised export. Security issues go to a private advisory (see SECURITY.md), not here.
+  - type: input
+    id: version
+    attributes:
+      label: Version
+      description: Output of `linchpin --version`
+      placeholder: linchpin 1.0.0
+    validations:
+      required: true
+  - type: textarea
+    id: repro
+    attributes:
+      label: Steps to reproduce
+      description: Exact commands, ideally starting from `linchpin synth --seed N`.
+      render: shell
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected vs actual
+      description: What you expected, what happened, and the relevant JSON output or traceback.
+    validations:
+      required: true
+  - type: input
+    id: env
+    attributes:
+      label: Environment
+      placeholder: Python 3.12, Ubuntu 24.04 / Windows 11, installed from wheel / source / Docker

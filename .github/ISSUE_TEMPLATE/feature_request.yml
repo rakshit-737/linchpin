@@ -1,0 +1,28 @@
+name: Feature request
+description: A new connector, edge type, remediation type, metric or UI improvement
+labels: [enhancement]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        LINCHPIN is read-only and defensive: it parses already-collected exports and never interacts with
+        targets. Requests for scanning, exploitation or payload features will be closed (see CONTRIBUTING.md).
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem
+      description: What decision or analysis is hard today?
+    validations:
+      required: true
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposal
+      description: For new graph semantics, say which contract (contracts/) changes and why it stays backwards compatible.
+    validations:
+      required: true
+  - type: textarea
+    id: evidence
+    attributes:
+      label: Evidence / data
+      description: Public datasets or synthetic cases that would test it.

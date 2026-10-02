@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Report a security vulnerability privately
+    url: https://github.com/rakshit-737/linchpin/security/advisories/new
+    about: Please do not open public issues for vulnerabilities in LINCHPIN itself.
+  - name: Documentation
+    url: https://rakshit-737.github.io/linchpin/
+    about: Getting started, how it works, evaluation and reproduction guides.

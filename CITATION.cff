@@ -1,0 +1,25 @@
+cff-version: 1.2.0
+message: "If you use LINCHPIN, please cite the software as below."
+title: "LINCHPIN: read-only attack-path reasoning and minimum-cut remediation planning"
+abstract: >-
+  LINCHPIN fuses already-collected scanner (OpenVAS, Nessus, nmap), identity (SharpHound/BloodHound)
+  and segmentation data with public exploit intelligence (NVD CVSS, FIRST EPSS, CISA KEV) into one
+  attack graph, and computes the smallest set of fixes that cuts every attack path to the crown jewels
+  (exact vertex min-cut with a greedy set-cover fallback), with templated, evidence-backed rationales.
+type: software
+authors:
+  - given-names: Rakshit
+    affiliation: "VIT Chennai"
+version: 1.0.0
+date-released: "2026-09-26"
+license: MIT
+repository-code: "https://github.com/rakshit-737/linchpin"
+url: "https://rakshit-737.github.io/linchpin/"
+keywords:
+  - attack graph
+  - attack path analysis
+  - vulnerability prioritisation
+  - minimum cut
+  - EPSS
+  - CISA KEV
+  - BloodHound

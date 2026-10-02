@@ -1,0 +1,5 @@
+# Default owner for everything in the repository.
+* @rakshit-737
+
+# Frozen interfaces: changes need an explicit review.
+/contracts/ @rakshit-737
