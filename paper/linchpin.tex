@@ -1,0 +1,287 @@
+\documentclass[11pt]{article}
+\usepackage[margin=1in]{geometry}
+\usepackage[T1]{fontenc}
+\usepackage{lmodern}
+\usepackage{amsmath}
+\usepackage{booktabs}
+\usepackage{graphicx}
+\usepackage{xcolor}
+\usepackage[hidelinks]{hyperref}
+\usepackage{url}
+
+\graphicspath{{../benchmarks/results/}{../docs/img/how/}}
+
+\title{Fused Attack Graphs for Budgeted Remediation:\\
+An Open, Measured Evaluation of LINCHPIN}
+\author{Rakshit\\VIT Chennai}
+\date{Preprint, October 2026 \quad (not peer reviewed)}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+Vulnerability management usually ranks findings one at a time, by CVSS, EPSS or membership in CISA's Known
+Exploited Vulnerabilities (KEV) catalog. Choosing a minimum set of fixes that disconnects an attack graph is a
+classical alternative, but open, reproducible evidence about \emph{which data} such plans need is scarce. We present
+LINCHPIN, an open-source, read-only tool that fuses already-collected scanner exports, Active Directory identity data
+and network segmentation into one attack graph with exploit-intelligence edge costs, and recommends a budgeted,
+evidence-carrying set of fixes: the exact minimum vertex cut when it fits the budget, a greedy set cover otherwise.
+On 200 seeded topologies in four families with real CVE parameters, plans with three fixes cut the crown jewel off in
+100\% [97.5, 100] of the 150 topologies where a three-fix cut exists, against 37\% [29, 45] when the identity data is
+withheld and 3\% [1, 7] for a KEV-then-EPSS patch queue (paired exact McNemar $p < 10^{-4}$). The exact budgeted
+interdiction program of Israeli and Wood reaches the same rate and a greedy interdiction heuristic 97\%; where no cut
+fits the budget, LINCHPIN attains 0.83 [0.77, 0.88] of the optimal rise in the attacker's cheapest-path cost. In a lab
+of five deliberately outdated container images scanned inside continuous integration, one upgrade disconnects the
+database while a CVSS-first queue needs three. We also reproduce part of a published EPSS-versus-CVSS comparison with
+public labels. Code, data pointers and every result are public.
+\end{abstract}
+
+\section{Introduction}
+
+A remediation queue sorted by CVSS treats a critical vulnerability on an unreachable host as urgent and two moderate
+ones that chain to the domain controller as routine. Exploit prediction (EPSS~\cite{jacobs2021epss}) and the KEV
+catalog sharpen the per-finding signal, but they still score findings in isolation. Attack graphs~\cite{phillips1998graph,sheyner2002automated,ou2005mulval}
+model how an attacker chains footholds, and minimum-cost hardening~\cite{noel2003efficient,wang2006minimum,albanese2012time}
+and budgeted blocking of identity graphs~\cite{dunagan2009heatray,guo2022practical,guo2023scalable} turn them into fix
+plans. The algorithmic core of such planning is well studied. What practitioners lack is open evidence about the
+inputs: how much does a plan depend on identity data, on segmentation, on exploit intelligence, and how does it compare
+with published planners and with the score-sorted queues that are actually used?
+
+This paper does not propose a new cut algorithm; LINCHPIN's cut is a vertex max-flow~\cite{ford1956maximal}. Its
+contributions are:
+\begin{itemize}
+  \item an open, read-only system that fuses real exports (OpenVAS, Nessus, nmap, SharpHound and a topology overlay)
+        with public exploit intelligence (NVD, EPSS, KEV) into one deterministic attack graph and returns fix plans in
+        which every fix carries a templated rationale and the paths it breaks (Section~\ref{sec:system});
+  \item a seeded benchmark with ground truth and an \emph{ablation} that isolates which data makes plans work, with
+        paired tests and confidence intervals (Sections~\ref{sec:setup}--\ref{sec:results});
+  \item comparisons with published planners: the exact budgeted shortest-path interdiction program of Israeli and
+        Wood~\cite{israeli2002shortest} and a greedy interdiction heuristic in the style of Guo et
+        al.~\cite{guo2023scalable};
+  \item a \emph{measured} case study in which continuous integration starts outdated official container images on
+        isolated networks, detects their versions, and checks the resulting plan; and a reproduction of part of
+        Jacobs et al.'s EPSS evaluation~\cite{jacobs2023enhancing} with public labels.
+\end{itemize}
+
+\section{Related work}
+\label{sec:related}
+
+\paragraph{Attack graphs and hardening.} Phillips and Swiler introduced graph-based vulnerability
+analysis~\cite{phillips1998graph}; Sheyner et al.\ generated attack graphs by model checking~\cite{sheyner2002automated};
+MulVAL derives them with logic programming~\cite{ou2005mulval}. Noel et al.~\cite{noel2003efficient} and Wang, Noel and
+Jajodia~\cite{wang2006minimum} compute minimum-cost hardening measures, and Albanese et al.\ make it time-efficient for
+large graphs~\cite{albanese2012time}. LINCHPIN's graph model is deliberately simpler than logical attack graphs: hosts,
+services, vulnerabilities, privileges, credentials, AD access-control entries and data stores, with an exact vertex cut
+over remediable nodes.
+
+\paragraph{Identity graphs.} Heat-ray combats identity snowball attacks with combinatorial optimization over
+credential graphs~\cite{dunagan2009heatray}. Guo et al.\ study budgeted blocking of Active Directory attack graphs with
+fixed-parameter algorithms~\cite{guo2022practical} and scalable edge blocking with a greedy
+baseline~\cite{guo2023scalable}. LINCHPIN ingests the same kind of SharpHound data but fuses it with vulnerability and
+segmentation data.
+
+\paragraph{Interdiction.} Shortest-path interdiction maximizes the adversary's shortest path after a budget of
+removals; Israeli and Wood give a mixed-integer formulation via the dual of the inner shortest-path
+problem~\cite{israeli2002shortest}. We use it as the optimal baseline when no cut fits the budget.
+
+\paragraph{Prioritization.} EPSS predicts exploitation from public and commercial signals~\cite{jacobs2021epss}; its
+third version is evaluated against CVSS and KEV in terms of coverage, efficiency and effort~\cite{jacobs2023enhancing}.
+LINCHPIN uses CVSS, EPSS and KEV only inside its edge costs.
+
+\section{System}
+\label{sec:system}
+
+\paragraph{Findings.} Connectors parse exports into one frozen schema, the \emph{normalized finding}
+(kinds: \texttt{cve}, \texttt{service}, \texttt{credential}, \texttt{acl}, \texttt{config}, \texttt{reachability}),
+validate it, and merge scanner host identifiers onto topology identifiers through declared aliases. When a scan only
+reports product versions, an offline index of NVD's version ranges maps them to CVEs, one finding per service; the
+fix is then an upgrade. Findings are enriched with the CVSS vector and exploitability sub-score, EPSS and KEV status.
+LINCHPIN never contacts a host.
+
+\paragraph{Graph.} Directed edges follow the attacker: the internet or a host reaches a service
+(\texttt{CAN\_REACH}, from segment rules), a service has a vulnerability (\texttt{HAS\_VULN}), a vulnerability whose
+CVSS vector implies code execution yields a privilege (\texttt{ENABLES}), a privilege controls a host
+(\texttt{LEADS\_TO}), a host stores credentials (\texttt{STORED\_ON}) that grant privileges elsewhere
+(\texttt{GRANTS}), abusable access-control entries grant control of principals and hosts, and a host holds a data
+store. Each edge gets a deterministic cost in $[0,1]$:
+\begin{equation}
+c(e) = \frac{w_1 (1 - x_e) + w_2 (1 - m_e) + w_3 s_e}{w_1 + w_2 + w_3},\qquad (w_1, w_2, w_3) = (0.5, 0.3, 0.2),
+\end{equation}
+where $x_e$ is exploitability ($0.6$ times the normalized CVSS exploitability sub-score plus $0.4$ times EPSS, at least
+$0.95$ for KEV entries, and $1$ for non-exploit edges), $m_e$ is a prerequisite match ($0.5$ for credential use whose
+target is not reachable from where the credential is stored, $1$ otherwise), and $s_e$ is a skill penalty per
+transition class.
+
+\paragraph{Paths, cuts, plans.} Paths from entry points to crown jewels are enumerated with Yen's
+algorithm~\cite{yen1971finding} on the subgraph that is both reachable from an entry and able to reach a crown jewel.
+\emph{Chokepoints} come from the dominator tree of a virtual source; the \emph{minimum remediation cut} from a
+vertex-split max-flow over remediable nodes (vulnerabilities, credentials, access-control entries and non-entry
+hosts). The plan uses the exact cut whenever it fits the budget, ordered by a greedy set cover of the enumerated paths;
+otherwise the greedy set cover alone. Every fix carries a rationale from templates (no language model) and the
+identifiers of the enumerated paths it breaks. A what-if query recomputes paths with nodes removed.
+
+\section{Evaluation setup}
+\label{sec:setup}
+
+\paragraph{Topologies.} Four families with 50 seeds each and $12 + (\text{seed} \bmod 49)$ hosts (58 to 317 graph
+nodes): \texttt{single} (one bastion; minimum cut 1), \texttt{multi} (parallel bastions and two routes into the
+database; cut 2, no chokepoint), \texttt{none} (flat network; cut about 7, larger than the budget) and \texttt{ad}
+(tiered Active Directory with cached administrator sessions; mean cut 1.34). Every vulnerability uses the CVSS vector,
+sub-score, EPSS and KEV status of a real CVE from a stratified sample of 3,000 (10\% KEV, against about 0.5\% in the
+source population). Every topology also contains two unreachable hosts with KEV-listed critical vulnerabilities and
+high-CVSS vulnerabilities without code execution: distractors for score-sorted queues.
+
+\paragraph{Planners and metrics.} With a budget of three fixes we compare LINCHPIN, its greedy set cover alone, the
+exact interdiction program~\cite{israeli2002shortest} solved with HiGHS~\cite{huangfu2018highs}, a greedy interdiction
+heuristic (repeatedly remove the node on the cheapest path whose removal raises its cost most), CVSS-, EPSS- and
+KEV-then-EPSS-sorted queues over all vulnerabilities and over vulnerabilities on some entry-to-crown-jewel route only,
+betweenness centrality, and a random choice. A plan \emph{disconnects} if no crown jewel stays reachable. Where nothing
+disconnects we report the rise in the attacker's cheapest-path cost and its share of the optimum. Rates carry 95\%
+Wilson intervals~\cite{wilson1927probable}, means seeded percentile-bootstrap intervals~\cite{efron1979bootstrap}, and
+paired differences exact McNemar tests~\cite{mcnemar1947note}. Graph algorithms use NetworkX~\cite{hagberg2008networkx}.
+
+\paragraph{Ablation.} The same optimizer plans on a degraded view of the findings and the plan is scored on the full
+graph: without identity findings, with 10/25/50\% of them dropped at random, with a flat network, with every CVE
+treated as code execution, with uniform edge costs, and with identity data only.
+
+\paragraph{What the 100\% means.} LINCHPIN plans on the graph it is scored on and returns the exact cut whenever that
+cut fits the budget, so it disconnects every topology where a three-fix cut exists \emph{by construction}. The
+benchmark measures how far other planners fall short of that optimum inside the model; the ablation measures what
+incomplete data costs. Neither measures real-world risk.
+
+\section{Results}
+\label{sec:results}
+
+\paragraph{Benchmark.} Table~\ref{tab:bench} pools the 150 topologies of \texttt{single}, \texttt{multi} and
+\texttt{ad}. Score-sorted queues disconnect 3--4\% of them; restricting them to on-path vulnerabilities, which removes
+the planted distractors, raises this only to 9--10\%. Betweenness reaches 39\% (84\% on \texttt{single}, 2\% on
+\texttt{multi}). The exact interdiction program also reaches 100\%, confirming that the cut itself is not the
+contribution; the greedy interdiction heuristic misses five \texttt{multi} topologies. Across all 200 topologies, on
+average 69.2\% [62.7, 75.5] of the enumerated attack paths are broken by LINCHPIN's three fixes but not by CVSS-first's.
+Figure~\ref{fig:bench} shows the per-family rates.
+
+\begin{table}[t]
+\centering\small
+\begin{tabular}{lrrr}
+\toprule
+planner & disconnected & 95\% interval & McNemar $p$ vs.\ LINCHPIN \\
+\midrule
+LINCHPIN (exact cut, else greedy) & 150/150 & [97.5, 100] & -- \\
+Exact interdiction MILP~\cite{israeli2002shortest} & 150/150 & [97.5, 100] & 1 \\
+LINCHPIN greedy set cover only & 147/150 & [94.3, 99.3] & 0.25 \\
+Greedy interdiction (Guo et al.-style) & 145/150 & [92.4, 98.6] & 0.063 \\
+Betweenness & 58/150 & [31.2, 46.7] & $<10^{-4}$ \\
+CVSS-first, on-path only & 15/150 & [6.2, 15.8] & $<10^{-4}$ \\
+KEV then EPSS, on-path only & 14/150 & [5.6, 15.1] & $<10^{-4}$ \\
+CVSS-first & 6/150 & [1.8, 8.5] & $<10^{-4}$ \\
+KEV then EPSS & 4/150 & [1.0, 6.7] & $<10^{-4}$ \\
+\bottomrule
+\end{tabular}
+\caption{Disconnection with a budget of three fixes, pooled over the \texttt{single}, \texttt{multi} and \texttt{ad}
+families (50 seeds each).}
+\label{tab:bench}
+\end{table}
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=\linewidth]{strategies.png}
+\caption{Disconnect rate (left, 95\% Wilson intervals) and attack paths left (right, mean $\pm$ s.e.) per family.}
+\label{fig:bench}
+\end{figure}
+
+\paragraph{No cut within budget.} On \texttt{none} nothing can be disconnected with three fixes. The exact program
+raises the attacker's cheapest-path cost by $+0.227$ [0.209, 0.245] edge-cost units on average; LINCHPIN's greedy
+fallback by $+0.193$ [0.169, 0.216], or 0.83 [0.77, 0.88] of the optimum; greedy interdiction by 0.82; KEV-then-EPSS
+by 0.15 and CVSS-first by 0.09 of it. Using the exact program as the fallback is an obvious next step.
+
+\paragraph{Ablation.} Table~\ref{tab:ablation} shows that identity data is decisive: without it the pooled rate falls
+to 37\%, with a dose-response as more of it is dropped, and identity data alone reaches only 18\%. Over-approximating
+views still disconnect (a cut of a super-graph cuts the real graph) but need more fixes: a flat network 1.82$\times$ the
+optimum on \texttt{single}, treating every CVE as code execution 1.10$\times$ on \texttt{ad}. The exact cut changes how
+many fixes are needed more than whether three suffice: greedy alone needs 1.22$\times$ the optimum on \texttt{multi}.
+Uniform edge costs leave cuts unchanged but reduce the attacker-cost gain on \texttt{none} from $+0.193$ to $+0.049$,
+and re-rank paths (Kendall's $\tau$ 0.36--0.51 against the intelligence-based costs).
+
+\begin{table}[t]
+\centering\small
+\begin{tabular}{lrrr}
+\toprule
+planner's view of the data & disconnected (of 150) & 95\% interval & McNemar $p$ vs.\ fused \\
+\midrule
+fused (LINCHPIN) & 100\% & [97.5, 100] & -- \\
+without the exact cut & 98.0\% & [94.3, 99.3] & 0.25 \\
+10\% / 25\% / 50\% of identity findings dropped & 100 / 95.3 / 90.0\% & [84.2, 93.9] (50\%) & 1 / 0.016 / $<10^{-4}$ \\
+without identity data & 36.7\% & [29.4, 44.6] & $<10^{-4}$ \\
+identity data only & 18.0\% & [12.7, 24.9] & $<10^{-4}$ \\
+no graph: KEV then EPSS & 2.7\% & [1.0, 6.7] & $<10^{-4}$ \\
+flat network / every CVE as RCE / uniform costs & 100\% & [97.5, 100] & 1 \\
+\bottomrule
+\end{tabular}
+\caption{Ablation: each planner runs the same optimizer on a degraded view and is scored on the full graph.}
+\label{tab:ablation}
+\end{table}
+
+\paragraph{Measured lab.} A continuous-integration job starts official images of httpd 2.4.49, nginx 1.16.1,
+Tomcat 9.0.30, Redis 5.0.7 and MySQL 5.5.62 on two Docker networks created as internal (no route outside), and runs
+version detection only (\texttt{nmap -sV}, no scripts) from a container inside each network. Segments and firewall rules
+are derived from what each vantage point saw; that the first network faces the internet and that the MySQL container
+holds the crown jewel are declared. Five of six services match 393 CVEs by NVD version range (7 in KEV). The minimum
+cut is one fix; LINCHPIN's plan (upgrade Tomcat, the only dual-homed container) disconnects the database, as do the
+interdiction planners; EPSS- and KEV-first need two fixes and CVSS-first three, because its first choice (Redis,
+CVSS 9.9) lies on only half of the paths.
+
+\paragraph{Reproducing a published comparison.} Jacobs et al.\ report coverage, efficiency and effort of CVSS and EPSS
+thresholds on CVEs published by the end of 2022, scored on 1~December 2022, against proprietary exploitation
+telemetry~\cite{jacobs2023enhancing}. Restricting to CVEs published by that date with an NVD CVSS~v3 score, using the
+EPSS scores published on that date (EPSS~v2) and KEV as the public label, CVSS 7+ flags 58.2\% of CVEs (paper: 58.1\%)
+and CVSS 9.1+ 15.0\% (15.1\%). EPSS needs 40.8\% effort to match CVSS 7+'s coverage (paper, EPSS~v2: 39.0\%) and covers
+71.4\% [68.4, 74.5] at CVSS 9.1+'s effort (paper: 69.9\%). The paper's headline, EPSS~v3 at one-eighth of CVSS's effort,
+is not reproducible from public data because EPSS~v3 scores were not published before March 2023; and because EPSS uses
+KEV as an input feature, scoring it against KEV is partly circular. On a prospective label (the 62 CVEs added to KEV in
+the following year), EPSS~v2 still covers 53.2\% [41.9, 64.6] at 15\% effort against 29.0\% [17.7, 41.9] for CVSS
+9.1+.
+
+\paragraph{Learned exploitability and scale.} An optional logistic-regression model over CVE text and CVSS vectors,
+trained on CVEs published 2015--2022 with KEV labels known at that date and with sentences that report exploitation
+status removed, reaches ROC-AUC 0.836 [0.820, 0.852] against 0.754 for the CVSS base score on later CVEs (average
+precision 0.028 against 0.011). A first version without these leak fixes reported 0.863 and 0.063. Building, ranking
+and planning take 1.1~s at 467 nodes and 7.0~s at 1,384 nodes on a laptop; Yen's algorithm dominates. A Neo4j Graph
+Data Science backend returns identical paths on graphs of up to 238,665 relationships and runs Yen 4--31$\times$
+faster, but mirroring the graph into Neo4j costs 8--22~s.
+
+\section{Limitations and threats to validity}
+
+The topology families were written for this project and plans are scored inside LINCHPIN's own model, so the benchmark
+measures distance from an optimum, not risk. The real-export case study (not detailed here) uses public sample reports
+placed into a declared topology; the measured lab is small and declares its internet exposure and crown jewel.
+Version banners do not show backported fixes, so matched CVE lists are upper bounds. Code execution is inferred from
+CVSS vectors, and Active Directory certificate services, shadow credentials, group-policy links and trusts are not
+modelled. KEV is a small, curated proxy for exploitation in the wild. Residual-path counts are capped at $k = 100$;
+disconnection and cost gain are reported for that reason. Laptop timings vary by up to 1.6$\times$ between sessions.
+
+\section{Ethics}
+
+LINCHPIN is read-only: it parses files and sends no packets, and its output (which fixes matter most) is the same
+information a defender needs. The only active probing in this work is version detection of containers that the
+continuous-integration job itself starts on networks without outside routes; no exploit code was written or run, and
+no third-party host was contacted. Public sample reports of deliberately vulnerable targets are used as data only.
+
+\section{Reproducibility}
+
+Code, the CVE pool, the CPE index, the committed scans and every result file are in the public repository
+(\url{https://github.com/rakshit-737/linchpin}); the downloader pins public datasets by SHA-256 and NVD's published
+hashes; all experiments are seeded and deterministic (path ties do not depend on the interpreter's hash seed). The
+documentation lists each command with its runtime (\url{https://rakshit-737.github.io/linchpin/reproduce/}), and the
+lab, Neo4j and paper builds run in continuous integration.
+
+\section*{Acknowledgements}
+
+The software, experiments and this manuscript were developed with substantial assistance from Claude, an AI model by
+Anthropic, used for code, analysis and writing under the author's direction; the author is responsible for the
+content. Data come from NIST's NVD, FIRST's EPSS, CISA's KEV catalog, and the DefectDojo and SpecterOps BloodHound
+test corpora.
+
+\bibliographystyle{plain}
+\bibliography{refs}
+
+\end{document}
