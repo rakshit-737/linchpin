@@ -175,7 +175,9 @@ def render(res: dict) -> str:
         lines.append(f"| {v['name']} on `{v['host']}` | {v['cvss']} | {v['epss']} | {'yes' if v['kev'] else ''} | "
                      f"{'yes' if v['grants_code_execution'] else 'no'} |")
     lines += ["", f"Chokepoints: {', '.join(f'`{c}`' for c in res['chokepoints']) or 'none'}; exact min cut "
-                  f"{res['min_cut']}.", "",
+                  f"{res['min_cut']} (one of several minimum cuts: every chokepoint above is a one-node cut). "
+                  "recommend() keeps the greedy pick when it is already a cut of minimum size, preferring the node on "
+                  "the most enumerated paths, then the node id; the MILP may return a different minimum cut of the same size.", "",
               "| strategy | 1 fix: chosen | cut off? | 3 fixes: cut off? | fixes needed to cut off |",
               "| --- | --- | :---: | :---: | ---: |"]
     for s, r in res["strategies"].items():

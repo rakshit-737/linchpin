@@ -10,7 +10,7 @@ Offline NVD version-range matching: 5 of 6 services matched, 393 CVEs, 7 of them
 | mysql 5.5.62 (210 CVEs by NVD version range) on `db` | 9.1 | 0.82136 |  | yes |
 | redis 5.0.7 (34 CVEs by NVD version range) on `cache` | 9.9 | 0.82294 |  | yes |
 
-Chokepoints: `vuln:CPE-apache-tomcat-9.0.30@app:8080`, `vuln:CPE-mysql-mysql-5.5.62@db:3306`; exact min cut ['vuln:CPE-mysql-mysql-5.5.62@db:3306'].
+Chokepoints: `vuln:CPE-apache-tomcat-9.0.30@app:8080`, `vuln:CPE-mysql-mysql-5.5.62@db:3306`; exact min cut ['vuln:CPE-mysql-mysql-5.5.62@db:3306'] (one of several minimum cuts: every chokepoint above is a one-node cut). recommend() keeps the greedy pick when it is already a cut of minimum size, preferring the node on the most enumerated paths, then the node id; the MILP may return a different minimum cut of the same size.
 
 | strategy | 1 fix: chosen | cut off? | 3 fixes: cut off? | fixes needed to cut off |
 | --- | --- | :---: | :---: | ---: |
