@@ -296,7 +296,8 @@ def cmd_neo4j_push(args) -> int:
 
         from linchpin.graph.neo4j_store import Neo4jGraphStore
     except ImportError:
-        raise SystemExit("neo4j-push needs the Neo4j driver: pip install 'linchpin[neo4j]'") from None
+        raise SystemExit("neo4j-push needs the Neo4j driver: install the [neo4j] extra (in a checkout: "
+                         "pip install -e '.[neo4j]'; PyPI's 'linchpin' is an unrelated project)") from None
     store = _load_store(args)
     pw = os.environ.get("NEO4J_PASSWORD")
     if not pw:
@@ -320,7 +321,8 @@ def cmd_serve(args) -> int:
     try:
         import uvicorn
     except ImportError:
-        raise SystemExit("serve needs the API extra: pip install 'linchpin[api]'") from None
+        raise SystemExit("serve needs the API extra: install the [api] extra (in a checkout: "
+                         "pip install -e '.[api]'; PyPI's 'linchpin' is an unrelated project)") from None
     if args.host not in LOOPBACK:
         print(f"WARNING: binding to {args.host}. The API has no authentication and serves a map of your "
               "weaknesses; keep it on a trusted, isolated network.", file=sys.stderr)

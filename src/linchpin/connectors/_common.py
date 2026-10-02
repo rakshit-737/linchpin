@@ -2,30 +2,33 @@
 from __future__ import annotations
 
 import re
-
-# stdlib parser is only a fallback: defusedxml is used when installed, and entity
-# declarations are refused otherwise (see parse_xml).
-import xml.etree.ElementTree as ET  # nosec B405
 from datetime import datetime, timezone
 from pathlib import Path
+from typing import TYPE_CHECKING
+
+from defusedxml import DefusedXmlException
+from defusedxml.ElementTree import parse as _safe_parse
 
 from linchpin.models import NormalizedFinding, make_finding_id
+
+if TYPE_CHECKING:  # the stdlib parser is imported for the type annotation only, never to parse
+    from xml.etree.ElementTree import Element  # nosec B405
 
 EPOCH0 = "1970-01-01T00:00:00+00:00"
 CVE_RE = re.compile(r"CVE-\d{4}-\d{4,}")
 
 
-def parse_xml(path: str | Path) -> ET.Element:
-    """Parse an exported XML report. Refuses DTD entity declarations (XXE / billion-laughs)."""
+def parse_xml(path: str | Path) -> Element:
+    """Parse an exported XML report with defusedxml (a hard dependency; there is no fallback).
+
+    Raises:
+        ValueError: the document declares entities or references external resources
+            (XXE, billion laughs); callers report the file as skipped.
+    """
     try:
-        from defusedxml.ElementTree import parse as dparse  # type: ignore
-        return dparse(str(path)).getroot()
-    except ImportError:
-        pass
-    head = Path(path).read_bytes()[:4096]
-    if b"<!ENTITY" in head:
-        raise ValueError(f"{path}: XML entity declarations are not accepted")
-    return ET.parse(str(path)).getroot()  # nosec B314
+        return _safe_parse(str(path)).getroot()
+    except DefusedXmlException as e:
+        raise ValueError(f"{path}: refused unsafe XML ({type(e).__name__})") from None
 
 
 def epoch_iso(s: str | int | None) -> str:
