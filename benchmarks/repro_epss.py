@@ -51,6 +51,7 @@ import numpy as np
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
 
 from linchpin.engine.edge_cost import EdgeContext, exploitability
+from linchpin.intel.provenance import feed_provenance
 
 AS_OF = "2022-12-01"
 HORIZON_DAYS = 365
@@ -226,7 +227,8 @@ def main(argv=None) -> int:
         "provenance": {"epss_history": hist_meta, "epss_current": cur_meta,
                        "kev": {"catalogVersion": kev_doc.get("catalogVersion"),
                                "dateReleased": kev_doc.get("dateReleased"), "count": kev_doc.get("count")},
-                       "intel_cache": {"file": intel.name, "sha256": _sha(intel)}},
+                       "intel_cache": {"file": intel.name, "sha256": _sha(intel)},
+                       "feeds": feed_provenance(d)},
     }
     dd = Path(a.out)
     dd.mkdir(parents=True, exist_ok=True)

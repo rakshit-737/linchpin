@@ -21,6 +21,7 @@ from linchpin.engine.cuts import chokepoints, min_remediation_cut
 from linchpin.engine.optimizer import recommend
 from linchpin.engine.paths import rank_paths
 from linchpin.graph.store import GraphStore
+from linchpin.intel.provenance import feed_provenance
 from linchpin.scenario import load_scenario
 
 STRATEGIES = ("linchpin", "milp_interdiction", "greedy_interdiction", "cvss", "cvss_reach", "epss", "epss_reach",
@@ -80,7 +81,7 @@ def main(argv=None) -> int:
     ap.add_argument("--out", default="benchmarks/results")
     a = ap.parse_args(argv)
     findings, cfg, stats = load_scenario(a.scenario, a.data_dir)
-    out = {"scenario": stats, "intel": analyse(findings, cfg, a.budget, a.k)}
+    out = {"scenario": stats, "provenance": feed_provenance(a.data_dir), "intel": analyse(findings, cfg, a.budget, a.k)}
     if stats.get("intel", {}).get("learned_model"):
         out["learned"] = analyse(findings, cfg.model_copy(update={"exploitability_source": "learned"}),
                                  a.budget, a.k)
