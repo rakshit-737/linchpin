@@ -44,6 +44,10 @@ def explain_remediation(r: Remediation, store, paths: list[AttackPath] | None = 
     if label == "Vuln":
         a = store.g.nodes[r.target_node]
         kev = ", CISA KEV" if a.get("kev") else ""
+        if a.get("upgrade"):
+            return (f"{a['upgrade']} on {a.get('host_id')} matches {len(a.get('cves') or [])} CVEs; the one an "
+                    f"attacker would use is {a.get('cve')} (CVSS {a.get('cvss_base')}, EPSS {a.get('epss')}{kev}). "
+                    f"It is a step on {r.paths_broken} attack paths; {tail}")
         name = a.get("cve") or a.get("name")
         return (f"{name} on {a.get('host_id')} (CVSS {a.get('cvss_base')}, EPSS {a.get('epss')}{kev}) "
                 f"is a step on {r.paths_broken} attack paths; {tail}")

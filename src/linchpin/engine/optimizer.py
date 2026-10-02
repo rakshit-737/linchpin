@@ -12,6 +12,8 @@ def action_for(store, node_id: str) -> str:
     a = store.g.nodes[node_id]
     lbl = a.get("label")
     if lbl == "Vuln":
+        if a.get("upgrade"):  # matched by product version (intel/cpe.py): the fix is an upgrade
+            return f"upgrade {a['upgrade']} on {a['host_id']} ({len(a.get('cves') or [])} known CVEs)"
         if a.get("cve") and len(a.get("cves") or []) <= 1:
             return f"patch {a['cve']} on {a['host_id']}"
         what = a.get("name") or a.get("cve") or node_id

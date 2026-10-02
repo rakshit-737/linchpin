@@ -42,7 +42,7 @@ from the state deterministically.
 parse exports (nmap/OpenVAS/Nessus XML, SharpHound JSON, inventory YAML, native JSON) into the state file.
 
 ```text
-usage: linchpin ingest [-h] [--replace] [--intel INTEL] paths [paths ...]
+usage: linchpin ingest [-h] [--replace] [--intel INTEL] [--match-cpe] paths [paths ...]
 ```
 
 | argument | meaning |
@@ -50,6 +50,7 @@ usage: linchpin ingest [-h] [--replace] [--intel INTEL] paths [paths ...]
 | `paths` | files or directories (directories are scanned one level deep) |
 | `--replace` | discard previously ingested findings |
 | `--intel` `INTEL` | CVE intel cache from `intel-build`, to fill in CVSS / EPSS / KEV |
+| `--match-cpe` | map detected service versions (e.g. nmap -sV) to CVEs with the packaged offline NVD version-range index |
 
 ### scenario
 

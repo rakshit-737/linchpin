@@ -93,6 +93,11 @@ def load_scenario(path: str | Path, data_dir: str | Path | None = None, use_inte
         per_source[spec["path"]] = len(got)
         for f in got:
             findings[f.finding_id] = f
+    if doc.get("match_cpe"):  # offline version -> CVE matching for detected services (intel/cpe.py)
+        from linchpin.intel.cpe import match_services
+        matched, cpe_stats = match_services(list(findings.values()))
+        for f in matched:
+            findings[f.finding_id] = f
     overlay = inventory.from_doc(doc)
     for f in overlay:
         findings[f.finding_id] = f
@@ -100,6 +105,8 @@ def load_scenario(path: str | Path, data_dir: str | Path | None = None, use_inte
     stats: dict = {"name": doc.get("name", path.stem), "sources": per_source, "findings": len(out),
                    "overlay_findings": len(overlay),
                    "unmatched_aliases": sorted(a for a in alias if a not in seen_hosts)}
+    if doc.get("match_cpe"):
+        stats["cpe_match"] = cpe_stats
     if use_intel and doc.get("intel"):
         ip = ref(doc["intel"])
         if ip.exists():

@@ -165,7 +165,7 @@ class GraphStore:
                 g.add_node(vid, label="Vuln", cve=f.cve_id, cvss_base=f.cvss_base, epss=f.epss,
                            exploit_maturity=d.get("exploit_maturity"), kev=bool(d.get("kev")),
                            name=d.get("name"), cves=d.get("cves") or ([f.cve_id] if f.cve_id else []),
-                           impact_class=impact, host_id=f.host_id)
+                           impact_class=impact, host_id=f.host_id, upgrade=d.get("upgrade"))
                 self._add(g, svc, "HAS_VULN", vid)
                 # Only vulns that plausibly yield code execution grant a privilege. Unknown
                 # impact (no CVSS vector) is treated conservatively as code execution.

@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- hand-written fixture in the shape of `nmap -sV -sT -Pn -n -oX` output for the CI lab (lab/scan.sh) -->
+<nmaprun scanner="nmap" args="nmap -sV -sT -Pn -n -T4 -p 1-10000 -oX /out/scan-lp-dmz.xml" start="1790000000" version="7.93">
+<host><status state="up"/><address addr="172.20.0.2" addrtype="ipv4"/><ports>
+<port protocol="tcp" portid="80"><state state="open"/><service name="http" product="Apache httpd" version="2.4.49" extrainfo="(Unix)" method="probed" conf="10"><cpe>cpe:/a:apache:http_server:2.4.49</cpe></service></port>
+</ports></host>
+<host><status state="up"/><address addr="172.20.0.3" addrtype="ipv4"/><ports>
+<port protocol="tcp" portid="80"><state state="open"/><service name="http" product="nginx" version="1.16.1" method="probed" conf="10"><cpe>cpe:/a:igor_sysoev:nginx:1.16.1</cpe></service></port>
+</ports></host>
+<host><status state="up"/><address addr="172.20.0.4" addrtype="ipv4"/><ports>
+<port protocol="tcp" portid="8009"><state state="open"/><service name="ajp13" product="Apache Jserv" extrainfo="Protocol v1.3" method="probed" conf="10"/></port>
+<port protocol="tcp" portid="8080"><state state="open"/><service name="http" product="Apache Tomcat" version="9.0.30" method="probed" conf="10"><cpe>cpe:/a:apache:tomcat:9.0.30</cpe></service></port>
+</ports></host>
+</nmaprun>

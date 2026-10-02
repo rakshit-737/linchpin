@@ -135,6 +135,11 @@ def cmd_ingest(args) -> int:
         existing = {x.finding_id: x.model_dump() for x in old}
         for a in unmatched:
             _warn(f"topology alias {a!r} (match:) matches no host id in the exports")
+    cpe_stats = None
+    if args.match_cpe:  # map detected product versions to CVEs offline (NVD version ranges)
+        from linchpin.intel.cpe import match_services
+        matched, cpe_stats = match_services(parsed)
+        parsed += matched
     intel_stats = None
     if args.intel and not os.path.exists(args.intel):
         raise SystemExit(f"ingest: intel cache not found: {args.intel} (build it with `linchpin intel-build`)")
@@ -157,7 +162,7 @@ def cmd_ingest(args) -> int:
     store.build_attack_graph()
     _diagnose(store)
     _emit({"files": files, "skipped": skipped, "accepted": n, "total_findings": len(existing),
-           "aliases": len(alias), "unmatched_aliases": unmatched, "intel": intel_stats,
+           "aliases": len(alias), "unmatched_aliases": unmatched, "cpe_match": cpe_stats, "intel": intel_stats,
            "graph": _reach_summary(store)})
     return 0
 
@@ -343,6 +348,9 @@ def build_parser() -> argparse.ArgumentParser:
     s.add_argument("paths", nargs="+", help="files or directories (directories are scanned one level deep)")
     s.add_argument("--replace", action="store_true", help="discard previously ingested findings")
     s.add_argument("--intel", help="CVE intel cache from `intel-build`, to fill in CVSS / EPSS / KEV")
+    s.add_argument("--match-cpe", action="store_true",
+                   help="map detected service versions (e.g. nmap -sV) to CVEs with the packaged offline NVD "
+                        "version-range index")
     s.set_defaults(fn=cmd_ingest)
     s = sub.add_parser("scenario", help="load a scenario YAML (exports + topology overlay + intel) as the state")
     s.add_argument("path", help="scenario YAML, e.g. scenarios/composite_lab.yaml")

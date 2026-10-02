@@ -1,0 +1,10 @@
+[
+ {"Name": "lp-dmz", "Internal": true, "Containers": {
+   "a1": {"Name": "web", "IPv4Address": "172.20.0.2/16"},
+   "a2": {"Name": "proxy", "IPv4Address": "172.20.0.3/16"},
+   "a3": {"Name": "app", "IPv4Address": "172.20.0.4/16"}}},
+ {"Name": "lp-core", "Internal": true, "Containers": {
+   "a3": {"Name": "app", "IPv4Address": "172.21.0.2/16"},
+   "a4": {"Name": "cache", "IPv4Address": "172.21.0.3/16"},
+   "a5": {"Name": "db", "IPv4Address": "172.21.0.4/16"}}}
+]
