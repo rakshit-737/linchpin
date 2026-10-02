@@ -91,3 +91,35 @@ def test_node_detail(synth_store):
     d = s.node(gt.linchpin)
     assert d.label == "Host" and d.props["segment"] == "mgmt"
     assert d.outbound and d.inbound
+
+
+def test_equal_cost_path_choice_does_not_depend_on_pythonhashseed():
+    """Two equally cheap routes plus many unrelated hosts: before the fix, which route Yen returned
+    first depended on string-set iteration order (PYTHONHASHSEED)."""
+    import subprocess
+    import sys
+    from pathlib import Path
+    code = r'''
+import sys
+from linchpin.graph.store import GraphStore
+from linchpin.models import NormalizedFinding, make_finding_id
+def f(h, kind, key, **kw):
+    return NormalizedFinding(finding_id=make_finding_id(h, kind, key), host_id=h, kind=kind, source="t",
+                             observed_at="2026-01-01T00:00:00Z", **kw)
+fs = []
+for h in ("web-a", "web-b", "web-c"):
+    fs += [f(h, "config", "i", detail={"issue": "inventory", "segment": "dmz", "internet_facing": True}),
+           f(h, "service", "80", port=80),
+           f(h, "cve", "c", cve_id="CVE-2020-0001", port=80, cvss_base=9.0, epss=0.5),
+           f(h, "credential", "k", detail={"principal": "dba", "valid_on": ["db"]})]
+fs += [f("db", "config", "i", detail={"issue": "inventory", "segment": "core",
+                                      "datastores": [{"name": "crown", "sensitivity": "high"}]})]
+fs += [f(f"noise-{i:03d}", "config", "i", detail={"issue": "inventory", "segment": "far"}) for i in range(80)]
+s = GraphStore(); s.upsert_findings(fs); s.build_attack_graph()
+print([p.path_id for p in s.k_shortest_paths(k=2)])
+'''
+    src = str(Path(__file__).parents[1] / "src")
+    outs = {subprocess.run([sys.executable, "-c", code], capture_output=True, text=True, check=True,
+                           env={"PYTHONHASHSEED": str(h), "PYTHONPATH": src, "SYSTEMROOT": "C:\Windows"}).stdout
+            for h in (1, 2, 3, 4)}
+    assert len(outs) == 1, outs

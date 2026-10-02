@@ -311,7 +311,12 @@ class GraphStore:
         keep = fwd & bwd
         if not keep & set(targets):
             return []
-        g = g.subgraph(keep).copy()
+        # Induced subgraph built in the parent's insertion order: nx.subgraph() iterates the
+        # `keep` *set* when it is small, which made tie order depend on PYTHONHASHSEED.
+        sub = nx.DiGraph()
+        sub.add_nodes_from((n, a) for n, a in g.nodes(data=True) if n in keep)
+        sub.add_edges_from((u, v, a) for u, v, a in g.edges(data=True) if u in keep and v in keep)
+        g = sub
         sources = [s for s in sources if s in g]
         for s in sources:
             g.add_edge(_SRC, s, cost=0.0)
