@@ -198,7 +198,8 @@ def _ace_findings(users, groups, computers, domains, names, enabled, members, ex
                 if u in domain_admins or u == tsid:
                     continue  # already all-powerful / self-control adds nothing
                 det = grants.setdefault((u, tsid), {
-                    "ace": True, "right": "ACE", "principal": names.get(u, u), "sid": u, "rights": set(), "target_kind": kind,
+                    "ace": True, "right": "ACE", "principal": names.get(u, u), "sid": u, "rights": set(),
+                    "target_kind": kind,
                     "target_name": names.get(tsid, tsid), "grants_creds": [], "grants_hosts": [],
                     "grants_datastores": []})
                 det["rights"] |= rs

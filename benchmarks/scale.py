@@ -12,11 +12,11 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
 
-from linchpin.engine.cuts import min_remediation_cut  # noqa: E402
-from linchpin.engine.optimizer import recommend  # noqa: E402
-from linchpin.engine.paths import rank_paths  # noqa: E402
-from linchpin.graph.store import GraphStore  # noqa: E402
-from linchpin.synth.topologies import generate_family  # noqa: E402
+from linchpin.engine.cuts import min_remediation_cut
+from linchpin.engine.optimizer import recommend
+from linchpin.engine.paths import rank_paths
+from linchpin.graph.store import GraphStore
+from linchpin.synth.topologies import generate_family
 
 
 def one(family: str, n: int, seed: int = 0) -> dict:
@@ -57,7 +57,7 @@ def main(argv=None) -> int:
         matplotlib.use("Agg")
         import matplotlib.pyplot as plt
         fig, ax = plt.subplots(figsize=(6, 3.6))
-        for fam, c in zip(a.families.split(","), ["#1f5fbf", "#d9822b", "#5aa469"]):
+        for fam, c in zip(a.families.split(","), ["#1f5fbf", "#d9822b", "#5aa469", "#9b59b6"], strict=False):
             rs = [r for r in rows if r["family"] == fam]
             ax.plot([r["nodes"] for r in rs], [r["total_s"] for r in rs], "o-", color=c, label=fam)
         ax.axhline(5, ls="--", color="#999", lw=1)

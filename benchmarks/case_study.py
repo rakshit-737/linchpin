@@ -13,12 +13,12 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
 
-from linchpin.benchmark import evaluate, order  # noqa: E402
-from linchpin.engine.cuts import chokepoints, min_remediation_cut  # noqa: E402
-from linchpin.engine.optimizer import recommend  # noqa: E402
-from linchpin.engine.paths import rank_paths  # noqa: E402
-from linchpin.graph.store import GraphStore  # noqa: E402
-from linchpin.scenario import load_scenario  # noqa: E402
+from linchpin.benchmark import evaluate, order
+from linchpin.engine.cuts import chokepoints, min_remediation_cut
+from linchpin.engine.optimizer import recommend
+from linchpin.engine.paths import rank_paths
+from linchpin.graph.store import GraphStore
+from linchpin.scenario import load_scenario
 
 
 def analyse(findings, cfg, budget, k):
@@ -70,7 +70,8 @@ def main(argv=None) -> int:
     r = out["intel"]
     lines = [
         f"Findings: {stats['findings']} from {len(stats['sources'])} real exports; "
-        f"{stats['intel'].get('enriched', 0)}/{stats['intel'].get('cve_findings', 0)} vuln findings carry a CVE found in NVD (the rest are CVE-less checks) "
+        f"{stats['intel'].get('enriched', 0)}/{stats['intel'].get('cve_findings', 0)} vuln findings carry a CVE "
+        "found in NVD (the rest are CVE-less checks) "
         f"(EPSS {stats['intel'].get('epss_date', '')[:10]}), {r['kev_vulns']} in CISA KEV.",
         f"Attack graph: {r['nodes']} nodes, {r['edges']} edges; {r['vulns']} vuln nodes of which "
         f"{r['vulns_granting_privilege']} grant code execution; {r['paths_enumerated']} crown-jewel paths "

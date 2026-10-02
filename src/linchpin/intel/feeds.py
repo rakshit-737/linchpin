@@ -5,8 +5,8 @@ import csv
 import gzip
 import io
 import json
+from collections.abc import Iterator
 from pathlib import Path
-from typing import Iterator
 
 # Max CVSS exploitability sub-score: v3.x = 8.22*0.85*0.77*0.85*0.85 ~= 3.887; v2 = 10.0
 EXPL_MAX = {"3": 3.9, "2": 10.0}

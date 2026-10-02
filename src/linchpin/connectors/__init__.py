@@ -1,8 +1,8 @@
 """M1 connectors: raw tool exports -> NormalizedFinding[]. Offline file parsers only."""
 from __future__ import annotations
 
+from collections.abc import Callable
 from pathlib import Path
-from typing import Callable
 
 from linchpin.connectors import bloodhound, inventory, native, nessus, nmap, openvas
 from linchpin.models import NormalizedFinding

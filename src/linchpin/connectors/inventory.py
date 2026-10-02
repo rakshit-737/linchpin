@@ -43,7 +43,7 @@ def is_inventory(path: str | Path) -> bool:
         return False
     try:
         doc = load(p)
-    except Exception:  # noqa: BLE001 - sniffing only
+    except Exception:
         return False
     return isinstance(doc, dict) and "hosts" in doc
 

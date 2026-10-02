@@ -1,6 +1,8 @@
 """M6: deterministic, template-based explanations (no LLM)."""
 from __future__ import annotations
 
+import itertools
+
 from linchpin.models import AttackPath, Remediation
 
 
@@ -62,6 +64,7 @@ def explain_remediation(r: Remediation, store, paths: list[AttackPath] | None = 
 
 
 def explain_path(p: AttackPath, store) -> str:
-    hops = [f"{u} -[{e.split('|')[1]}/{s}]-> {v}" for u, v, e, s in zip(p.nodes, p.nodes[1:], p.edges, p.stages)]
+    hops = [f"{u} -[{e.split('|')[1]}/{s}]-> {v}"
+            for (u, v), e, s in zip(itertools.pairwise(p.nodes), p.edges, p.stages, strict=True)]
     return (f"Path {p.path_id} (cost {p.total_cost:.3f}) reaches {p.crown_jewel} in {len(p.edges)} hops: "
             + "; ".join(hops))

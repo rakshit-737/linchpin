@@ -2,8 +2,8 @@ import pytest
 
 pytest.importorskip("sklearn")
 
-from linchpin.intel.store import CveRecord  # noqa: E402
-from linchpin.ml.exploitability import ExploitModel, evaluate, train  # noqa: E402
+from linchpin.intel.store import CveRecord
+from linchpin.ml.exploitability import ExploitModel, evaluate, train
 
 
 def _recs():
@@ -13,7 +13,8 @@ def _recs():
         out.append(CveRecord(
             cve=f"CVE-2020-{1000 + i}", cvss_base=9.8 if kev else 5.3, epss=0.5 if kev else 0.01, kev=kev,
             cvss_exploitability=1.0 if kev else 0.4, published="2020-01-01", cwe="CWE-78" if kev else "CWE-79",
-            cvss_vector="CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:H/A:H" if kev else "CVSS:3.1/AV:N/AC:L/PR:L/UI:R/S:C/C:L/I:L/A:N",
+            cvss_vector=("CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:H/A:H" if kev
+                         else "CVSS:3.1/AV:N/AC:L/PR:L/UI:R/S:C/C:L/I:L/A:N"),
             description=("remote unauthenticated command injection" if kev else "stored cross-site scripting")))
     return out
 

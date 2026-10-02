@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import re
+
 # stdlib parser is only a fallback: defusedxml is used when installed, and entity
 # declarations are refused otherwise (see parse_xml).
 import xml.etree.ElementTree as ET  # nosec B405

@@ -70,7 +70,7 @@ class CveIntel:
         return self.records.values()
 
     @classmethod
-    def build(cls, data_dir: str | Path, out: str | Path | None = None) -> "CveIntel":
+    def build(cls, data_dir: str | Path, out: str | Path | None = None) -> CveIntel:
         d = Path(data_dir)
         epss_file = next((d / "epss").glob("epss_scores-*.csv*"))
         epss, epss_date = load_epss(epss_file)
@@ -95,7 +95,7 @@ class CveIntel:
                    {"epss_date": epss_date, "n": len(rows), "kev": len(kev)})
 
     @classmethod
-    def load(cls, path: str | Path, only: set[str] | None = None) -> "CveIntel":
+    def load(cls, path: str | Path, only: set[str] | None = None) -> CveIntel:
         """Load the cache; `only` restricts to a CVE-id subset (much less memory)."""
         recs: dict[str, CveRecord] = {}
         meta: dict = {}

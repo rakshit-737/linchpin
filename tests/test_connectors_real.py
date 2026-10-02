@@ -51,9 +51,9 @@ def test_nessus_golden():
 
 def test_nmap_vulners():
     out = CONNECTORS["nmap"](str(FIX / "nmap_vulners.xml"))
-    svc = [f for f in out if f.kind == "service"][0]
+    svc = next(f for f in out if f.kind == "service")
     assert (svc.host_id, svc.port, svc.software, svc.version) == ("192.168.0.1", 5022, "OpenSSH", "7.4")
-    cve = [f for f in out if f.kind == "cve"][0]
+    cve = next(f for f in out if f.kind == "cve")
     assert cve.detail["cves"] == ["CVE-2017-15906", "CVE-2018-15919"] and cve.cvss_base == 5.0
 
 

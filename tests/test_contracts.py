@@ -17,7 +17,8 @@ def test_contract_files_exist():
 
 def test_schema_and_model_agree():
     schema = json.loads((ROOT / "contracts" / "finding.schema.json").read_text())
-    assert set(schema["properties"]["kind"]["enum"]) == {"cve", "service", "credential", "acl", "config", "reachability"}
+    kinds = {"cve", "service", "credential", "acl", "config", "reachability"}
+    assert set(schema["properties"]["kind"]["enum"]) == kinds
     assert set(schema["required"]) <= set(NormalizedFinding.model_fields)
     assert set(schema["properties"]) == set(NormalizedFinding.model_fields)
 

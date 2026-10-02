@@ -15,8 +15,8 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
 
-from linchpin.benchmark import STRATEGIES, run_one, summarise  # noqa: E402
-from linchpin.synth.topologies import FAMILIES  # noqa: E402
+from linchpin.benchmark import STRATEGIES, run_one, summarise
+from linchpin.synth.topologies import FAMILIES
 
 LABEL = {"linchpin": "LINCHPIN (exact+greedy)", "greedy": "LINCHPIN greedy only", "cvss": "CVSS-first",
          "epss": "EPSS-first", "kev_epss": "KEV then EPSS", "betweenness": "Betweenness", "random": "Random"}
@@ -80,7 +80,8 @@ def plot(summ: dict, out: Path) -> None:
         axes[0].bar(xs, [summ[f][s]["disconnect_rate"] for f in fams], w, label=LABEL[s], color=colors[i])
         axes[1].bar(xs, [summ[f][s]["residual_frac"] for f in fams], w, color=colors[i],
                     yerr=[summ[f][s]["residual_frac_se"] for f in fams], capsize=2)
-    for ax, t in zip(axes, ["Crown jewels disconnected (higher is better)", "Residual attack paths (lower is better)"]):
+    titles = ["Crown jewels disconnected (higher is better)", "Residual attack paths (lower is better)"]
+    for ax, t in zip(axes, titles, strict=True):
         ax.set_xticks(range(len(fams)), fams)
         ax.set_title(t, fontsize=10)
         ax.set_ylim(0, 1.05)

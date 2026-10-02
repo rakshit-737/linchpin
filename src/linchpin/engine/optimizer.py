@@ -89,7 +89,7 @@ def _greedy(store, paths, budget, k, cands) -> list[Remediation]:
             break
         best_hits = max(len(v) for v in scores.values())
         tied = [n for n, v in scores.items() if len(v) == best_hits]
-        pick = min(tied, key=lambda n: (len(store.reachable_crown_jewels(exclude=removed + [n])), n))
+        pick = min(tied, key=lambda n: (len(store.reachable_crown_jewels(exclude=[*removed, n])), n))
         removed.append(pick)
         broken = scores[pick]
         for pid in broken:
