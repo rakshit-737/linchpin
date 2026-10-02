@@ -21,7 +21,7 @@ docker compose up api                                                           
 ```
 
 Release images are published to `ghcr.io/rakshit-737/linchpin`; v1.0.0 has known issues (see
-[Security](security.md#known-issues-in-released-versions)), so use a later version.
+[Security](security.md#known-issues-in-released-versions)), so use 1.1.0 or later.
 
 ## Synthetic demo (no downloads)
 

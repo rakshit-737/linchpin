@@ -13,7 +13,7 @@
 | evidence | result (95% intervals) |
 | --- | --- |
 | [Ablation](benchmarks/results/ablation.md), 150 topologies, paired | fused data 100%; without identity data 37% (McNemar p < 1e-4); 25% / 50% of identity findings dropped: 95% / 90%; identity data only 18%; no graph (KEV->EPSS) 3% |
-| [Published planners](benchmarks/results/summary.md) | the exact budgeted interdiction MILP (Israeli & Wood 2002) also reaches 100%; Guo et al.-style greedy interdiction 97% [92, 99]; CVSS / EPSS / KEV queues restricted to on-path vulns 10% [6, 16] / 9% [6, 15] |
+| [Published planners](benchmarks/results/summary.md) | the exact budgeted interdiction MILP (Israeli & Wood 2002) also reaches 100%; Guo et al.-style greedy interdiction 97% [92, 99]; CVSS / EPSS / KEV queues restricted to on-path vulns 10% [6, 16] / 9% [6, 15], no better than a random on-path choice (10% [6, 16]); betweenness 39% [31, 47] |
 | [Measured lab](benchmarks/results/lab/lab_case_study.md) (CI, internal Docker networks) | one 5-service lab: upgrading Tomcat 9.0.30 (1 fix) cuts the database off; betweenness, greedy interdiction and the MILP also need 1 fix; EPSS- and KEV-first need 2, CVSS-first 3 |
 | [Published result reproduced](benchmarks/results/repro_epss.md) | Jacobs et al. (2023), EPSS v2 with public KEV labels: effort and coverage within ~2-8 points (CVSS 7+ coverage 89.6% vs 82.1%; the EPSS row is matched to our own CVSS 7+ coverage of about 90%, not the paper's 82-85%) (40.8% vs 39.0% effort); efficiency does not reproduce (1.6% vs 8.9%) because KEV is a much sparser label |
 
@@ -84,7 +84,7 @@ Every number below comes from a committed result file in [`benchmarks/results/`]
 | Ablation | identity data is decisive (37% without it, p < 1e-4); the exact cut changes how many fixes are needed (greedy 1.22x on `multi`), uniform edge costs cut the `none` cost gain from +0.193 to +0.049 |
 | Measured CI lab | 5 services detected, 393 CVEs (7 in KEV) by NVD version range; 1 fix (Tomcat upgrade) cuts the database off; betweenness, greedy and MILP tie at 1 fix (n=1 lab, 23-node graph) |
 | Real-export case study | one credential rotation cuts the domain controller off; enriched CVSS / EPSS / KEV queues with 3 fixes do not |
-| EPSS reproduction (Jacobs et al. 2023) | effort and coverage reproduce within ~2-8 points (CVSS 7+ coverage 89.6% vs 82.1%) (CVSS 7+ effort 58.2% vs 58.1%); efficiency does not (1.6% vs 8.9%: KEV is sparser than the paper's telemetry); prospective KEV label: EPSS v2 53% [42, 65] vs CVSS 9.1+ 29% [18, 42] coverage at 15% effort, intervals overlap (62 positives) |
+| EPSS reproduction (Jacobs et al. 2023) | effort and coverage reproduce within ~2-8 points (CVSS 7+ coverage 89.6% vs 82.1%) (CVSS 7+ effort 58.2% vs 58.1%); efficiency does not (1.6% vs 8.9%: KEV is sparser than the paper's telemetry); prospective KEV label: EPSS v2 53% [42, 65] vs CVSS 9.1+ 29% [18, 42] coverage at 15% effort, marginal intervals touch at 42 (62 positives; no paired test yet) |
 | M11 learned exploitability (leak-free test set) | ROC-AUC 0.836 vs 0.754 for CVSS; average precision 0.028 vs 0.011 |
 | Neo4j GDS (CI) | identical Yen paths on 60k and 239k relationships; 4-31x faster inside Neo4j, mirroring costs 8-22 s |
 | Performance (laptop, median of 5) | 1.1 s at 467 nodes, 3.1 s at 903, 7.0 s at 1,384 (spec: < 5 s at 500 nodes) |
@@ -162,7 +162,7 @@ linchpin ingest --replace --match-cpe nmap-sV.xml topology.yaml   # or: versions
 linchpin serve                             # API + web UI on http://127.0.0.1:8000/ui
 ```
 
-Do not `pip install linchpin` from PyPI: that name belongs to an unrelated project. Release images are on `ghcr.io/rakshit-737/linchpin`; v1.0.0 has known issues ([SECURITY.md](SECURITY.md)), use a later one.
+Do not `pip install linchpin` from PyPI: that name belongs to an unrelated project. Release images are on `ghcr.io/rakshit-737/linchpin`; v1.0.0 has known issues ([SECURITY.md](SECURITY.md)), use 1.1.0 or later.
 
 ## Prior art and how this differs
 
@@ -182,6 +182,7 @@ Do not `pip install linchpin` from PyPI: that name belongs to an unrelated proje
 - **Residual paths are k-capped**; disconnect rate and cost gain are reported for that reason.
 - **No cut within budget:** the greedy fallback reaches about 83% of the optimal attacker-cost rise.
 - **Scale:** about 3 s at 900 nodes, 7 s at 1,400 on a laptop; the GDS backend is faster only when the graph already lives in Neo4j.
+- **Open items (1.1.0):** the Jacobs et al. cells are transcribed from the paper's figures and not yet re-checked against the PDF; the prospective EPSS-vs-CVSS comparison reports marginal intervals, not a paired (McNemar / paired bootstrap) test; Mermaid diagrams are not syntax-checked in CI.
 
 Full list: [docs/limitations](https://rakshit-737.github.io/linchpin/limitations/).
 

@@ -240,7 +240,7 @@ and CVSS 9.1+ 15.0\% (15.1\%). EPSS needs 40.8\% effort to match CVSS 7+'s cover
 is not reproducible from public data because EPSS~v3 scores were not published before March 2023; and because EPSS uses
 KEV as an input feature, scoring it against KEV is partly circular. On a prospective label (the 62 CVEs added to KEV in
 the following year), EPSS~v2 still covers 53.2\% [41.9, 64.6] at 15\% effort against 29.0\% [17.7, 41.9] for CVSS
-9.1+; with 62 positives these intervals overlap. Efficiency does not reproduce (1.6\% vs 8.9\%) because KEV is a much
+9.1+; with 62 positives these marginal intervals touch, and a paired test on the same positives has not been run. Efficiency does not reproduce (1.6\% vs 8.9\%) because KEV is a much
 sparser label than the paper's exploitation telemetry.
 
 \paragraph{Learned exploitability and scale.} An optional logistic-regression model over CVE text and CVSS vectors,

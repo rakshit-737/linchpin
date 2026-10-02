@@ -33,6 +33,7 @@ from fastapi import FastAPI, HTTPException, Query
 from fastapi.responses import FileResponse, RedirectResponse
 from pydantic import BaseModel, Field, ValidationError
 
+from linchpin import __version__
 from linchpin.config import Config
 from linchpin.engine.cuts import chokepoints, min_remediation_cut
 from linchpin.engine.optimizer import recommend
@@ -175,7 +176,7 @@ def _node_ref(s: GraphStore, ref: str) -> str:
 def create_app(store: GraphStore | None = None, loaded: str = "") -> FastAPI:
     """Build the FastAPI app around ``store`` (an empty in-memory store by default)."""
     docs = os.environ.get("LINCHPIN_API_DOCS") == "1"
-    app = FastAPI(title="LINCHPIN API", version="1.2",
+    app = FastAPI(title="LINCHPIN API", version=__version__,
                   description="Read-only attack-path reasoning. Consumes exported findings; sends no packets.",
                   docs_url="/docs" if docs else None, redoc_url="/redoc" if docs else None)
     app.add_middleware(BodySizeLimit, max_bytes=int(float(os.environ.get("LINCHPIN_MAX_BODY_MB", "25")) * 2**20))

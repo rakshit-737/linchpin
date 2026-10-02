@@ -1,6 +1,6 @@
 # Changelog
 
-## [Unreleased]: measured lab, ablation, published baselines, reproduction, preprint
+## [1.1.0] - 2026-10-02: measured lab, ablation, published baselines, reproduction, preprint
 
 ### Security
 - **API (v1.0.0 is affected, see SECURITY.md):** `/demo/load` read any server-side path as a scenario; `k`, `budget` and

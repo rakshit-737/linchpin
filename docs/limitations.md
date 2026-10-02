@@ -38,6 +38,8 @@
 - **Static demo.** The GitHub Pages demo holds seed-0 snapshots for budgets 1-10, and its what-if counts surviving
   *enumerated* paths instead of re-enumerating.
 
+- **Open items in 1.1.0.** The Jacobs et al. (2023) cells used by the reproduction were transcribed from the paper's Figures 3-5 and have not yet been re-checked against the PDF. The prospective EPSS-vs-CVSS comparison reports two marginal intervals on the same 62 positives; a paired test (exact McNemar or paired bootstrap) has not been run. Mermaid diagrams are rendered but not syntax-checked in CI.
+
 ## Roadmap
 
 - Use the exact interdiction MILP as the optimiser's fallback when no cut fits the budget

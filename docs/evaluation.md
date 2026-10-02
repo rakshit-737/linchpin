@@ -103,7 +103,7 @@ paper's EPSS v2 cells reproduce within ~2-8 points (CVSS 7+ coverage 89.6% vs 82
 (854 positives) is a much sparser label than the paper's exploitation telemetry. The paper's headline "one-eighth of the effort" uses EPSS v3, which was not published before
 March 2023 and cannot be scored retroactively from public data, so it is not reproduced. Against KEV on the scoring
 date EPSS is partly circular (EPSS uses KEV as an input feature); against the 62 CVEs added to KEV in the following
-year it still covers 53% of them at 15% effort, against 29% for CVSS 9.1+, but with 62 positives the intervals overlap ([42, 65] vs [18, 42]). LINCHPIN's own exploitability blend is a
+year it still covers 53% of them at 15% effort, against 29% for CVSS 9.1+, but with 62 positives the marginal intervals touch ([42, 65] vs [18, 42]) and no paired test has been run. LINCHPIN's own exploitability blend is a
 worse global ranker than EPSS (68.8% effort for CVSS 7+ coverage): its job is the edge cost inside a path, not
 global triage.
 
