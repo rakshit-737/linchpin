@@ -13,9 +13,9 @@
 | evidence | result (95% intervals) |
 | --- | --- |
 | [Ablation](benchmarks/results/ablation.md), 150 topologies, paired | fused data 100%; without identity data 37% (McNemar p < 1e-4); 25% / 50% of identity findings dropped: 95% / 90%; identity data only 18%; no graph (KEV->EPSS) 3% |
-| [Published planners](benchmarks/results/summary.md) | the exact budgeted interdiction MILP (Israeli & Wood 2002) also reaches 100%; Guo et al.-style greedy interdiction 97% [92, 99]; CVSS / EPSS / KEV queues restricted to on-path vulns 9-10% |
+| [Published planners](benchmarks/results/summary.md) | the exact budgeted interdiction MILP (Israeli & Wood 2002) also reaches 100%; Guo et al.-style greedy interdiction 97% [92, 99]; CVSS / EPSS / KEV queues restricted to on-path vulns 10% [6, 16] / 9% [6, 15] |
 | [Measured lab](benchmarks/results/lab/lab_case_study.md) (CI, internal Docker networks) | one 5-service lab: upgrading Tomcat 9.0.30 (1 fix) cuts the database off; betweenness, greedy interdiction and the MILP also need 1 fix; EPSS- and KEV-first need 2, CVSS-first 3 |
-| [Published result reproduced](benchmarks/results/repro_epss.md) | Jacobs et al. (2023), EPSS v2 with public KEV labels: effort and coverage within ~2-7 points (40.8% vs 39.0% effort at CVSS 7+ coverage); efficiency does not reproduce (1.6% vs 8.9%) because KEV is a much sparser label |
+| [Published result reproduced](benchmarks/results/repro_epss.md) | Jacobs et al. (2023), EPSS v2 with public KEV labels: effort and coverage within ~2-8 points (CVSS 7+ coverage 89.6% vs 82.1%; the EPSS row is matched to our own CVSS 7+ coverage of about 90%, not the paper's 82-85%) (40.8% vs 39.0% effort); efficiency does not reproduce (1.6% vs 8.9%) because KEV is a much sparser label |
 
 LINCHPIN reads exports that were **already collected** (OpenVAS, Nessus and nmap reports, SharpHound/BloodHound JSON and a topology overlay), maps detected versions to CVEs offline, enriches them with NVD CVSS vectors, FIRST EPSS and CISA KEV, and builds a heterogeneous attack graph whose edges are attacker transitions with deterministic costs. It ranks the cheapest attack paths (Yen), finds chokepoints (dominators) and the exact minimum remediation cut (vertex max-flow), and returns an ordered, budgeted plan (patch or upgrade, rotate a credential, remove an abusable AD ACL, add a segmentation rule) in which every fix carries a templated rationale and the ids of the paths it breaks. No LLM is involved.
 
@@ -84,7 +84,7 @@ Every number below comes from a committed result file in [`benchmarks/results/`]
 | Ablation | identity data is decisive (37% without it, p < 1e-4); the exact cut changes how many fixes are needed (greedy 1.22x on `multi`), uniform edge costs cut the `none` cost gain from +0.193 to +0.049 |
 | Measured CI lab | 5 services detected, 393 CVEs (7 in KEV) by NVD version range; 1 fix (Tomcat upgrade) cuts the database off; betweenness, greedy and MILP tie at 1 fix (n=1 lab, 23-node graph) |
 | Real-export case study | one credential rotation cuts the domain controller off; enriched CVSS / EPSS / KEV queues with 3 fixes do not |
-| EPSS reproduction (Jacobs et al. 2023) | effort and coverage reproduce within ~2-7 points (CVSS 7+ effort 58.2% vs 58.1%); efficiency does not (1.6% vs 8.9%: KEV is sparser than the paper's telemetry); prospective KEV label: EPSS v2 53% [42, 65] vs CVSS 9.1+ 29% [18, 42] coverage at 15% effort, intervals overlap (62 positives) |
+| EPSS reproduction (Jacobs et al. 2023) | effort and coverage reproduce within ~2-8 points (CVSS 7+ coverage 89.6% vs 82.1%) (CVSS 7+ effort 58.2% vs 58.1%); efficiency does not (1.6% vs 8.9%: KEV is sparser than the paper's telemetry); prospective KEV label: EPSS v2 53% [42, 65] vs CVSS 9.1+ 29% [18, 42] coverage at 15% effort, intervals overlap (62 positives) |
 | M11 learned exploitability (leak-free test set) | ROC-AUC 0.836 vs 0.754 for CVSS; average precision 0.028 vs 0.011 |
 | Neo4j GDS (CI) | identical Yen paths on 60k and 239k relationships; 4-31x faster inside Neo4j, mirroring costs 8-22 s |
 | Performance (laptop, median of 5) | 1.1 s at 467 nodes, 3.1 s at 903, 7.0 s at 1,384 (spec: < 5 s at 500 nodes) |
@@ -100,7 +100,7 @@ The `lab-scan` CI job starts official images pinned to older releases (httpd 2.4
 | EPSS-first, KEV-then-EPSS | httpd 2.4.49 on `web` | no | 2 |
 | CVSS-first | redis 5.0.7 on `cache` (CVSS 9.9; on 5 of the 10 paths, the direct app-to-db route remains) | no | 3 |
 
-Scans from CI run [36999203784](https://github.com/rakshit-737/linchpin/actions/runs/36999203784) are committed in [`benchmarks/results/lab/`](benchmarks/results/lab/); replay with `linchpin scenario scenarios/lab_scan.yaml --data-dir .`. A version banner is not proof of exposure, so the CVE lists are an upper bound.
+The `lab-scan` job re-runs on every push ([workflow](https://github.com/rakshit-737/linchpin/actions/workflows/ci.yml)) and detects the same five versions; scans from CI run [36999203784](https://github.com/rakshit-737/linchpin/actions/runs/36999203784) are committed in [`benchmarks/results/lab/`](benchmarks/results/lab/); replay with `linchpin scenario scenarios/lab_scan.yaml --data-dir .`. A version banner is not proof of exposure, so the CVE lists are an upper bound.
 
 ### Synthetic benchmark and ablation
 
@@ -110,7 +110,7 @@ The four families span zero, one and several chokepoints; every planted vuln use
 
 ### Reproduction of a published result
 
-[Jacobs et al. (IEEE EuroS&P Workshops 2023)](https://doi.org/10.1109/EuroSPW59978.2023.00027) report coverage, efficiency and effort of CVSS and EPSS thresholds. On the population they used (CVEs published by 2022-12-01 with an NVD CVSS v3 score), with the EPSS scores actually published on that date (EPSS v2) and CISA KEV as the public label, effort and coverage reproduce within ~2-7 points, but efficiency does not (1.6% vs 8.9% at CVSS 7+ coverage) because KEV (854 positives) is a much sparser label than the paper's exploitation telemetry; the "one-eighth of the effort" headline uses EPSS v3, which was not published before March 2023 and is not reproducible from public data. Details, the circularity of scoring EPSS against KEV, and a prospective label: [`repro_epss.md`](benchmarks/results/repro_epss.md).
+[Jacobs et al. (IEEE EuroS&P Workshops 2023)](https://doi.org/10.1109/EuroSPW59978.2023.00027) report coverage, efficiency and effort of CVSS and EPSS thresholds. On the population they used (CVEs published by 2022-12-01 with an NVD CVSS v3 score), with the EPSS scores actually published on that date (EPSS v2) and CISA KEV as the public label, effort and coverage reproduce within ~2-8 points (CVSS 7+ coverage 89.6% vs 82.1%; the EPSS row is matched to our own CVSS 7+ coverage of about 90%, not the paper's 82-85%), but efficiency does not (1.6% vs 8.9% at CVSS 7+ coverage) because KEV (854 positives) is a much sparser label than the paper's exploitation telemetry; the "one-eighth of the effort" headline uses EPSS v3, which was not published before March 2023 and is not reproducible from public data. Details, the circularity of scoring EPSS against KEV, and a prospective label: [`repro_epss.md`](benchmarks/results/repro_epss.md).
 
 | paper-like population, EPSS v2, KEV label | ours: effort / coverage / efficiency % | paper |
 | --- | --- | --- |
@@ -120,7 +120,7 @@ The four families span zero, one and several chokepoints; every planted vuln use
 | EPSS, effort matched to CVSS 9.1+ | 15.1 / 71.4 / 3.4 | 15.4 / 69.9 / 18.5 |
 
 
-### Real-export case study (declared topology)
+### Secondary case study: real export, declared topology (superseded by the measured lab above)
 
 Real OpenVAS, Greenbone, Nessus and nmap exports plus the SharpHound `TESTLAB.LOCAL` collection, enriched with NVD / EPSS / KEV and placed into a **declared** topology ([`scenarios/composite_lab.yaml`](scenarios/composite_lab.yaml)): 135 findings (119 exported + 16 from the overlay), 128 nodes, 224 edges. LINCHPIN's single fix (rotate the cached `ADMINISTRATOR@TESTLAB.LOCAL` hash) cuts the domain controller off; CVSS-, EPSS- and KEV-sorted queues with 3 fixes do not. Without NVD / EPSS / KEV enrichment the EPSS and KEV queues happen to pick the app-server RCE and succeed too ([`case_study.md`](benchmarks/results/case_study.md)).
 

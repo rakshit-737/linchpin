@@ -16,9 +16,9 @@ open, seeded evaluation with an ablation, published-method baselines and a measu
 | evidence | result (95% intervals) | where |
 | --- | --- | --- |
 | Ablation, 150 topologies, paired | fused data 100% [97.5, 100]; without identity data 37% [29, 45] (McNemar p < 1e-4); 25% / 50% of identity findings dropped: 95% / 90%; identity data only 18%; no graph (KEV→EPSS) 3% | [ablation](evaluation.md#ablation) |
-| Published planners | exact budgeted interdiction MILP (Israeli & Wood 2002) also 100%; Guo et al.-style greedy interdiction 97% [92, 99]; CVSS / EPSS / KEV queues restricted to on-path vulns 9-10% | [benchmark](evaluation.md#synthetic-benchmark) |
+| Published planners | exact budgeted interdiction MILP (Israeli & Wood 2002) also 100%; Guo et al.-style greedy interdiction 97% [92, 99]; CVSS / EPSS / KEV queues restricted to on-path vulns 10% [6, 16] / 9% [6, 15] | [benchmark](evaluation.md#synthetic-benchmark) |
 | Measured lab (CI, internal Docker networks) | one 5-service lab: upgrading Tomcat 9.0.30 (1 fix) cuts the database off; betweenness, greedy and MILP also need 1; EPSS- and KEV-first 2, CVSS-first 3 | [lab scan](evaluation.md#measured-case-study-ci-lab-scan) |
-| Published result reproduced | Jacobs et al. (2023), EPSS v2 with public KEV labels: effort and coverage within ~2-7 points; efficiency does not reproduce (1.6% vs 8.9%, KEV is a sparser label) | [reproduction](evaluation.md#reproduction-epss-vs-cvss-jacobs-et-al-2023) |
+| Published result reproduced | Jacobs et al. (2023), EPSS v2 with public KEV labels: effort and coverage within ~2-8 points (CVSS 7+ coverage 89.6% vs 82.1%); efficiency does not reproduce (1.6% vs 8.9%, KEV is a sparser label) | [reproduction](evaluation.md#reproduction-epss-vs-cvss-jacobs-et-al-2023) |
 
 ## Try it in 60 seconds
 
