@@ -10,6 +10,13 @@
       "bloodhound/v6": 20
     },
     "findings": 135,
+    "overlay_findings": 16,
+    "unmatched_aliases": [
+      "10.99.99.99",
+      "192.168.1.1001",
+      "198.38.82.159",
+      "44.228.249.3"
+    ],
     "intel": {
       "cve_findings": 69,
       "enriched": 43,
@@ -25,6 +32,10 @@
     "vulns": 69,
     "vulns_granting_privilege": 33,
     "kev_vulns": 2,
+    "ace_nodes": 3,
+    "ace_reachable_from_entry": 1,
+    "ace_on_enumerated_paths": 0,
+    "credential_uses_unreachable": 1,
     "crown_jewels": [
       "ds:ntds@primary.testlab.local"
     ],
@@ -105,7 +116,35 @@
         "residual": 0,
         "min_cost_after": null
       },
+      "milp_interdiction": {
+        "fixes": [
+          "cred:ADMINISTRATOR@TESTLAB.LOCAL",
+          "cred:svc_deploy",
+          "host:win10.testlab.local"
+        ],
+        "disconnected": true,
+        "residual": 0,
+        "min_cost_after": null
+      },
+      "greedy_interdiction": {
+        "fixes": [
+          "cred:ADMINISTRATOR@TESTLAB.LOCAL"
+        ],
+        "disconnected": true,
+        "residual": 0,
+        "min_cost_after": null
+      },
       "cvss": {
+        "fixes": [
+          "vuln:NESSUS-58987@web-php:80",
+          "vuln:NVT-100111@msf2:512",
+          "vuln:NVT-103549@msf2:1524"
+        ],
+        "disconnected": false,
+        "residual": 200,
+        "min_cost_after": 0.421954
+      },
+      "cvss_reach": {
         "fixes": [
           "vuln:NESSUS-58987@web-php:80",
           "vuln:NVT-100111@msf2:512",
@@ -125,11 +164,31 @@
         "residual": 200,
         "min_cost_after": 0.421954
       },
+      "epss_reach": {
+        "fixes": [
+          "vuln:NESSUS-58988@web-php:80",
+          "vuln:NVT-103482@msf2:80",
+          "vuln:NVT-105042@msf2:5432"
+        ],
+        "disconnected": false,
+        "residual": 200,
+        "min_cost_after": 0.421954
+      },
       "kev_epss": {
         "fixes": [
           "vuln:NESSUS-58988@web-php:80",
           "vuln:NVT-103482@msf2:80",
           "vuln:NVT-111012@msf2:5432"
+        ],
+        "disconnected": false,
+        "residual": 200,
+        "min_cost_after": 0.421954
+      },
+      "kev_epss_reach": {
+        "fixes": [
+          "vuln:NESSUS-58988@web-php:80",
+          "vuln:NVT-103482@msf2:80",
+          "vuln:NVT-105042@msf2:5432"
         ],
         "disconnected": false,
         "residual": 200,
@@ -153,11 +212,15 @@
     "vulns": 69,
     "vulns_granting_privilege": 33,
     "kev_vulns": 2,
+    "ace_nodes": 3,
+    "ace_reachable_from_entry": 1,
+    "ace_on_enumerated_paths": 0,
+    "credential_uses_unreachable": 1,
     "crown_jewels": [
       "ds:ntds@primary.testlab.local"
     ],
     "paths_enumerated": 200,
-    "min_cost": 0.65099,
+    "min_cost": 0.530465,
     "chokepoints": [
       "vuln:NVT-836484@app-win:42",
       "host:app-win",
@@ -170,7 +233,7 @@
     ],
     "top_paths": [
       {
-        "cost": 0.65099,
+        "cost": 0.530465,
         "hops": [
           "internet",
           "vuln:NVT-103549@msf2:1524",
@@ -185,7 +248,7 @@
         ]
       },
       {
-        "cost": 0.65099,
+        "cost": 0.530465,
         "hops": [
           "internet",
           "vuln:NESSUS-58987@web-php:80",
@@ -200,7 +263,7 @@
         ]
       },
       {
-        "cost": 0.65099,
+        "cost": 0.530465,
         "hops": [
           "internet",
           "vuln:NVT-108010@msf2:8787",
@@ -233,6 +296,24 @@
         "residual": 0,
         "min_cost_after": null
       },
+      "milp_interdiction": {
+        "fixes": [
+          "cred:ADMINISTRATOR@TESTLAB.LOCAL",
+          "cred:svc_deploy",
+          "host:win10.testlab.local"
+        ],
+        "disconnected": true,
+        "residual": 0,
+        "min_cost_after": null
+      },
+      "greedy_interdiction": {
+        "fixes": [
+          "cred:ADMINISTRATOR@TESTLAB.LOCAL"
+        ],
+        "disconnected": true,
+        "residual": 0,
+        "min_cost_after": null
+      },
       "cvss": {
         "fixes": [
           "vuln:NESSUS-58987@web-php:80",
@@ -241,7 +322,17 @@
         ],
         "disconnected": false,
         "residual": 200,
-        "min_cost_after": 0.65099
+        "min_cost_after": 0.530465
+      },
+      "cvss_reach": {
+        "fixes": [
+          "vuln:NESSUS-58987@web-php:80",
+          "vuln:NVT-100111@msf2:512",
+          "vuln:NVT-103549@msf2:1524"
+        ],
+        "disconnected": false,
+        "residual": 200,
+        "min_cost_after": 0.530465
       },
       "epss": {
         "fixes": [
@@ -251,7 +342,17 @@
         ],
         "disconnected": false,
         "residual": 200,
-        "min_cost_after": 0.65099
+        "min_cost_after": 0.530465
+      },
+      "epss_reach": {
+        "fixes": [
+          "vuln:NESSUS-58988@web-php:80",
+          "vuln:NVT-103482@msf2:80",
+          "vuln:NVT-105042@msf2:5432"
+        ],
+        "disconnected": false,
+        "residual": 200,
+        "min_cost_after": 0.530465
       },
       "kev_epss": {
         "fixes": [
@@ -261,7 +362,17 @@
         ],
         "disconnected": false,
         "residual": 200,
-        "min_cost_after": 0.65099
+        "min_cost_after": 0.530465
+      },
+      "kev_epss_reach": {
+        "fixes": [
+          "vuln:NESSUS-58988@web-php:80",
+          "vuln:NVT-103482@msf2:80",
+          "vuln:NVT-105042@msf2:5432"
+        ],
+        "disconnected": false,
+        "residual": 200,
+        "min_cost_after": 0.530465
       },
       "betweenness": {
         "fixes": [
@@ -281,6 +392,10 @@
     "vulns": 69,
     "vulns_granting_privilege": 28,
     "kev_vulns": 0,
+    "ace_nodes": 3,
+    "ace_reachable_from_entry": 1,
+    "ace_on_enumerated_paths": 0,
+    "credential_uses_unreachable": 1,
     "crown_jewels": [
       "ds:ntds@primary.testlab.local"
     ],
@@ -361,7 +476,35 @@
         "residual": 0,
         "min_cost_after": null
       },
+      "milp_interdiction": {
+        "fixes": [
+          "cred:ADMINISTRATOR@TESTLAB.LOCAL",
+          "cred:svc_deploy",
+          "host:win10.testlab.local"
+        ],
+        "disconnected": true,
+        "residual": 0,
+        "min_cost_after": null
+      },
+      "greedy_interdiction": {
+        "fixes": [
+          "cred:ADMINISTRATOR@TESTLAB.LOCAL"
+        ],
+        "disconnected": true,
+        "residual": 0,
+        "min_cost_after": null
+      },
       "cvss": {
+        "fixes": [
+          "vuln:NESSUS-58987@web-php:80",
+          "vuln:NVT-100111@msf2:512",
+          "vuln:NVT-103549@msf2:1524"
+        ],
+        "disconnected": false,
+        "residual": 200,
+        "min_cost_after": 0.427954
+      },
+      "cvss_reach": {
         "fixes": [
           "vuln:NESSUS-58987@web-php:80",
           "vuln:NVT-100111@msf2:512",
@@ -381,7 +524,27 @@
         "residual": 0,
         "min_cost_after": null
       },
+      "epss_reach": {
+        "fixes": [
+          "vuln:NVT-836484@app-win:42",
+          "vuln:NESSUS-24907@web-php:80",
+          "vuln:NESSUS-25971@web-php:80"
+        ],
+        "disconnected": true,
+        "residual": 0,
+        "min_cost_after": null
+      },
       "kev_epss": {
+        "fixes": [
+          "vuln:NVT-836484@app-win:42",
+          "vuln:NESSUS-58987@web-php:80",
+          "vuln:NVT-100111@msf2:512"
+        ],
+        "disconnected": true,
+        "residual": 0,
+        "min_cost_after": null
+      },
+      "kev_epss_reach": {
         "fixes": [
           "vuln:NVT-836484@app-win:42",
           "vuln:NESSUS-58987@web-php:80",
