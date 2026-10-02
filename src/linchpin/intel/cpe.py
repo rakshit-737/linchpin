@@ -219,9 +219,11 @@ def match_services(findings: Iterable[NormalizedFinding], index: CpeIndex | None
     index = index or CpeIndex.load()
     out: list[NormalizedFinding] = []
     stats = {"services": 0, "identified": 0, "matched_services": 0, "cves": 0, "kev_cves": 0, "unmatched": []}
+    seen: set[tuple[str, int]] = set()  # a dual-homed host is seen from several networks
     for f in findings:
-        if f.kind != "service" or f.port is None:
+        if f.kind != "service" or f.port is None or (f.host_id, f.port) in seen:
             continue
+        seen.add((f.host_id, f.port))
         stats["services"] += 1
         ident = _identify(f)
         if not ident:

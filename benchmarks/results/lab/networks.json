@@ -1,0 +1,104 @@
+[
+    {
+        "Name": "lp-dmz",
+        "Id": "c954d7eb22072eb8ad1028208e9bd271387bd4189f9019d3352d40ef1c6f3994",
+        "Created": "2026-10-02T11:11:00.419105979Z",
+        "Scope": "local",
+        "Driver": "bridge",
+        "EnableIPv4": true,
+        "EnableIPv6": false,
+        "IPAM": {
+            "Driver": "default",
+            "Options": {},
+            "Config": [
+                {
+                    "Subnet": "172.18.0.0/16",
+                    "Gateway": "172.18.0.1"
+                }
+            ]
+        },
+        "Internal": true,
+        "Attachable": false,
+        "Ingress": false,
+        "ConfigFrom": {
+            "Network": ""
+        },
+        "ConfigOnly": false,
+        "Containers": {
+            "81995da6cfff92b294fceb1763a1122074d35d41ef34bcc9ed26a7fe29656dd1": {
+                "Name": "app",
+                "EndpointID": "72cedf863c1fa8b75b991a675c807900784faf0697f8ef93741122c99d7d9642",
+                "MacAddress": "66:94:e9:80:5e:69",
+                "IPv4Address": "172.18.0.4/16",
+                "IPv6Address": ""
+            },
+            "853968fd35826379bc2e2c7495a5c04b3ddd7ade66804c317814d25ec4ed9db2": {
+                "Name": "web",
+                "EndpointID": "ac38bf1d4a981dceaddecda0fb50eaa4e9fe7e856f64650cde3e9b73fdabcd07",
+                "MacAddress": "be:6e:14:53:c0:2d",
+                "IPv4Address": "172.18.0.2/16",
+                "IPv6Address": ""
+            },
+            "f581114d07671fca941deb208ce8b084d4a7b5043b4f25e6dae3d730381fa1fe": {
+                "Name": "proxy",
+                "EndpointID": "4bd54850a4c1d3f5ebc904b7a873694dbac7933fc598f0b39fb3a2c96eb19b84",
+                "MacAddress": "3e:72:f9:39:e7:ab",
+                "IPv4Address": "172.18.0.3/16",
+                "IPv6Address": ""
+            }
+        },
+        "Options": {},
+        "Labels": {}
+    },
+    {
+        "Name": "lp-core",
+        "Id": "21f7e37d9c2071f6aaeff2f0bac4d926772af69fe4da9d9d53223c0b2b42458f",
+        "Created": "2026-10-02T11:11:00.448419196Z",
+        "Scope": "local",
+        "Driver": "bridge",
+        "EnableIPv4": true,
+        "EnableIPv6": false,
+        "IPAM": {
+            "Driver": "default",
+            "Options": {},
+            "Config": [
+                {
+                    "Subnet": "172.19.0.0/16",
+                    "Gateway": "172.19.0.1"
+                }
+            ]
+        },
+        "Internal": true,
+        "Attachable": false,
+        "Ingress": false,
+        "ConfigFrom": {
+            "Network": ""
+        },
+        "ConfigOnly": false,
+        "Containers": {
+            "38afe43152d8da7036a894369a3050a268204d8bd1f26e09fb35f38c063bdb32": {
+                "Name": "cache",
+                "EndpointID": "9e1203afcb26363c93f68327ecc742379b6d912cca8975eed10bd729d3a587bf",
+                "MacAddress": "fe:3e:15:f1:e0:6a",
+                "IPv4Address": "172.19.0.3/16",
+                "IPv6Address": ""
+            },
+            "81995da6cfff92b294fceb1763a1122074d35d41ef34bcc9ed26a7fe29656dd1": {
+                "Name": "app",
+                "EndpointID": "a87b8f2d0873f3f545d511c220c21d706ec09210ab74a167334fe750dc49b995",
+                "MacAddress": "4a:91:f1:bf:31:06",
+                "IPv4Address": "172.19.0.2/16",
+                "IPv6Address": ""
+            },
+            "ce596f563ec22da32f27846444f9a460f90370e8e19949e8b02384f1ba79d261": {
+                "Name": "db",
+                "EndpointID": "371f3f1f4469415451ccc070a7f9ad23eb8385eb4c88cb1597550b102f3d1099",
+                "MacAddress": "ee:8a:ff:d2:90:c1",
+                "IPv4Address": "172.19.0.4/16",
+                "IPv6Address": ""
+            }
+        },
+        "Options": {},
+        "Labels": {}
+    }
+]

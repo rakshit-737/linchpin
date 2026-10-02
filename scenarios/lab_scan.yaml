@@ -1,0 +1,70 @@
+# Measured CI lab (GitHub Actions run 36999203784): official images pinned to older releases on two
+# --internal Docker networks, scanned with nmap -sV (no NSE scripts) from inside each network
+# (lab/up.sh, lab/scan.sh). Hosts, segments and firewall rules are DERIVED from that measurement by
+# benchmarks/lab_case_study.py; two facts are DECLARED because a scan cannot see them: the lp-dmz
+# network faces the internet, and `db` holds the crown-jewel customer database.
+# Replay: linchpin --state .linchpin/lab.json scenario scenarios/lab_scan.yaml --data-dir .
+name: ci-lab-measured
+sources:
+- benchmarks/results/lab/scan-lp-dmz.xml
+- benchmarks/results/lab/scan-lp-core.xml
+match_cpe: true
+hosts:
+- id: app
+  match:
+  - 172.18.0.4
+  - 172.19.0.2
+  segment: dmz+core
+  internet_facing: true
+  datastores: []
+- id: cache
+  match:
+  - 172.19.0.3
+  segment: core
+  internet_facing: false
+  datastores: []
+- id: db
+  match:
+  - 172.19.0.4
+  segment: core
+  internet_facing: false
+  datastores:
+  - name: customer-db
+    sensitivity: high
+- id: proxy
+  match:
+  - 172.18.0.3
+  segment: dmz
+  internet_facing: true
+  datastores: []
+- id: web
+  match:
+  - 172.18.0.2
+  segment: dmz
+  internet_facing: true
+  datastores: []
+reachability:
+- from: core
+  to: dmz+core
+  ports:
+  - 8009
+  - 8080
+- from: dmz
+  to: dmz+core
+  ports:
+  - 8009
+  - 8080
+- from: dmz+core
+  to: core
+  ports:
+  - 3306
+  - 6379
+- from: dmz+core
+  to: dmz
+  ports:
+  - 80
+crown_jewels:
+- auto:sensitivity=high
+entrypoints:
+- auto:internet_facing
+k_shortest: 100

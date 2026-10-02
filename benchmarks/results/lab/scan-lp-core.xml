@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE nmaprun>
+<?xml-stylesheet href="file:///usr/bin/../share/nmap/nmap.xsl" type="text/xsl"?>
+<!-- Nmap 7.93 scan initiated Fri Oct  2 11:11:34 2026 as: nmap -sV -sT -Pn -n -T4 -&#45;version-intensity 7 -p 1-10000 -oX /out/scan-lp-core.xml 172.19.0.3 172.19.0.2 172.19.0.4 -->
+<nmaprun scanner="nmap" args="nmap -sV -sT -Pn -n -T4 -&#45;version-intensity 7 -p 1-10000 -oX /out/scan-lp-core.xml 172.19.0.3 172.19.0.2 172.19.0.4" start="1790939494" startstr="Fri Oct  2 11:11:34 2026" version="7.93" xmloutputversion="1.05">
+<scaninfo type="connect" protocol="tcp" numservices="10000" services="1-10000"/>
+<verbose level="0"/>
+<debugging level="0"/>
+<host starttime="1790939494" endtime="1790939501"><status state="up" reason="user-set" reason_ttl="0"/>
+<address addr="172.19.0.3" addrtype="ipv4"/>
+<hostnames>
+</hostnames>
+<ports><extraports state="closed" count="9999">
+<extrareasons reason="conn-refused" count="9999" proto="tcp" ports="1-6378,6380-10000"/>
+</extraports>
+<port protocol="tcp" portid="6379"><state state="open" reason="syn-ack" reason_ttl="0"/><service name="redis" product="Redis key-value store" version="5.0.7" method="probed" conf="10"><cpe>cpe:/a:redislabs:redis:5.0.7</cpe></service></port>
+</ports>
+<times srtt="169" rttvar="113" to="100000"/>
+</host>
+<host starttime="1790939494" endtime="1790939501"><status state="up" reason="user-set" reason_ttl="0"/>
+<address addr="172.19.0.2" addrtype="ipv4"/>
+<hostnames>
+</hostnames>
+<ports><extraports state="closed" count="9998">
+<extrareasons reason="conn-refused" count="9998" proto="tcp" ports="1-8008,8010-8079,8081-10000"/>
+</extraports>
+<port protocol="tcp" portid="8009"><state state="open" reason="syn-ack" reason_ttl="0"/><service name="ajp13" product="Apache Jserv" extrainfo="Protocol v1.3" method="probed" conf="10"/></port>
+<port protocol="tcp" portid="8080"><state state="open" reason="syn-ack" reason_ttl="0"/><service name="http" product="Apache Tomcat" version="9.0.30" method="probed" conf="10"><cpe>cpe:/a:apache:tomcat:9.0.30</cpe></service></port>
+</ports>
+<times srtt="154" rttvar="120" to="100000"/>
+</host>
+<host starttime="1790939494" endtime="1790939501"><status state="up" reason="user-set" reason_ttl="0"/>
+<address addr="172.19.0.4" addrtype="ipv4"/>
+<hostnames>
+</hostnames>
+<ports><extraports state="closed" count="9999">
+<extrareasons reason="conn-refused" count="9999" proto="tcp" ports="1-3305,3307-10000"/>
+</extraports>
+<port protocol="tcp" portid="3306"><state state="open" reason="syn-ack" reason_ttl="0"/><service name="mysql" product="MySQL" version="5.5.62" method="probed" conf="10"><cpe>cpe:/a:mysql:mysql:5.5.62</cpe></service></port>
+</ports>
+<times srtt="179" rttvar="98" to="100000"/>
+</host>
+<runstats><finished time="1790939501" timestr="Fri Oct  2 11:11:41 2026" summary="Nmap done at Fri Oct  2 11:11:41 2026; 3 IP addresses (3 hosts up) scanned in 6.72 seconds" elapsed="6.72" exit="success"/><hosts up="3" down="0" total="3"/>
+</runstats>
+</nmaprun>

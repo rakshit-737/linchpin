@@ -1,0 +1,408 @@
+{
+  "detected": [
+    "Apache Tomcat 9.0.30",
+    "Apache httpd 2.4.49",
+    "MySQL 5.5.62",
+    "Redis key-value store 5.0.7",
+    "nginx 1.16.1"
+  ],
+  "cpe_match": {
+    "services": 6,
+    "identified": 5,
+    "matched_services": 5,
+    "cves": 393,
+    "kev_cves": 7,
+    "unmatched": [
+      "app:8009 Apache Jserv"
+    ]
+  },
+  "topology": {
+    "name": "ci-lab-measured",
+    "hosts": [
+      {
+        "id": "app",
+        "match": [
+          "172.18.0.4",
+          "172.19.0.2"
+        ],
+        "segment": "dmz+core",
+        "internet_facing": true,
+        "datastores": []
+      },
+      {
+        "id": "cache",
+        "match": [
+          "172.19.0.3"
+        ],
+        "segment": "core",
+        "internet_facing": false,
+        "datastores": []
+      },
+      {
+        "id": "db",
+        "match": [
+          "172.19.0.4"
+        ],
+        "segment": "core",
+        "internet_facing": false,
+        "datastores": [
+          {
+            "name": "customer-db",
+            "sensitivity": "high"
+          }
+        ]
+      },
+      {
+        "id": "proxy",
+        "match": [
+          "172.18.0.3"
+        ],
+        "segment": "dmz",
+        "internet_facing": true,
+        "datastores": []
+      },
+      {
+        "id": "web",
+        "match": [
+          "172.18.0.2"
+        ],
+        "segment": "dmz",
+        "internet_facing": true,
+        "datastores": []
+      }
+    ],
+    "reachability": [
+      {
+        "from": "core",
+        "to": "dmz+core",
+        "ports": [
+          8009,
+          8080
+        ]
+      },
+      {
+        "from": "dmz",
+        "to": "dmz+core",
+        "ports": [
+          8009,
+          8080
+        ]
+      },
+      {
+        "from": "dmz+core",
+        "to": "core",
+        "ports": [
+          3306,
+          6379
+        ]
+      },
+      {
+        "from": "dmz+core",
+        "to": "dmz",
+        "ports": [
+          80
+        ]
+      }
+    ],
+    "crown_jewels": [
+      "auto:sensitivity=high"
+    ],
+    "entrypoints": [
+      "auto:internet_facing"
+    ],
+    "k_shortest": 100
+  },
+  "graph": {
+    "nodes": 23,
+    "edges": 36,
+    "crown_jewels": [
+      "ds:customer-db"
+    ],
+    "paths_before": 10,
+    "cheapest_path_cost": 0.198964
+  },
+  "vulns": [
+    {
+      "node": "vuln:CPE-mysql-mysql-5.5.62@db:3306",
+      "host": "db",
+      "name": "mysql 5.5.62 (210 CVEs by NVD version range)",
+      "cvss": 9.1,
+      "epss": 0.82136,
+      "kev": false,
+      "grants_code_execution": true
+    },
+    {
+      "node": "vuln:CPE-apache-tomcat-9.0.30@app:8080",
+      "host": "app",
+      "name": "tomcat 9.0.30 (76 CVEs by NVD version range)",
+      "cvss": 9.8,
+      "epss": 0.99927,
+      "kev": true,
+      "grants_code_execution": true
+    },
+    {
+      "node": "vuln:CPE-redislabs-redis-5.0.7@cache:6379",
+      "host": "cache",
+      "name": "redis 5.0.7 (34 CVEs by NVD version range)",
+      "cvss": 9.9,
+      "epss": 0.82294,
+      "kev": false,
+      "grants_code_execution": true
+    },
+    {
+      "node": "vuln:CPE-apache-http_server-2.4.49@web:80",
+      "host": "web",
+      "name": "http_server 2.4.49 (66 CVEs by NVD version range)",
+      "cvss": 9.8,
+      "epss": 0.99992,
+      "kev": true,
+      "grants_code_execution": true
+    },
+    {
+      "node": "vuln:CPE-igor_sysoev-nginx-1.16.1@proxy:80",
+      "host": "proxy",
+      "name": "nginx 1.16.1 (7 CVEs by NVD version range)",
+      "cvss": 7.7,
+      "epss": 0.53461,
+      "kev": false,
+      "grants_code_execution": true
+    }
+  ],
+  "chokepoints": [
+    "vuln:CPE-apache-tomcat-9.0.30@app:8080",
+    "vuln:CPE-mysql-mysql-5.5.62@db:3306"
+  ],
+  "min_cut": [
+    "vuln:CPE-mysql-mysql-5.5.62@db:3306"
+  ],
+  "plan": [
+    {
+      "node": "vuln:CPE-apache-tomcat-9.0.30@app:8080",
+      "action": "upgrade tomcat 9.0.30 on app (76 known CVEs)",
+      "rationale": "tomcat 9.0.30 on app matches 76 CVEs; the one an attacker would use is CVE-2025-24813 (CVSS 9.8, EPSS 0.99927, CISA KEV). It is a step on 10 attack paths; upgrade tomcat 9.0.30 on app (76 known CVEs) breaks 10/10 enumerated attack paths to ds:customer-db.",
+      "paths_broken": 10,
+      "paths_total": 10
+    }
+  ],
+  "strategies": {
+    "linchpin": {
+      "fixes_to_disconnect": 1,
+      "budget_1": {
+        "fixes": [
+          "vuln:CPE-apache-tomcat-9.0.30@app:8080"
+        ],
+        "disconnected": true,
+        "residual": 0,
+        "min_cost_after": null
+      },
+      "budget_3": {
+        "fixes": [
+          "vuln:CPE-apache-tomcat-9.0.30@app:8080"
+        ],
+        "disconnected": true,
+        "residual": 0,
+        "min_cost_after": null
+      }
+    },
+    "milp_interdiction": {
+      "fixes_to_disconnect": 1,
+      "budget_1": {
+        "fixes": [
+          "vuln:CPE-mysql-mysql-5.5.62@db:3306"
+        ],
+        "disconnected": true,
+        "residual": 0,
+        "min_cost_after": null
+      },
+      "budget_3": {
+        "fixes": [
+          "host:cache",
+          "vuln:CPE-apache-tomcat-9.0.30@app:8080",
+          "vuln:CPE-mysql-mysql-5.5.62@db:3306"
+        ],
+        "disconnected": true,
+        "residual": 0,
+        "min_cost_after": null
+      }
+    },
+    "greedy_interdiction": {
+      "fixes_to_disconnect": 1,
+      "budget_1": {
+        "fixes": [
+          "vuln:CPE-apache-tomcat-9.0.30@app:8080"
+        ],
+        "disconnected": true,
+        "residual": 0,
+        "min_cost_after": null
+      },
+      "budget_3": {
+        "fixes": [
+          "vuln:CPE-apache-tomcat-9.0.30@app:8080"
+        ],
+        "disconnected": true,
+        "residual": 0,
+        "min_cost_after": null
+      }
+    },
+    "cvss": {
+      "fixes_to_disconnect": 3,
+      "budget_1": {
+        "fixes": [
+          "vuln:CPE-redislabs-redis-5.0.7@cache:6379"
+        ],
+        "disconnected": false,
+        "residual": 5,
+        "min_cost_after": 0.198964
+      },
+      "budget_3": {
+        "fixes": [
+          "vuln:CPE-redislabs-redis-5.0.7@cache:6379",
+          "vuln:CPE-apache-http_server-2.4.49@web:80",
+          "vuln:CPE-apache-tomcat-9.0.30@app:8080"
+        ],
+        "disconnected": true,
+        "residual": 0,
+        "min_cost_after": null
+      }
+    },
+    "cvss_reach": {
+      "fixes_to_disconnect": 3,
+      "budget_1": {
+        "fixes": [
+          "vuln:CPE-redislabs-redis-5.0.7@cache:6379"
+        ],
+        "disconnected": false,
+        "residual": 5,
+        "min_cost_after": 0.198964
+      },
+      "budget_3": {
+        "fixes": [
+          "vuln:CPE-redislabs-redis-5.0.7@cache:6379",
+          "vuln:CPE-apache-http_server-2.4.49@web:80",
+          "vuln:CPE-apache-tomcat-9.0.30@app:8080"
+        ],
+        "disconnected": true,
+        "residual": 0,
+        "min_cost_after": null
+      }
+    },
+    "epss": {
+      "fixes_to_disconnect": 2,
+      "budget_1": {
+        "fixes": [
+          "vuln:CPE-apache-http_server-2.4.49@web:80"
+        ],
+        "disconnected": false,
+        "residual": 4,
+        "min_cost_after": 0.198964
+      },
+      "budget_3": {
+        "fixes": [
+          "vuln:CPE-apache-http_server-2.4.49@web:80",
+          "vuln:CPE-apache-tomcat-9.0.30@app:8080",
+          "vuln:CPE-redislabs-redis-5.0.7@cache:6379"
+        ],
+        "disconnected": true,
+        "residual": 0,
+        "min_cost_after": null
+      }
+    },
+    "epss_reach": {
+      "fixes_to_disconnect": 2,
+      "budget_1": {
+        "fixes": [
+          "vuln:CPE-apache-http_server-2.4.49@web:80"
+        ],
+        "disconnected": false,
+        "residual": 4,
+        "min_cost_after": 0.198964
+      },
+      "budget_3": {
+        "fixes": [
+          "vuln:CPE-apache-http_server-2.4.49@web:80",
+          "vuln:CPE-apache-tomcat-9.0.30@app:8080",
+          "vuln:CPE-redislabs-redis-5.0.7@cache:6379"
+        ],
+        "disconnected": true,
+        "residual": 0,
+        "min_cost_after": null
+      }
+    },
+    "kev_epss": {
+      "fixes_to_disconnect": 2,
+      "budget_1": {
+        "fixes": [
+          "vuln:CPE-apache-http_server-2.4.49@web:80"
+        ],
+        "disconnected": false,
+        "residual": 4,
+        "min_cost_after": 0.198964
+      },
+      "budget_3": {
+        "fixes": [
+          "vuln:CPE-apache-http_server-2.4.49@web:80",
+          "vuln:CPE-apache-tomcat-9.0.30@app:8080",
+          "vuln:CPE-redislabs-redis-5.0.7@cache:6379"
+        ],
+        "disconnected": true,
+        "residual": 0,
+        "min_cost_after": null
+      }
+    },
+    "kev_epss_reach": {
+      "fixes_to_disconnect": 2,
+      "budget_1": {
+        "fixes": [
+          "vuln:CPE-apache-http_server-2.4.49@web:80"
+        ],
+        "disconnected": false,
+        "residual": 4,
+        "min_cost_after": 0.198964
+      },
+      "budget_3": {
+        "fixes": [
+          "vuln:CPE-apache-http_server-2.4.49@web:80",
+          "vuln:CPE-apache-tomcat-9.0.30@app:8080",
+          "vuln:CPE-redislabs-redis-5.0.7@cache:6379"
+        ],
+        "disconnected": true,
+        "residual": 0,
+        "min_cost_after": null
+      }
+    },
+    "betweenness": {
+      "fixes_to_disconnect": 1,
+      "budget_1": {
+        "fixes": [
+          "vuln:CPE-apache-tomcat-9.0.30@app:8080"
+        ],
+        "disconnected": true,
+        "residual": 0,
+        "min_cost_after": null
+      },
+      "budget_3": {
+        "fixes": [
+          "vuln:CPE-apache-tomcat-9.0.30@app:8080",
+          "vuln:CPE-mysql-mysql-5.5.62@db:3306",
+          "vuln:CPE-apache-http_server-2.4.49@web:80"
+        ],
+        "disconnected": true,
+        "residual": 0,
+        "min_cost_after": null
+      }
+    }
+  },
+  "checks": {
+    "no NSE script output in the scans": true,
+    ">= 3 product versions detected": true,
+    "a CISA KEV CVE was mapped": true,
+    "crown jewel reachable before any fix": true,
+    "LINCHPIN's plan cuts the crown jewel off within budget 3": true,
+    "LINCHPIN never needs more fixes than a baseline": true
+  },
+  "tools": [
+    "Nmap version 7.93 ( https://nmap.org )",
+    "docker 28.0.4"
+  ],
+  "cpe_index": "# cpe_index built from NVD CVE 2.0 feeds; epss_date=2026-09-25T12:03:13Z; kev_catalog=2026.09.25; products=apache:http_server,apache:tomcat,f5:nginx,mariadb:mariadb,mysql:mysql,nginx:nginx,openbsd:ope"
+}
