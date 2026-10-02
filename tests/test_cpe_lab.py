@@ -61,6 +61,8 @@ def test_match_services_on_a_real_nmap_export():
 
 
 def test_lab_case_study_replays_the_fixture_scan(tmp_path):
+    pytest.importorskip("numpy")
+    pytest.importorskip("scipy")
     import importlib.util
     path = Path(__file__).parents[1] / "benchmarks" / "lab_case_study.py"
     spec = importlib.util.spec_from_file_location("lab_case_study", path)

@@ -71,6 +71,8 @@ def test_decoys_unreachable_and_never_recommended():
 
 
 def test_benchmark_row_and_summary():
+    pytest.importorskip("numpy")
+    pytest.importorskip("scipy")
     rows = [run_one(f, 0, 12, budget=3, k=30) for f in ("single", "ad")]
     summ = summarise(rows)
     assert summ["single"]["linchpin"]["disconnect_rate"] == 1.0
