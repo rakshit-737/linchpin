@@ -53,6 +53,7 @@ plugins:
 
 not_in_nav: |
   /demo/**
+  benchmarks.md
 
 nav:
   - Home: index.md
