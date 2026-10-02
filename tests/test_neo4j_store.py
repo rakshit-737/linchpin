@@ -93,3 +93,22 @@ def test_live_neo4j_roundtrip():
     s.pull()
     assert recommend(s, budget=1, k=30)[0].target_node == gt.linchpin
     s.close()
+
+
+def test_cypher_export_does_not_resubstitute_parameters_inside_data():
+    """A scanned banner containing `$graph` must stay literal (single-pass substitution)."""
+    from linchpin.graph.store import GraphStore
+    from linchpin.models import NormalizedFinding, make_finding_id
+
+    def f(host, kind, key, **kw):
+        return NormalizedFinding(finding_id=make_finding_id(host, kind, key), host_id=host, kind=kind,
+                                 source="t", observed_at="2026-01-01T00:00:00Z", **kw)
+    s = GraphStore()
+    s.upsert_findings([f("web", "config", "inv", detail={"issue": "inventory", "segment": "dmz",
+                                                         "internet_facing": True}),
+                       f("web", "service", "80", port=80, software="Apache httpd$graph `x` $rows 2.4")])
+    s.build_attack_graph()
+    text = to_cypher(s.g, "lab")
+    assert '"Apache httpd$graph `x` $rows 2.4"' in text
+    assert text.count(";\n") == len(statements(s.g, "lab"))
+    assert "$graph" not in text.replace("httpd$graph", "")  # every template parameter was inlined
