@@ -31,3 +31,26 @@ def test_train_score_save_load(tmp_path):
     assert abs(m2.score(recs[0]) - m.score(recs[0])) < 1e-4
     ev = evaluate(m, recs)
     assert ev["learned"]["roc_auc"] > 0.9
+
+
+def test_exploitation_status_is_masked_and_labels_respect_the_cutoff():
+    from linchpin.ml.exploitability import features, known_exploited, mask_exploitation_status, mentions_exploitation
+    text = ("Use after free in WebKit. Apple is aware of a report that this issue may have been actively "
+            "exploited. Exploitation of this issue does not require user interaction.")
+    masked = mask_exploitation_status(text)
+    assert "aware of a report" not in masked and "does not require user interaction" in masked
+    assert mentions_exploitation(text) and not mentions_exploitation(masked)
+    assert mentions_exploitation("Google is aware that an exploit for CVE-2024-1 exists in the wild.")
+    assert not mentions_exploitation("An attacker could exploit this vulnerability by sending a crafted request.")
+    rec = CveRecord(cve="CVE-2021-1", kev=True, kev_date="2023-03-01", description=text)
+    assert known_exploited(rec) and not known_exploited(rec, "2023-01-01") and known_exploited(rec, "2023-06-01")
+    assert "aware" not in features(rec) and "aware" in features(rec, mask=False)
+
+
+def test_model_remembers_masking(tmp_path):
+    recs = _recs()
+    m = train(recs, mask=False)
+    p = tmp_path / "m.npz"
+    m.save(p)
+    assert ExploitModel.load(p).mask is False
+    assert train(recs).mask is True
