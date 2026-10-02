@@ -22,7 +22,7 @@ from fastapi.testclient import TestClient  # noqa: E402
 
 from linchpin.api.app import STATIC, create_app  # noqa: E402
 
-BUDGETS = range(1, 6)
+BUDGETS = range(1, 11)  # the UI's budget input allows 1-10
 
 
 def snapshot(client: TestClient) -> dict:

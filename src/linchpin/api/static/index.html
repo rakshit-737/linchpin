@@ -26,6 +26,8 @@ tr.rem{cursor:pointer}tr.rem:hover,tr.rem.sel{background:color-mix(in srgb,var(-
 .delta{font-size:22px;font-weight:600}
 .muted{color:var(--muted);font-size:12px}
 #removed span{display:inline-block;margin:2px;padding:1px 6px;border-radius:9px;background:color-mix(in srgb,var(--hot) 18%,transparent);font-size:12px}
+.bars{margin:8px 0 4px}.bar{display:flex;align-items:center;gap:6px;font-size:12px;color:var(--muted);margin:3px 0}
+.bar i{display:block;height:10px;border-radius:3px;min-width:2px}.bar .b{background:var(--muted)}.bar .a{background:var(--hot)}.bar .a.cut{background:var(--ok)}
 @media (max-width:900px){main{grid-template-columns:1fr;height:auto}#cy{height:60vh}aside{border-left:0}}
 </style>
 </head>
@@ -38,8 +40,9 @@ tr.rem{cursor:pointer}tr.rem:hover,tr.rem.sel{background:color-mix(in srgb,var(-
       <option value="none">no chokepoint</option><option value="ad">Active Directory tiers</option>
       <option value="scenario">server scenario (LINCHPIN_SCENARIO)</option>
     </select></label>
-  <label>seed <input id="seed" type="number" value="0" style="width:64px"></label>
+  <label>seed <input id="seed" type="number" value="0" min="0" style="width:64px"></label>
   <label>budget <input id="budget" type="number" value="3" min="1" max="10" style="width:56px"></label>
+  <label>crown jewel <select id="crown"><option value="">all</option></select></label>
   <button class="primary" id="load">Load</button>
   <span class="stat" id="stats"></span>
 </header>
@@ -70,6 +73,9 @@ const esc = s => String(s ?? '').replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;
 // written by scripts/build_static_demo.py; what-if is recomputed in the browser over the snapshot.
 const STATIC = window.LINCHPIN_STATIC;
 let snap = null;
+if (STATIC) {  // snapshots exist for seed 0 and budgets 1-10 only
+  $('#seed').disabled = true; $('#seed').title = 'The static demo holds seed-0 snapshots; run the server for other seeds.';
+}
 async function snapLoad(name) { const r = await fetch(STATIC + name + '.json'); if (!r.ok) throw new Error('no snapshot ' + name); snap = await r.json(); }
 function staticWhatif(rm) {
   const gone = new Set(rm), adj = {};
@@ -92,7 +98,11 @@ async function api(path, opts) {
   if (p === '/graph') return snap.graph;
   if (p === '/chokepoints') return snap.chokepoints;
   if (p === '/paths') return snap.paths;
-  if (p === '/remediations') return snap.remediations[q.get('budget')] || snap.remediations['3'];
+  if (p === '/remediations') {
+    const b = q.get('budget');
+    if (!snap.remediations[b]) throw new Error(`the static demo has budgets 1-${Object.keys(snap.remediations).length}`);
+    return snap.remediations[b];
+  }
   if (p.startsWith('/nodes/')) return snap.nodes[decodeURIComponent(path.slice(7))];
   if (p === '/whatif') return staticWhatif(JSON.parse(opts.body).remove_nodes);
   throw new Error('not available in the static demo: ' + path);
@@ -100,7 +110,7 @@ async function api(path, opts) {
 
 function draw(g) {
   if (cy) cy.destroy();
-  cy = cytoscape({ container: $('#cy'), elements: [...g.nodes, ...g.edges], wheelSensitivity: 0.2,
+  cy = cytoscape({ container: $('#cy'), elements: [...g.nodes, ...g.edges],
     style: [
       { selector: 'node', style: { 'background-color': e => COLORS[e.data('label')] || '#999', label: 'data(name)',
           'font-size': 8, color: css('--ink'), 'text-valign': 'bottom', 'text-margin-y': 2, width: 14, height: 14 } },
@@ -145,7 +155,12 @@ async function whatif() {
   if (!removed.size) { $('#whatif').innerHTML = ''; return; }
   const w = await api('/whatif', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ remove_nodes: [...removed] }) });
   const cut = !w.reachable_crown_jewels_after.length;
+  const pct = n => w.paths_before ? Math.round(100 * n / w.paths_before) : 0;
   $('#whatif').innerHTML = `<div class="delta" style="color:${cut ? 'var(--ok)' : 'var(--hot)'}">${w.paths_before} → ${w.paths_after} paths</div>
+    <div class="bars" role="img" aria-label="attack paths before and after">
+      <div class="bar"><span style="width:44px">before</span><i class="b" style="width:${pct(w.paths_before)}%"></i>${w.paths_before}</div>
+      <div class="bar"><span style="width:44px">after</span><i class="a${cut ? ' cut' : ''}" style="width:${pct(w.paths_after)}%"></i>${w.paths_after}</div>
+    </div>
     <div class="muted">cheapest path cost ${w.min_cost_before ?? '–'} → ${w.min_cost_after ?? 'none'};
     crown jewels reachable: ${esc(w.reachable_crown_jewels_after.join(', ') || 'none')}</div>`;
 }
@@ -172,13 +187,22 @@ async function refresh(budget, st) {
   });
   $('#cut').textContent = ch.min_cut_size == null ? 'No finite cut: an entrypoint reaches a crown jewel directly.'
     : `Exact minimum cut: ${ch.min_cut_size} fix(es). Single-node chokepoints: ${ch.chokepoints.length ? ch.chokepoints.join(', ') : 'none'}.`;
-  const seen = new Set();
-  const uniq = paths.filter(p => { const k = p.nodes.filter(n => /^(host|cred|ds):/.test(n)).join('>'); if (seen.has(k)) return false; seen.add(k); return true; });
-  $('#paths').innerHTML = uniq.slice(0, 8).map(p => `<tr class="rem" data-p="${p.path_id}"><td>${p.total_cost.toFixed(3)}</td><td>${esc(p.nodes.filter(n => n.startsWith('host:') || n.startsWith('cred:') || n.startsWith('ds:')).join(' → '))}</td></tr>`).join('');
-  document.querySelectorAll('tr[data-p]').forEach(tr => tr.onclick = () => highlight([tr.dataset.p], 'onpath'));
+  const crowns = [...new Set(paths.map(p => p.crown_jewel))].sort();
+  $('#crown').innerHTML = '<option value="">all</option>' + crowns.map(c => `<option value="${esc(c)}">${esc(c)}</option>`).join('');
+  showPaths();
   document.querySelector('tr.rem[data-i]')?.click();  // show the top fix's evidence by default
 }
+function showPaths() {  // top attack paths, optionally only those ending at the selected crown jewel
+  const crown = $('#crown').value, seen = new Set();
+  const uniq = paths.filter(p => !crown || p.crown_jewel === crown)
+    .filter(p => { const k = p.nodes.filter(n => /^(host|cred|ds):/.test(n)).join('>'); if (seen.has(k)) return false; seen.add(k); return true; });
+  $('#paths').innerHTML = uniq.slice(0, 8).map(p => `<tr class="rem" data-p="${p.path_id}"><td>${p.total_cost.toFixed(3)}</td><td>${esc(p.nodes.filter(n => n.startsWith('host:') || n.startsWith('cred:') || n.startsWith('ds:')).join(' → '))}</td></tr>`).join('')
+    || '<tr><td class="muted">No path to this crown jewel.</td></tr>';
+  document.querySelectorAll('tr[data-p]').forEach(tr => tr.onclick = () => highlight([tr.dataset.p], 'onpath'));
+  if (crown) highlight(paths.filter(p => p.crown_jewel === crown).map(p => p.path_id), 'onpath');
+}
 $('#load').onclick = load;
+$('#crown').onchange = showPaths;
 api('/stats').then(st => { if (st.loaded) $('#family').value = st.loaded.split(':')[0]; });
 refresh(3).catch(e => $('#stats').textContent = 'error: ' + e.message);
 </script>

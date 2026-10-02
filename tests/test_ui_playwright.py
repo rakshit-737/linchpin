@@ -6,6 +6,7 @@ The page loads Cytoscape.js from a CDN, so these tests need network access.
 """
 import functools
 import http.server
+import os
 import socket
 import threading
 import time
@@ -16,7 +17,8 @@ import pytest
 pw = pytest.importorskip("playwright.sync_api")
 pytestmark = pytest.mark.ui
 
-DEMO = Path(__file__).resolve().parents[1] / "docs" / "demo"
+# CI points this at the *built* site (site/demo) so the deployed page itself is what gets tested
+DEMO = Path(os.environ.get("LINCHPIN_DEMO_DIR") or Path(__file__).resolve().parents[1] / "docs" / "demo")
 
 
 def _port() -> int:
@@ -52,6 +54,12 @@ def _check_explorer(page, url: str) -> None:
     assert target
     page.wait_for_selector("#whatif .delta", timeout=10000)
     assert "paths" in page.inner_text("#whatif")
+    assert page.locator("#whatif .bar").count() == 2  # before / after bars
+    # crown-jewel filter: lists the crown jewels and filters the path table
+    crowns = page.evaluate("[...document.querySelectorAll('#crown option')].map(o => o.value).filter(Boolean)")
+    assert crowns
+    page.select_option("#crown", crowns[0])
+    assert page.locator("#paths tr[data-p]").count() >= 1
     assert not errors, errors
 
 
@@ -65,9 +73,12 @@ def test_static_demo(browser):
     try:
         page = browser.new_page()
         _check_explorer(page, f"http://127.0.0.1:{port}/index.html")
+        assert page.is_disabled("#seed")  # snapshots are seed 0 only
         page.select_option("#family", "ad")
+        page.fill("#budget", "8")  # snapshots cover budgets 1-10
         page.click("#load")
         page.wait_for_function("document.querySelector('#stats').textContent.includes('nodes')")
+        assert "error" not in page.inner_text("#stats")
     finally:
         srv.shutdown()
 
