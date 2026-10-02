@@ -12,10 +12,18 @@ Thanks for helping. LINCHPIN is a defensive, read-only tool, and contributions m
 ## Dev setup
 
 ```bash
-pip install -e ".[dev,api,ml,bench]"
-python -m ruff check .
-python -m pytest -q                 # add -m realdata after scripts/download_data.py
+pip install -e ".[dev,api,ml,bench,docs]"
+python -m ruff check .              # includes Google-style docstrings and return types on the public API
+python -m pytest -q                 # real-data tests run after scripts/download_data.py
+python scripts/check_repo.py        # no tracked file > 1 MB, no broken relative Markdown links
+python scripts/gen_cli_reference.py # after changing CLI options (a test fails if the page is stale)
+mkdocs build --strict
 ```
+
+Results are produced by the scripts in `benchmarks/` and committed under `benchmarks/results/`; never edit a
+number by hand. Each script, its runtime and its expected output are listed on the docs' Reproduce page. Any active
+probing belongs only in the CI lab (`lab/`): containers the job starts itself, on `--internal` Docker networks,
+version detection only.
 
 ## Adding a connector
 

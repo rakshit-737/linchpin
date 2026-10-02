@@ -3,7 +3,7 @@ DATA ?= ../../datasets/linchpin
 export PYTHONPATH := src
 LP = $(PY) -m linchpin --state .linchpin/findings.json
 
-.PHONY: install test lint data intel bench bench-quick casestudy ml scale demo demo-real api clean
+.PHONY: install test lint data intel bench bench-quick ablation repro casestudy labcase ml scale figures demo demo-real api paper clean
 
 install:
 	$(PY) -m pip install -e ".[dev,api,ml,bench]"
@@ -20,8 +20,17 @@ data:
 	$(LP) intel-build --data-dir $(DATA)
 
 ## benchmarks (results land in benchmarks/results/)
+WORKERS ?= 8
 bench:
-	$(PY) benchmarks/run_benchmark.py --seeds 50 --budget 3
+	$(PY) benchmarks/run_benchmark.py --seeds 50 --budget 3 --workers $(WORKERS)
+ablation:
+	$(PY) benchmarks/ablation.py --seeds 50 --budget 3 --workers $(WORKERS)
+repro:
+	$(PY) benchmarks/repro_epss.py --data-dir $(DATA)
+labcase:
+	$(PY) benchmarks/lab_case_study.py --scans benchmarks/results/lab
+figures:
+	$(PY) scripts/make_figures.py
 bench-quick:
 	$(PY) benchmarks/run_benchmark.py --seeds 5 --budget 3 --out benchmarks/results/quick
 casestudy:
@@ -29,7 +38,7 @@ casestudy:
 ml:
 	$(PY) benchmarks/ml_exploitability.py --intel $(DATA)/derived/cve_intel.csv.gz
 scale:
-	$(PY) benchmarks/scale.py
+	$(PY) benchmarks/scale.py --reps 5
 
 demo:
 	$(LP) synth --hosts 20 --seed 0 --out data/synth.json
@@ -47,7 +56,10 @@ demo-real:
 	$(LP) cuts
 
 api:
-	LINCHPIN_SCENARIO=$(SCENARIO) LINCHPIN_DATA_DIR=$(DATA) $(PY) -m uvicorn linchpin.api.app:app --host 127.0.0.1 --port 8000
+	$(LP) serve $(if $(SCENARIO),--scenario $(SCENARIO) --data-dir $(DATA),)
+
+paper:
+	cd paper && latexmk -pdf linchpin.tex
 
 clean:
 	rm -rf .linchpin data .pytest_cache
