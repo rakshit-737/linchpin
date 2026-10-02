@@ -1,6 +1,7 @@
 # Lab-only stack: API + web UI on localhost, optional Neo4j mirror.
 #   docker compose up api                       -> http://127.0.0.1:8000/ui (synthetic demo)
-#   docker compose --profile neo4j up           -> also Neo4j Browser on http://127.0.0.1:7474
+#   NEO4J_PASSWORD=... docker compose --profile neo4j up   -> also Neo4j Browser on http://127.0.0.1:7474
+# Put NEO4J_PASSWORD in a local .env file (git-ignored); `linchpin neo4j-push` reads the same variable.
 # To serve the real-export case study, mount the dataset dir and set LINCHPIN_SCENARIO.
 services:
   api:
@@ -13,8 +14,10 @@ services:
     ports: ["127.0.0.1:8000:8000"]
   neo4j:
     profiles: ["neo4j"]
-    image: neo4j:5
+    image: neo4j:5.26-community@sha256:d9cfe82983d27f5a75b3aaae8f316d04f9a698a3b7f6103a508f7caf8362f255
     environment:
-      NEO4J_AUTH: neo4j/change-me-lab-only
+      NEO4J_AUTH: neo4j/${NEO4J_PASSWORD:?set NEO4J_PASSWORD (e.g. in a local .env file)}
       NEO4J_PLUGINS: '["graph-data-science"]'
+      # Neo4j's HTTP API allows any CORS origin by default; only its own Browser may call it here
+      NEO4J_dbms_security_http__access__control__allow__origin: "http://127.0.0.1:7474"
     ports: ["127.0.0.1:7474:7474", "127.0.0.1:7687:7687"]

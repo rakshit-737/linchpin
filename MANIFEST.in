@@ -1,0 +1,10 @@
+# sdist contents beyond the package: everything the test suite needs, so `pytest` runs from an unpacked sdist
+include config.yaml requirements.txt CITATION.cff CHANGELOG.md SECURITY.md THREAT_MODEL.md
+include docs/reference/cli.md
+graft contracts
+graft scenarios
+graft tests
+graft scripts
+graft benchmarks
+prune benchmarks/results
+global-exclude __pycache__ *.py[cod] .pytest_cache

@@ -1,10 +1,42 @@
+# Python / tooling
 __pycache__/
 *.pyc
 .pytest_cache/
-.linchpin/
-/data/
+.ruff_cache/
+.mypy_cache/
 *.egg-info/
 .venv/
+venv/
+.coverage
+htmlcov/
+dist/
+build/
+
+# LINCHPIN state and data (datasets live outside the repo; findings describe weaknesses)
+.linchpin/
+/data/
 *.part
+models/
+*.npz
+*.joblib
+*.pkl
+artifacts/
 benchmarks/results/quick/
+
+# secrets (compose reads NEO4J_PASSWORD from .env)
+.env
+.env.*
+
+# docs build
 site/
+
+# LaTeX intermediates (paper/linchpin.pdf itself is committed)
+paper/*.aux
+paper/*.log
+paper/*.out
+paper/*.bbl
+paper/*.blg
+paper/*.synctex.gz
+paper/*.fls
+paper/*.fdb_latexmk
+paper/*.toc

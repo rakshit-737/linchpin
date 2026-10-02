@@ -9,3 +9,10 @@ docs
 site
 benchmarks/results
 tests
+lab
+paper
+artifacts
+dist
+build
+.venv
+venv

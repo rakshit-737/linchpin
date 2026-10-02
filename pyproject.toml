@@ -1,33 +1,58 @@
 [build-system]
-requires = ["setuptools>=68"]
+requires = ["setuptools>=77"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "linchpin"
-version = "1.0.0"
+# The PyPI name "linchpin" belongs to an unrelated project (an Ansible provisioner), so the
+# distribution is "linchpin-attackpath"; the import package and the CLI are still `linchpin`.
+name = "linchpin-attackpath"
+dynamic = ["version"]
 description = "Read-only attack-path reasoning and remediation prioritisation over scanner, identity and exploit-intel data"
 readme = "README.md"
-license = { text = "MIT" }
+license = "MIT"
+license-files = ["LICENSE"]
 authors = [{ name = "Rakshit" }]
 requires-python = ">=3.10"
+keywords = ["attack-graph", "attack-path", "vulnerability-management", "minimum-cut", "epss", "cisa-kev", "bloodhound"]
+classifiers = [
+  "Development Status :: 4 - Beta",
+  "Intended Audience :: Information Technology",
+  "Programming Language :: Python :: 3",
+  "Programming Language :: Python :: 3.10",
+  "Programming Language :: Python :: 3.11",
+  "Programming Language :: Python :: 3.12",
+  "Programming Language :: Python :: 3.13",
+  "Programming Language :: Python :: 3.14",
+  "Topic :: Security",
+]
 dependencies = ["pydantic>=2.5", "networkx>=3.2", "pyyaml>=6", "defusedxml>=0.7"]
 
+[project.urls]
+Homepage = "https://rakshit-737.github.io/linchpin/"
+Source = "https://github.com/rakshit-737/linchpin"
+Changelog = "https://github.com/rakshit-737/linchpin/blob/main/CHANGELOG.md"
+
 [project.optional-dependencies]
-api = ["fastapi>=0.110", "httpx>=0.27", "uvicorn>=0.29"]
+# starlette >= 1.3.1: the lowest versions fastapi used to allow carry published advisories
+api = ["fastapi>=0.135", "starlette>=1.3.1", "uvicorn>=0.29", "httpx>=0.27"]
 neo4j = ["neo4j>=5.14"]
-ml = ["scikit-learn>=1.4", "numpy>=1.26", "scipy>=1.11"]
+ml = ["scikit-learn>=1.5", "numpy>=1.26", "scipy>=1.11"]
 bench = ["matplotlib>=3.8"]
 docs = ["mkdocs>=1.6,<2", "mkdocs-material>=9.5", "mkdocstrings[python]>=0.26"]
-dev = ["pytest>=8", "fastapi>=0.110", "httpx>=0.27", "ruff==0.16.10", "neo4j>=5.14"]
+dev = ["pytest>=8", "fastapi>=0.135", "starlette>=1.3.1", "httpx>=0.27", "httpx2>=2.13", "ruff==0.16.10",
+       "neo4j>=5.14"]
 
 [project.scripts]
 linchpin = "linchpin.cli:main"
+
+[tool.setuptools.dynamic]
+version = { attr = "linchpin.__version__" }
 
 [tool.setuptools.packages.find]
 where = ["src"]
 
 [tool.setuptools.package-data]
-linchpin = ["api/static/*", "synth/data/*.csv"]
+linchpin = ["api/static/*", "synth/data/*.csv", "intel/data/*.csv.gz"]
 
 [tool.pytest.ini_options]
 pythonpath = ["src"]
@@ -47,4 +72,3 @@ extend-exclude = ["data", ".linchpin", "site", "paper"]
 [tool.ruff.lint]
 # Explicit rule set so the result does not depend on the ruff version's defaults.
 select = ["E", "F", "W", "I", "UP", "B", "SIM", "RUF"]
-

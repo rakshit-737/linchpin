@@ -1,32 +1,46 @@
 name: ci
-on: [push, pull_request]
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+  workflow_call:          # release.yml runs the whole suite before publishing anything
+  schedule:
+    - cron: "17 5 * * 1"  # weekly: catch upstream breakage (dependencies only have lower bounds)
 permissions:
   contents: read
+# Third-party actions are pinned to full commit SHAs (Dependabot keeps them current).
 jobs:
   test:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     strategy:
       fail-fast: false
       matrix:
-        python: ["3.11", "3.12", "3.13"]
+        python: ["3.10", "3.11", "3.12", "3.13", "3.14"]
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97  # v7.0.0
         with: { python-version: "${{ matrix.python }}" }
       - run: pip install -e ".[dev,api,ml]"
       - name: Lint
         run: ruff check .
-      - name: Tests (real-data and live-Neo4j tests auto-skip)
+      - name: Repository hygiene (no file > 1 MB, no broken relative links)
+        run: python scripts/check_repo.py
+      - name: Tests (real-data, live-Neo4j and browser tests auto-skip)
         run: pytest -q
       - name: Synthetic demo
         run: make demo
       - name: Quick benchmark smoke
         run: python benchmarks/run_benchmark.py --seeds 2 --budget 3 --families single,ad --out /tmp/bench
+      - name: Quick ablation smoke (incl. the none-only case)
+        run: |
+          python benchmarks/ablation.py --seeds 2 --families single,ad --out /tmp/abl
+          python benchmarks/ablation.py --seeds 1 --families none --out /tmp/abl-none
+
   neo4j:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     services:
       neo4j:
-        image: neo4j:5
+        image: neo4j:5.26-community@sha256:d9cfe82983d27f5a75b3aaae8f316d04f9a698a3b7f6103a508f7caf8362f255
         env:
           NEO4J_AUTH: neo4j/ci-lab-only-pw
         ports: ["7687:7687"]
@@ -34,8 +48,8 @@ jobs:
           --health-cmd "cypher-shell -u neo4j -p ci-lab-only-pw 'RETURN 1'"
           --health-interval 10s --health-timeout 10s --health-retries 12
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97  # v7.0.0
         with: { python-version: "3.12" }
       - run: pip install -e ".[dev]"
       - name: Live Neo4j round trip
@@ -43,23 +57,159 @@ jobs:
           NEO4J_URI: bolt://localhost:7687
           NEO4J_PASSWORD: ci-lab-only-pw
         run: pytest -q -m neo4j tests/test_neo4j_store.py
+      - name: neo4j-push reports a wrong password instead of a traceback
+        env:
+          NEO4J_PASSWORD: wrong
+        run: |
+          linchpin --state /tmp/lp/f.json synth --out /tmp/lp/s.json && linchpin --state /tmp/lp/f.json ingest /tmp/lp/s.json > /dev/null
+          ! linchpin --state /tmp/lp/f.json neo4j-push 2> /tmp/err.txt
+          grep -q "authentication failed" /tmp/err.txt
+
+  # Graphs of up to ~240k relationships in Neo4j with the Graph Data Science plugin: GDS Yen's
+  # k-shortest paths must equal the in-memory engine's. A missing plugin FAILS the job.
+  neo4j-gds:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 45
+    services:
+      neo4j:
+        image: neo4j:5.26-community@sha256:d9cfe82983d27f5a75b3aaae8f316d04f9a698a3b7f6103a508f7caf8362f255
+        env:
+          NEO4J_AUTH: neo4j/ci-lab-only-pw
+          NEO4J_PLUGINS: '["graph-data-science"]'
+          NEO4J_dbms_security_procedures_unrestricted: "gds.*"
+          NEO4J_server_memory_heap_max__size: 3G
+          NEO4J_server_memory_pagecache_size: 1G
+        ports: ["7687:7687"]
+        options: >-
+          --health-cmd "cypher-shell -u neo4j -p ci-lab-only-pw 'RETURN 1'"
+          --health-interval 10s --health-timeout 10s --health-retries 30
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97  # v7.0.0
+        with: { python-version: "3.12" }
+      - run: pip install -e ".[dev]"
+      - name: Where the GDS plugin came from (bundled in the image or fetched by its entrypoint)
+        run: docker logs "${{ job.services.neo4j.id }}" 2>&1 | grep -i -E "graph-data-science|plugin" | head -20 || true
+      - name: GDS k-shortest paths vs the in-memory engine (sweep)
+        env:
+          NEO4J_URI: bolt://localhost:7687
+          NEO4J_PASSWORD: ci-lab-only-pw
+          LINCHPIN_ARTIFACT_DIR: artifacts
+          LINCHPIN_GDS_SWEEP: "250:10,250:100,500:10,500:100"
+        run: pytest -q -rs -m neo4j_gds tests/test_neo4j_gds.py
+      - name: Check the artefact
+        run: |
+          python - <<'PY'
+          import json
+          d = json.load(open("artifacts/gds_crosscheck.json"))
+          for r in d["runs"]:
+              assert r["projection"]["relationships"] == r["graph"]["relationships"] > 10000, r["graph"]
+              assert [round(c, 5) for c in r["gds_costs"]] == [round(c, 5) for c in r["networkx_costs"]]
+              print(r["hosts"], r["k"], r["graph"], r["timings_s"]["networkx_yen_median"], r["timings_s"]["gds_yen_median"])
+          print(d["gds_version"], d["neo4j"])
+          PY
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a  # v7.0.1
+        if: always()
+        with: { name: gds-crosscheck, path: artifacts/, if-no-files-found: error }
+
+  # Measured case study: official images pinned to older releases on --internal Docker networks,
+  # nmap -sV (version detection only, no NSE scripts) from inside each network, versions mapped
+  # to CVEs offline with the packaged NVD/EPSS/KEV index, then LINCHPIN plans and the checks run.
+  # Nothing but the image / package registries is contacted from outside the lab networks.
+  lab-scan:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97  # v7.0.0
+        with: { python-version: "3.12" }
+      - run: pip install -e ".[ml]"
+      - name: Start the lab (internal networks only)
+        run: bash lab/up.sh
+      - name: Service / version detection from inside each lab network
+        run: bash lab/scan.sh
+      - name: Analyse with LINCHPIN (offline) and check the plan
+        run: python benchmarks/lab_case_study.py --scans artifacts/lab
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a  # v7.0.1
+        if: always()
+        with: { name: lab-scan, path: artifacts/lab/, if-no-files-found: error }
+      - name: Tear down
+        if: always()
+        run: bash lab/down.sh
+
   ui:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97  # v7.0.0
         with: { python-version: "3.12" }
-      - run: pip install -e ".[dev,api]" playwright && python -m playwright install --with-deps chromium
-      - name: Browser smoke tests (live API + static demo)
+      - run: pip install -e ".[dev,api,docs]" playwright && python -m playwright install --with-deps chromium
+      - name: Build the docs site (the static demo is tested as deployed)
+        run: |
+          mkdocs build --strict
+          grep -q LINCHPIN_STATIC site/demo/index.html || { echo "::error::/demo/ is not the explorer"; exit 1; }
+      - name: Browser smoke tests (live API + built static demo)
+        env:
+          LINCHPIN_DEMO_DIR: site/demo
         run: pytest -q -m ui tests/test_ui_playwright.py
-  security:
-    runs-on: ubuntu-latest
+
+  wheel:
+    runs-on: ubuntu-24.04
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97  # v7.0.0
         with: { python-version: "3.12" }
-      - run: pip install bandit pip-audit
+      - name: Build wheel and sdist
+        run: pip install build && python -m build
+      - name: Install the wheel in a fresh venv and run the CLI outside the source tree
+        run: |
+          python -m venv /tmp/venv
+          /tmp/venv/bin/pip install "$(ls dist/*.whl)"
+          cd /tmp
+          /tmp/venv/bin/linchpin --help > /dev/null
+          /tmp/venv/bin/linchpin --version
+          /tmp/venv/bin/linchpin --state /tmp/lp/findings.json synth --hosts 20 --seed 0 --out /tmp/lp/synth.json
+          /tmp/venv/bin/linchpin --state /tmp/lp/findings.json ingest --replace /tmp/lp/synth.json > /dev/null
+          /tmp/venv/bin/linchpin --state /tmp/lp/findings.json fix --budget 3 > /tmp/lp/fix.json
+          /tmp/venv/bin/python -c "import json; f = json.load(open('/tmp/lp/fix.json')); assert f and f[0]['rationale'], f; print(f[0]['action'])"
+          /tmp/venv/bin/python -c "from linchpin.synth.topologies import load_pool; p = load_pool(); assert len(p['rce']) > 100, 'CVE pool not packaged'"
+          /tmp/venv/bin/python -c "from linchpin.intel.cpe import CpeIndex; assert CpeIndex.load().match('apache:tomcat', '9.0.30'), 'CPE index not packaged'"
+      - name: The sdist carries what its own tests need
+        run: |
+          mkdir /tmp/sdist && tar -xzf dist/*.tar.gz -C /tmp/sdist
+          cd /tmp/sdist/* && python -m venv /tmp/sv && /tmp/sv/bin/pip install -q ".[dev,api,ml]" && /tmp/sv/bin/pytest -q -p no:cacheprovider
+
+  docker:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
+      - name: Build image
+        run: docker build -t linchpin:ci .
+      - name: Smoke-test the API in the container (published on localhost only)
+        run: |
+          docker run -d --name lp -p 127.0.0.1:8000:8000 linchpin:ci
+          for i in $(seq 1 30); do curl -sf http://127.0.0.1:8000/stats > /dev/null && break; sleep 2; done
+          curl -sf http://127.0.0.1:8000/stats | python3 -c "import json, sys; d = json.load(sys.stdin); assert d['findings'] == 73 and d['nodes'] > 0, d; print(d)"
+          curl -sf -o /dev/null http://127.0.0.1:8000/ui
+          test "$(curl -s -o /dev/null -w '%{http_code}' -H 'Host: attacker.example' http://127.0.0.1:8000/stats)" = 400
+          docker logs lp 2>&1 | tail -5
+
+  security:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97  # v7.0.0
+        with: { python-version: "3.12" }
+      - run: pip install bandit pip-audit uv
       - name: SAST (bandit)
         run: bandit -q -r src -ll
-      - name: Dependency audit
+      - name: Dependency audit of the Docker image's hash-pinned lock
+        run: pip-audit -r requirements.lock --require-hashes --no-deps --disable-pip
+      - name: Dependency audit of the lowest versions pyproject.toml allows
+        run: |
+          uv pip compile pyproject.toml --extra api --extra ml --extra neo4j --resolution lowest-direct \
+            --python-version 3.12 --no-header -o /tmp/lowest.txt
+          pip-audit -r /tmp/lowest.txt --no-deps --disable-pip
+      - name: Dependency audit of the newest resolution
         run: pip-audit -r requirements.txt
+

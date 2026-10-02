@@ -46,7 +46,7 @@ not_in_nav: |
 nav:
   - Home: index.md
   - Getting started: getting-started.md
-  - Live demo: demo.md
+  - Live demo: live-demo.md
   - Architecture: architecture.md
   - Design notes: design.md
   - Datasets: datasets.md
