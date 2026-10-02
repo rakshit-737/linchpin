@@ -26,13 +26,14 @@ classical alternative, but open, reproducible evidence about \emph{which data} s
 LINCHPIN, an open-source, read-only tool that fuses already-collected scanner exports, Active Directory identity data
 and network segmentation into one attack graph with exploit-intelligence edge costs, and recommends a budgeted,
 evidence-carrying set of fixes: the exact minimum vertex cut when it fits the budget, a greedy set cover otherwise.
-On 200 seeded topologies in four families with real CVE parameters, plans with three fixes cut the crown jewel off in
-100\% [97.5, 100] of the 150 topologies where a three-fix cut exists, against 37\% [29, 45] when the identity data is
-withheld and 3\% [1, 7] for a KEV-then-EPSS patch queue (paired exact McNemar $p < 10^{-4}$). The exact budgeted
+On 200 seeded topologies in four families with real CVE parameters, adding identity data to the scanner graph lifts
+the three-fix disconnect rate from 37\% [29, 45] to 100\% [97.5, 100] of the 150 topologies where a three-fix cut
+exists (segmentation and exploit-intelligence costs change the number of fixes needed and the attacker-cost gain, not
+this rate), against 3\% [1, 7] for a KEV-then-EPSS patch queue (paired exact McNemar $p < 10^{-4}$). The exact budgeted
 interdiction program of Israeli and Wood reaches the same rate and a greedy interdiction heuristic 97\%; where no cut
 fits the budget, LINCHPIN attains 0.83 [0.77, 0.88] of the optimal rise in the attacker's cheapest-path cost. In a lab
 of five deliberately outdated container images scanned inside continuous integration, one upgrade disconnects the
-database while a CVSS-first queue needs three. We also reproduce part of a published EPSS-versus-CVSS comparison with
+database (as do betweenness and both interdiction baselines) while a CVSS-first queue needs three. We also reproduce part of a published EPSS-versus-CVSS comparison with
 public labels. Code, data pointers and every result are public.
 \end{abstract}
 
@@ -239,7 +240,8 @@ and CVSS 9.1+ 15.0\% (15.1\%). EPSS needs 40.8\% effort to match CVSS 7+'s cover
 is not reproducible from public data because EPSS~v3 scores were not published before March 2023; and because EPSS uses
 KEV as an input feature, scoring it against KEV is partly circular. On a prospective label (the 62 CVEs added to KEV in
 the following year), EPSS~v2 still covers 53.2\% [41.9, 64.6] at 15\% effort against 29.0\% [17.7, 41.9] for CVSS
-9.1+.
+9.1+; with 62 positives these intervals overlap. Efficiency does not reproduce (1.6\% vs 8.9\%) because KEV is a much
+sparser label than the paper's exploitation telemetry.
 
 \paragraph{Learned exploitability and scale.} An optional logistic-regression model over CVE text and CVSS vectors,
 trained on CVEs published 2015--2022 with KEV labels known at that date and with sentences that report exploitation

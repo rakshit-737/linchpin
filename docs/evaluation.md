@@ -97,12 +97,13 @@ unrelated networks. Crown jewel: the NTDS database on the domain controller.
 
 **Reading.** On the population the paper used (CVEs published by 2022-12-01 with an NVD CVSS v3 score) the CVSS
 effort column reproduces almost exactly (58.2% vs 58.1% for CVSS 7+, 15.0% vs 15.1% for CVSS 9.1+), and with the
-EPSS scores that were actually published on that date (model v2022.01.01, i.e. EPSS v2) the paper's EPSS v2 cells
-reproduce closely with KEV as the label: 40.8% vs 39.0% effort at CVSS 7+ coverage and 71.4% vs 69.9% coverage at
-CVSS 9.1+ effort. The paper's headline "one-eighth of the effort" uses EPSS v3, which was not published before
+EPSS scores that were actually published on that date (model v2022.01.01, i.e. EPSS v2) effort and coverage of the
+paper's EPSS v2 cells reproduce within ~2-7 points with KEV as the label (40.8% vs 39.0% effort at CVSS 7+ coverage,
+71.4% vs 69.9% coverage at CVSS 9.1+ effort), but efficiency does not (1.6% vs 8.9%; 3.4% vs 18.5%) because KEV
+(854 positives) is a much sparser label than the paper's exploitation telemetry. The paper's headline "one-eighth of the effort" uses EPSS v3, which was not published before
 March 2023 and cannot be scored retroactively from public data, so it is not reproduced. Against KEV on the scoring
 date EPSS is partly circular (EPSS uses KEV as an input feature); against the 62 CVEs added to KEV in the following
-year it still covers 53% of them at 15% effort, against 29% for CVSS 9.1+. LINCHPIN's own exploitability blend is a
+year it still covers 53% of them at 15% effort, against 29% for CVSS 9.1+, but with 62 positives the intervals overlap ([42, 65] vs [18, 42]). LINCHPIN's own exploitability blend is a
 worse global ranker than EPSS (68.8% effort for CVSS 7+ coverage): its job is the edge cost inside a path, not
 global triage.
 

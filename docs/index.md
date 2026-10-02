@@ -3,10 +3,10 @@
 **Read-only attack-path reasoning: find the few fixes that cut every route to the crown jewels, using scanner, identity and exploit-intel data.**
 
 !!! abstract "Contribution, in one sentence"
-    LINCHPIN's contribution is evidence, not a new cut algorithm: planning on one graph that fuses scanner,
-    identity and segmentation data cuts the crown jewel off with 3 fixes in **100% [97.5, 100]** of 150 seeded
-    topologies, against **37% [29, 45]** when the identity data is missing and **3% [1, 7]** for a KEV-then-EPSS
-    patch queue.
+    LINCHPIN's contribution is evidence, not a new cut algorithm: adding identity (BloodHound) data to the
+    scanner graph lifts the 3-fix disconnect rate from **37% [29, 45]** to **100% [97.5, 100]** of 150 seeded
+    topologies (KEV-then-EPSS queue: **3% [1, 7]**). Segmentation and exploit-intel costs change how many fixes
+    are needed (flat-network view: 1.82x the minimum on `single`) and the attacker-cost gain, not the disconnect rate.
 
 The minimum vertex cut itself is classical (minimum-cost network hardening has been studied since Noel et al. 2003
 and Wang, Noel & Jajodia 2006); what LINCHPIN adds is the fusion of real exports, evidence-carrying fix plans, and an
@@ -17,8 +17,8 @@ open, seeded evaluation with an ablation, published-method baselines and a measu
 | --- | --- | --- |
 | Ablation, 150 topologies, paired | fused data 100% [97.5, 100]; without identity data 37% [29, 45] (McNemar p < 1e-4); 25% / 50% of identity findings dropped: 95% / 90%; identity data only 18%; no graph (KEV→EPSS) 3% | [ablation](evaluation.md#ablation) |
 | Published planners | exact budgeted interdiction MILP (Israeli & Wood 2002) also 100%; Guo et al.-style greedy interdiction 97% [92, 99]; CVSS / EPSS / KEV queues restricted to on-path vulns 9-10% | [benchmark](evaluation.md#synthetic-benchmark) |
-| Measured lab (CI, internal Docker networks) | upgrading Tomcat 9.0.30 (1 fix) cuts the database off; EPSS- and KEV-first need 2 fixes, CVSS-first 3 | [lab scan](evaluation.md#measured-case-study-ci-lab-scan) |
-| Published result reproduced | Jacobs et al. (2023), EPSS v2 with public KEV labels: 40.8% vs 39.0% effort at CVSS 7+ coverage, 71.4% vs 69.9% coverage at CVSS 9.1+ effort | [reproduction](evaluation.md#reproduction-epss-vs-cvss-jacobs-et-al-2023) |
+| Measured lab (CI, internal Docker networks) | one 5-service lab: upgrading Tomcat 9.0.30 (1 fix) cuts the database off; betweenness, greedy and MILP also need 1; EPSS- and KEV-first 2, CVSS-first 3 | [lab scan](evaluation.md#measured-case-study-ci-lab-scan) |
+| Published result reproduced | Jacobs et al. (2023), EPSS v2 with public KEV labels: effort and coverage within ~2-7 points; efficiency does not reproduce (1.6% vs 8.9%, KEV is a sparser label) | [reproduction](evaluation.md#reproduction-epss-vs-cvss-jacobs-et-al-2023) |
 
 ## Try it in 60 seconds
 
