@@ -1,134 +1,229 @@
-[
-  {
-    "family": "single",
-    "hosts": 20,
-    "nodes": 102,
-    "edges": 414,
-    "build_s": 0.0026526000001467764,
-    "rank_s": 0.01133260000278824,
-    "optimise_s": 0.12230389999967883,
-    "mincut_s": 0.005059100003563799,
-    "total_s": 0.13628910000261385
+{
+  "meta": {
+    "cpu": "13th Gen Intel(R) Core(TM) i5-13500H",
+    "cpus": 16,
+    "python": "3.14.3",
+    "os": "Windows-11-10.0.26200-SP0",
+    "reps": 5,
+    "statistic": "median",
+    "command": "python benchmarks/scale.py --reps 5 --out benchmarks/results"
   },
-  {
-    "family": "single",
-    "hosts": 50,
-    "nodes": 229,
-    "edges": 2372,
-    "build_s": 0.012363999998342479,
-    "rank_s": 0.019387999996979488,
-    "optimise_s": 0.2562051999993855,
-    "mincut_s": 0.03735959999903571,
-    "total_s": 0.2879571999947075
-  },
-  {
-    "family": "single",
-    "hosts": 100,
-    "nodes": 467,
-    "edges": 9802,
-    "build_s": 0.10662729999967269,
-    "rank_s": 0.051782900001853704,
-    "optimise_s": 0.5336881000002904,
-    "mincut_s": 0.1846734999999171,
-    "total_s": 0.6920983000018168
-  },
-  {
-    "family": "single",
-    "hosts": 150,
-    "nodes": 673,
-    "edges": 20970,
-    "build_s": 0.11007260000042152,
-    "rank_s": 0.06788439999945695,
-    "optimise_s": 1.5095793000000413,
-    "mincut_s": 0.5818395999995118,
-    "total_s": 1.6875362999999197
-  },
-  {
-    "family": "single",
-    "hosts": 200,
-    "nodes": 903,
-    "edges": 37643,
-    "build_s": 1.1560418000008212,
-    "rank_s": 0.4454667999998492,
-    "optimise_s": 4.224691099996562,
-    "mincut_s": 1.4819946999996318,
-    "total_s": 5.8261996999972325
-  },
-  {
-    "family": "single",
-    "hosts": 300,
-    "nodes": 1384,
-    "edges": 89197,
-    "build_s": 3.198367600001802,
-    "rank_s": 1.288064000000304,
-    "optimise_s": 10.316589400001249,
-    "mincut_s": 3.494510700002138,
-    "total_s": 14.803021000003355
-  },
-  {
-    "family": "ad",
-    "hosts": 20,
-    "nodes": 88,
-    "edges": 334,
-    "build_s": 0.010666599999240134,
-    "rank_s": 0.01583290000053239,
-    "optimise_s": 0.22689049999826238,
-    "mincut_s": 0.016686099999787984,
-    "total_s": 0.2533899999980349
-  },
-  {
-    "family": "ad",
-    "hosts": 50,
-    "nodes": 194,
-    "edges": 1806,
-    "build_s": 0.06281780000063009,
-    "rank_s": 0.04971040000236826,
-    "optimise_s": 0.5899892000015825,
-    "mincut_s": 0.12220779999915976,
-    "total_s": 0.7025174000045808
-  },
-  {
-    "family": "ad",
-    "hosts": 100,
-    "nodes": 373,
-    "edges": 6716,
-    "build_s": 0.24583680000068853,
-    "rank_s": 0.12029110000003129,
-    "optimise_s": 1.658696399998007,
-    "mincut_s": 0.2403511000011349,
-    "total_s": 2.024824299998727
-  },
-  {
-    "family": "ad",
-    "hosts": 150,
-    "nodes": 561,
-    "edges": 15549,
-    "build_s": 0.7718763999982912,
-    "rank_s": 0.1268391999983578,
-    "optimise_s": 1.3377223999996204,
-    "mincut_s": 1.0683425000024727,
-    "total_s": 2.2364379999962694
-  },
-  {
-    "family": "ad",
-    "hosts": 200,
-    "nodes": 729,
-    "edges": 26611,
-    "build_s": 0.7927608999998483,
-    "rank_s": 0.4474826000005123,
-    "optimise_s": 4.227940099997795,
-    "mincut_s": 1.4770353000021714,
-    "total_s": 5.468183599998156
-  },
-  {
-    "family": "ad",
-    "hosts": 300,
-    "nodes": 1126,
-    "edges": 61894,
-    "build_s": 2.331956699999864,
-    "rank_s": 0.528978599999391,
-    "optimise_s": 7.660555299997213,
-    "mincut_s": 2.871241500000906,
-    "total_s": 10.521490599996469
-  }
-]
+  "rows": [
+    {
+      "family": "single",
+      "hosts": 20,
+      "nodes": 102,
+      "edges": 414,
+      "build_s": 0.0066,
+      "rank_s": 0.0177,
+      "optimise_s": 0.2202,
+      "mincut_s": 0.0118,
+      "total_s": 0.2465,
+      "total_s_runs": [
+        0.2465,
+        0.2546,
+        0.2387,
+        0.2623,
+        0.2314
+      ]
+    },
+    {
+      "family": "single",
+      "hosts": 50,
+      "nodes": 229,
+      "edges": 2372,
+      "build_s": 0.0335,
+      "rank_s": 0.039,
+      "optimise_s": 0.4355,
+      "mincut_s": 0.0458,
+      "total_s": 0.5038,
+      "total_s_runs": [
+        0.5678,
+        0.5038,
+        0.4938,
+        0.4982,
+        0.5157
+      ]
+    },
+    {
+      "family": "single",
+      "hosts": 100,
+      "nodes": 467,
+      "edges": 9802,
+      "build_s": 0.1253,
+      "rank_s": 0.0745,
+      "optimise_s": 0.8969,
+      "mincut_s": 0.1701,
+      "total_s": 1.0964,
+      "total_s_runs": [
+        1.0545,
+        1.0964,
+        1.1352,
+        1.0945,
+        1.1372
+      ]
+    },
+    {
+      "family": "single",
+      "hosts": 150,
+      "nodes": 673,
+      "edges": 20970,
+      "build_s": 0.2654,
+      "rank_s": 0.1408,
+      "optimise_s": 1.3805,
+      "mincut_s": 0.4356,
+      "total_s": 1.7847,
+      "total_s_runs": [
+        1.7847,
+        1.6889,
+        1.8769,
+        1.9254,
+        1.7734
+      ]
+    },
+    {
+      "family": "single",
+      "hosts": 200,
+      "nodes": 903,
+      "edges": 37643,
+      "build_s": 0.532,
+      "rank_s": 0.232,
+      "optimise_s": 2.2584,
+      "mincut_s": 0.7371,
+      "total_s": 3.0806,
+      "total_s_runs": [
+        2.863,
+        3.262,
+        3.3812,
+        2.8832,
+        3.0806
+      ]
+    },
+    {
+      "family": "single",
+      "hosts": 300,
+      "nodes": 1384,
+      "edges": 89197,
+      "build_s": 1.0835,
+      "rank_s": 0.7195,
+      "optimise_s": 5.0359,
+      "mincut_s": 1.554,
+      "total_s": 6.9577,
+      "total_s_runs": [
+        6.3778,
+        6.4246,
+        7.5399,
+        7.1856,
+        6.9577
+      ]
+    },
+    {
+      "family": "ad",
+      "hosts": 20,
+      "nodes": 88,
+      "edges": 334,
+      "build_s": 0.0055,
+      "rank_s": 0.0073,
+      "optimise_s": 0.1061,
+      "mincut_s": 0.0097,
+      "total_s": 0.1185,
+      "total_s_runs": [
+        0.1203,
+        0.1049,
+        0.1178,
+        0.1185,
+        0.1251
+      ]
+    },
+    {
+      "family": "ad",
+      "hosts": 50,
+      "nodes": 194,
+      "edges": 1806,
+      "build_s": 0.0237,
+      "rank_s": 0.1016,
+      "optimise_s": 0.3,
+      "mincut_s": 0.0571,
+      "total_s": 0.4171,
+      "total_s_runs": [
+        0.4167,
+        0.4153,
+        0.4304,
+        0.4314,
+        0.4171
+      ]
+    },
+    {
+      "family": "ad",
+      "hosts": 100,
+      "nodes": 373,
+      "edges": 6716,
+      "build_s": 0.0814,
+      "rank_s": 0.0419,
+      "optimise_s": 0.7891,
+      "mincut_s": 0.2133,
+      "total_s": 0.9217,
+      "total_s_runs": [
+        0.9217,
+        1.0856,
+        0.9078,
+        0.9927,
+        0.8946
+      ]
+    },
+    {
+      "family": "ad",
+      "hosts": 150,
+      "nodes": 561,
+      "edges": 15549,
+      "build_s": 0.1993,
+      "rank_s": 0.0781,
+      "optimise_s": 0.737,
+      "mincut_s": 0.3797,
+      "total_s": 1.0353,
+      "total_s_runs": [
+        1.0353,
+        0.9577,
+        1.089,
+        1.0912,
+        1.0144
+      ]
+    },
+    {
+      "family": "ad",
+      "hosts": 200,
+      "nodes": 729,
+      "edges": 26611,
+      "build_s": 0.3205,
+      "rank_s": 0.1008,
+      "optimise_s": 1.6452,
+      "mincut_s": 0.6732,
+      "total_s": 2.0494,
+      "total_s_runs": [
+        2.0283,
+        2.0742,
+        2.0494,
+        1.8956,
+        2.0687
+      ]
+    },
+    {
+      "family": "ad",
+      "hosts": 300,
+      "nodes": 1126,
+      "edges": 61894,
+      "build_s": 0.7766,
+      "rank_s": 0.2514,
+      "optimise_s": 3.7436,
+      "mincut_s": 1.3558,
+      "total_s": 4.7988,
+      "total_s_runs": [
+        4.6978,
+        5.1177,
+        4.7988,
+        4.6722,
+        5.3842
+      ]
+    }
+  ]
+}
