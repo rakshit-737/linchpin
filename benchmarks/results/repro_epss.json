@@ -1,0 +1,71 @@
+{
+  "population": 379082,
+  "kev_total": 1726,
+  "kev_base_rate_pct": 0.455,
+  "note": "exploited label = CISA KEV (public subset of real exploitation); the paper uses proprietary exploitation telemetry, so coverage differs by design.",
+  "strategies": {
+    "cvss>=7": {
+      "effort": 50.74,
+      "flagged": 192338,
+      "coverage": 88.82,
+      "efficiency": 0.797
+    },
+    "cvss>=9.1": {
+      "effort": 13.56,
+      "flagged": 51408,
+      "coverage": 35.4,
+      "efficiency": 1.189
+    },
+    "epss>=0.1": {
+      "effort": 4.55,
+      "flagged": 17261,
+      "coverage": 73.75,
+      "efficiency": 7.375
+    },
+    "kev-only": {
+      "effort": 0.46,
+      "flagged": 1726,
+      "coverage": 100.0,
+      "efficiency": 100.0
+    },
+    "epss>=0.0267 (=coverage cvss>=7)": {
+      "effort": 14.88,
+      "flagged": 56402,
+      "coverage": 88.88,
+      "efficiency": 2.72
+    },
+    "ours>=0.2935 (=coverage cvss>=7)": {
+      "effort": 71.62,
+      "flagged": 271484,
+      "coverage": 88.88,
+      "efficiency": 0.565
+    }
+  },
+  "paper": {
+    "cvss>=7": {
+      "coverage": 82.1,
+      "efficiency": null,
+      "effort": 58.1
+    },
+    "cvss>=9.1": {
+      "coverage": 33.5,
+      "efficiency": 6.1,
+      "effort": null
+    },
+    "epss v2": {
+      "coverage": 69.9,
+      "efficiency": 18.5,
+      "effort": null
+    },
+    "epss v3": {
+      "coverage": 90.4,
+      "efficiency": 24.1,
+      "effort": null
+    },
+    "epss>=0.088 (v3, matched to cvss>=7 coverage)": {
+      "coverage": 82.0,
+      "efficiency": null,
+      "effort": 7.3
+    }
+  }
+}
