@@ -274,6 +274,10 @@ def render(out: dict) -> str:
             ver = "EPSS v2 " if pk and "v2" in pk else "EPSS v3 " if pk and "v3" in pk else ""
             ptxt = ("n/r" if not p else
                     f"{p['effort']} / {p['coverage']} / {p['efficiency']} (Fig. {p['fig']}, {ver}{p['threshold']})")
+            if row["name"] == "epss_eq_cov" and not r["equal_coverage_reachable"]:
+                lines.append(f"| {names[row['name']]} | {row['threshold']} | n/a (ties) | n/a (ties) | n/a (ties) "
+                             f"| {ptxt} |")
+                continue
             lines.append(f"| {names[row['name']]} | {row['threshold']} | {_cell(row, 'effort')} | "
                          f"{_cell(row, 'coverage')} | {_cell(row, 'efficiency')} | {ptxt} |")
         ratio = (f"**{r['effort_ratio_epss_vs_cvss7']}**" if r["equal_coverage_reachable"] else

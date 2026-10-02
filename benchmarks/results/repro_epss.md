@@ -21,7 +21,7 @@ same population minus CVEs already in KEV; label = added to KEV in (2022-12-01, 
 | strategy | threshold | effort % | coverage % | efficiency % | paper (effort / coverage / efficiency) |
 | --- | ---: | ---: | ---: | ---: | --- |
 | CVSS 7+ | 7.0 | 57.9 [57.7, 58.2] | 77.4 [67.7, 87.1] | 0.1 [0.1, 0.1] | 58.1 / 82.1 / 3.9 (Fig. 5, 7+) |
-| EPSS, coverage matched to CVSS 7+ | 0.0089 | 100.0 [100.0, 100.0] | 100.0 [100.0, 100.0] | 0.1 [0.1, 0.1] | 39.0 / 84.7 / 8.9 (Fig. 5, EPSS v2 0.012+) |
+| EPSS, coverage matched to CVSS 7+ | 0.0089 | n/a (ties) | n/a (ties) | n/a (ties) | 39.0 / 84.7 / 8.9 (Fig. 5, EPSS v2 0.012+) |
 | LINCHPIN blend (no KEV floor), coverage matched | 0.3318 | 67.7 [67.5, 68.0] | 77.4 [67.7, 87.1] | 0.1 [0.1, 0.1] | n/r |
 | CVSS 9.1+ | 9.1 | 14.9 [14.7, 15.1] | 29.0 [17.7, 41.9] | 0.1 [0.1, 0.1] | 15.1 / 33.5 / 6.1 (Fig. 4, 9.1+) |
 | EPSS, effort matched to CVSS 9.1+ | 0.016 | 14.9 [14.7, 15.1] | 53.2 [41.9, 64.6] | 0.2 [0.1, 0.2] | 15.4 / 69.9 / 18.5 (Fig. 4, EPSS v2 0.037+) |
