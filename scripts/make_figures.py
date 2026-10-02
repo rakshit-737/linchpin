@@ -5,6 +5,7 @@
    and the exact minimum cut highlighted.
 2. how/cost_curves.png -- on a `none` topology (no small cut): the attacker's cheapest-path cost
    after 0..5 fixes chosen by LINCHPIN, the exact interdiction MILP and CVSS-first.
+3. copies benchmarks/results/{strategies,scale}.png to docs/img/results/ for the docs site.
 
 Everything is seeded; regenerate after changing the engine.
 """
@@ -106,10 +107,21 @@ def cost_curves(path: Path) -> None:
     plt.close(fig)
 
 
+def sync_result_figures() -> None:
+    """The docs site can only show images under docs/: copy the benchmark figures there."""
+    import shutil
+    root = OUT.parents[2]
+    for name in ("strategies.png", "scale.png"):
+        src = root / "benchmarks" / "results" / name
+        if src.exists():
+            shutil.copyfile(src, root / "docs" / "img" / "results" / name)
+
+
 def main() -> int:
     OUT.mkdir(parents=True, exist_ok=True)
     attack_graph(OUT / "attack_graph.png")
     cost_curves(OUT / "cost_curves.png")
+    sync_result_figures()
     for p in sorted(OUT.glob("*.png")):
         print(f"wrote {p} ({p.stat().st_size / 1e3:.0f} kB)")
     return 0

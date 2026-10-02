@@ -8,7 +8,7 @@ copyright: MIT licence. Lab-only, read-only tooling.
 
 theme:
   name: material
-  features: [navigation.sections, navigation.top, content.code.copy, search.highlight]
+  features: [navigation.sections, navigation.top, navigation.indexes, content.code.copy, search.highlight]
   palette:
     - media: "(prefers-color-scheme: light)"
       scheme: default
@@ -23,8 +23,10 @@ markdown_extensions:
   - admonition
   - tables
   - attr_list
+  - md_in_html
   - toc: {permalink: true}
   - pymdownx.details
+  - pymdownx.tabbed: {alternate_style: true}
   - pymdownx.snippets: {base_path: ["."], check_paths: true}
   - pymdownx.superfences:
       custom_fences:
@@ -38,7 +40,16 @@ plugins:
       handlers:
         python:
           paths: [src]
-          options: {show_source: false, docstring_style: google, show_root_heading: true, heading_level: 3}
+          options:
+            docstring_style: google
+            show_source: false
+            show_root_heading: true
+            heading_level: 3
+            members_order: source
+            show_if_no_docstring: true
+            show_signature_annotations: true
+            separate_signature: true
+            filters: ["!^_"]
 
 not_in_nav: |
   /demo/**
@@ -46,11 +57,13 @@ not_in_nav: |
 nav:
   - Home: index.md
   - Getting started: getting-started.md
+  - How it works: how-it-works.md
+  - Evaluation: evaluation.md
+  - Reproduce: reproduce.md
   - Live demo: live-demo.md
   - Architecture: architecture.md
   - Design notes: design.md
-  - Datasets: datasets.md
-  - Benchmarks & results: benchmarks.md
+  - Datasets & references: datasets.md
   - Reference:
       - CLI: reference/cli.md
       - HTTP API: reference/api.md
@@ -59,8 +72,9 @@ nav:
   - Security: security.md
   - ADRs:
       - 0001 Exact cut plus greedy: adr/0001-exact-cut-plus-greedy.md
-      - 0002 Neo4j adapter: adr/0002-neo4j-adapter.md
+      - 0002 Neo4j adapter and GDS: adr/0002-neo4j-adapter.md
       - 0003 Real-data strategy: adr/0003-real-data-strategy.md
       - 0004 AD ACEs and weighted cut: adr/0004-ace-edges-weighted-cut.md
+      - 0005 Static, dependency-free UI: adr/0005-static-ui.md
   - Limitations & roadmap: limitations.md
   - Changelog: changelog.md
