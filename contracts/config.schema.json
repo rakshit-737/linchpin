@@ -9,6 +9,9 @@
     "crown_jewels": { "type": "array", "items": { "type": "string" } },
     "k_shortest": { "type": "integer", "minimum": 1 },
     "exploitability_source": { "type": "string", "enum": ["intel", "learned"], "description": "additive in v1.1" },
+    "fix_cost": { "type": "object", "additionalProperties": { "type": "number", "minimum": 0 }, "description": "additive in v1.2: effort per remediation label for the weighted min cut" },
+    "credential_reachability": { "type": "boolean", "default": true, "description": "additive in v1.3: score credential use by network reachability (prerequisite_match)" },
+    "prerequisite_penalty": { "type": "number", "minimum": 0, "maximum": 1, "default": 0.5, "description": "additive in v1.3: prerequisite_match of a credential use whose target is not reachable" },
     "neo4j": { "type": "object", "properties": { "uri": {"type": "string"}, "user": {"type": "string"} } }
   }
 }

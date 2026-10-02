@@ -229,6 +229,8 @@ class GraphStore:
             for port, svc in services.get(b, []):
                 if sa == sb or (rule is not None and (not rule or port in rule)):
                     self._add(g, f"host:{a}", "CAN_REACH", svc)
+        if self.cfg.credential_reachability:
+            self._credential_prerequisites(g, hosts, services, rules)
         facing = sorted(h for h, p in hosts.items() if p["internet_facing"])
         if facing:
             g.add_node(INTERNET, label="Internet")
@@ -260,6 +262,44 @@ class GraphStore:
             if sa != sb:
                 total += seg_hosts.get(sa, 0) * sum(1 for p in seg_ports.get(sb, []) if not ports or p in ports)
         return total
+
+    def _credential_prerequisites(self, g: nx.DiGraph, hosts: dict[str, dict],
+                                  services: dict[str, list[tuple[int, str]]],
+                                  rules: dict[tuple[str, str], set[int]]) -> None:
+        """Contract v1.3: using a credential needs network access to the host it unlocks.
+
+        A ``GRANTS`` edge (credential -> admin on host T) keeps ``prerequisite_match = 1`` when T
+        is reachable from a segment where the credential is recoverable (``STORED_ON``): the same
+        segment, or an allow rule whose ports include one of T's services (any port when T has no
+        service inventory). Otherwise it gets ``cfg.prerequisite_penalty`` and a higher cost; the
+        edge stays, because the firewall view may be incomplete. Credentials whose storage is
+        unknown (e.g. BloodHound AdminTo without a session) are left at 1.
+        """
+        stored: dict[str, set[str]] = {}
+        for u, v, a in g.edges(data=True):
+            if a["rel"] == "STORED_ON" and g.nodes[u].get("host_id") in hosts:
+                stored.setdefault(v, set()).add(hosts[g.nodes[u]["host_id"]]["segment"])
+
+        def reachable(seg: str, target: str) -> bool:
+            st = hosts[target]["segment"]
+            if seg == st:
+                return True
+            ports = rules.get((seg, st))
+            if ports is None:
+                return False
+            known = [p for p, _ in services.get(target, [])]
+            return not ports or not known or any(p in ports for p in known)
+
+        pen = self.cfg.prerequisite_penalty
+        for u, v, a in g.edges(data=True):
+            if a["rel"] != "GRANTS" or u not in stored:
+                continue
+            target = g.nodes[v].get("host_id")
+            if target not in hosts or any(reachable(s, target) for s in stored[u]):
+                continue
+            a["prerequisite_match"] = pen
+            a["cost"] = edge_cost(EdgeContext(rel="GRANTS", transition_class=CLASS_BY_REL["GRANTS"],
+                                              prerequisite_match=pen), self.cfg)
 
     def _add(self, g: nx.DiGraph, u: str, rel: str, v: str, **props) -> None:
         ctx = EdgeContext(rel=rel, transition_class=CLASS_BY_REL.get(rel),

@@ -42,3 +42,39 @@ def test_property_bounds():
                           epss=rng.choice([None, rng.random()]),
                           prerequisite_match=rng.random())
         assert 0.0 <= edge_cost(ctx, cfg) <= 1.0
+
+
+def test_credential_use_needs_network_reachability():
+    """Contract v1.3: a credential that only works on an unreachable host costs more to use."""
+    from linchpin.graph.store import GraphStore
+    from linchpin.models import NormalizedFinding, make_finding_id
+
+    def f(host, kind, key, **kw):
+        return NormalizedFinding(finding_id=make_finding_id(host, kind, key), host_id=host, kind=kind,
+                                 source="t", observed_at="2026-01-01T00:00:00Z", **kw)
+
+    def inv(host, seg):
+        return f(host, "config", "inv", detail={"issue": "inventory", "segment": seg})
+
+    base = [inv("a", "office"), inv("b", "office"), inv("c", "vault"),
+            f("a", "service", "445", port=445), f("b", "service", "445", port=445), f("c", "service", "22", port=22),
+            f("a", "credential", "svc", detail={"principal": "svc", "valid_on": ["b", "c"]})]
+    cfg = Config()
+    s = GraphStore(cfg)
+    s.upsert_findings(base)
+    s.build_attack_graph()
+    near = s.g.edges["cred:svc", "priv:admin@b"]
+    far = s.g.edges["cred:svc", "priv:admin@c"]
+    assert "prerequisite_match" not in near and far["prerequisite_match"] == cfg.prerequisite_penalty
+    assert far["cost"] == pytest.approx(near["cost"] + cfg.weights.w2 * (1 - cfg.prerequisite_penalty))
+    # an allow rule covering one of c's services makes it reachable again
+    rule = f("net", "reachability", "office->vault",
+             detail={"from_segment": "office", "to_segment": "vault", "ports": [22]})
+    s.upsert_findings([rule])
+    s.build_attack_graph()
+    assert s.g.edges["cred:svc", "priv:admin@c"]["cost"] == near["cost"]
+    # and the check can be switched off
+    off = GraphStore(Config(credential_reachability=False))
+    off.upsert_findings(base)
+    off.build_attack_graph()
+    assert off.g.edges["cred:svc", "priv:admin@c"]["cost"] == near["cost"]
