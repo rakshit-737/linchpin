@@ -3,7 +3,7 @@
 `python scripts/download_data.py` fetches about 270 MB into `../../datasets/linchpin/`, outside the repo.
 Commit-addressed files are verified against SHA-256 checksums and a manifest is written for rolling feeds.
 Nothing downloaded is committed. The repo holds tiny trimmed test fixtures, the derived 3,000-CVE benchmark
-pool (`benchmarks/data/cve_pool.csv`) and the static-demo snapshots (graph structure only).
+pool (`src/linchpin/synth/data/cve_pool.csv`, shipped in the wheel) and the static-demo snapshots (graph structure only).
 
 | dataset | use | licence / terms |
 | --- | --- | --- |

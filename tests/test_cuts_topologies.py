@@ -19,6 +19,18 @@ def test_pool_is_real_and_committed():
     pool = load_pool()
     assert len(pool["rce"]) > 500 and len(pool["rce_kev"]) > 50
     assert all(r["cve"].startswith("CVE-") for r in pool["info"][:20])
+    _, gt = generate_family("single", 12, 0)
+    assert gt.cve_pool.startswith("sha256:")
+
+
+def test_missing_pool_is_an_error_unless_synthetic_is_allowed(tmp_path):
+    missing = str(tmp_path / "nope.csv")
+    with pytest.raises(FileNotFoundError, match="CVE pool not found"):
+        generate_family("single", 12, 0, pool_path=missing)
+    with pytest.warns(RuntimeWarning, match="placeholder"):
+        findings, gt = generate_family("single", 12, 0, pool_path=missing, allow_synthetic=True)
+    assert gt.cve_pool == "synthetic-fallback"
+    assert all(f.cve_id.startswith("CVE-2099-") for f in findings if f.kind == "cve")
 
 
 @pytest.mark.parametrize("family", FAMILIES)

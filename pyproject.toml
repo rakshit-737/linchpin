@@ -27,7 +27,7 @@ linchpin = "linchpin.cli:main"
 where = ["src"]
 
 [tool.setuptools.package-data]
-linchpin = ["api/static/*"]
+linchpin = ["api/static/*", "synth/data/*.csv"]
 
 [tool.pytest.ini_options]
 pythonpath = ["src"]

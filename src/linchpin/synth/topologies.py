@@ -1,9 +1,12 @@
 """Benchmark topology families with REAL vulnerability parameters.
 
-Every vuln planted here is drawn from ``benchmarks/data/cve_pool.csv`` -- a seeded sample of
-real CVEs with their NVD CVSS vector / exploitability sub-score, FIRST EPSS and CISA KEV
-status -- so the CVSS / EPSS / KEV baselines are ranking realistic score distributions.
-(Hosts, segments and credentials are still synthetic.)
+Every vuln planted here is drawn from ``synth/data/cve_pool.csv`` (shipped as package data):
+a seeded, KEV-enriched stratified sample of 3,000 real CVEs (300 in KEV, i.e. 10% against
+about 0.5% in the source population) with their NVD CVSS vector / exploitability sub-score,
+FIRST EPSS and CISA KEV status. The CVSS / EPSS / KEV baselines therefore rank real score
+*values*; the KEV share is deliberately inflated so KEV-first queues have KEV entries to pick.
+Hosts, segments and credentials are synthetic. A missing pool is an error unless the caller
+opts into placeholder ``CVE-2099-*`` ids with ``allow_synthetic=True``.
 
 Families (``family`` argument):
 
@@ -18,27 +21,60 @@ Families (``family`` argument):
   Chokepoint is usually the DA credential; half the seeds add an exploitable DC service
   (e.g. a KEV-listed RCE) that removes it.
 
-All families add high-CVSS *decoys*: unreachable hosts and non-code-execution vulns.
+All families add two kinds of planted distractors, and the benchmark reports them:
+
+* *decoys* -- two isolated hosts (``legacy-00``, ``legacy-01``) in a segment nothing can
+  reach, each with a KEV-listed remote-code-execution CVE of CVSS >= 9.0;
+* *noise* -- high-CVSS (>= 6.5) vulns without code execution on reachable hosts.
+
+Both are what a score-sorted patch queue spends its budget on; the reachability-filtered
+baselines in :mod:`linchpin.benchmark` remove that advantage.
 """
 from __future__ import annotations
 
 import csv
+import hashlib
 import random
+import warnings
 from functools import lru_cache
 from pathlib import Path
 
 from linchpin.models import GroundTruth, NormalizedFinding, make_finding_id
 
 TS = "2026-01-01T00:00:00+00:00"
-POOL = Path(__file__).resolve().parents[3] / "benchmarks" / "data" / "cve_pool.csv"
+POOL = Path(__file__).resolve().parent / "data" / "cve_pool.csv"  # shipped as package data
 FAMILIES = ("single", "multi", "none", "ad")
+SYNTHETIC = "synthetic-fallback"
+
+
+def pool_provenance(path: str | Path | None = None) -> str:
+    """``sha256:<first 16 hex>`` of the CVE pool file, or ``synthetic-fallback`` when it is absent.
+
+    Line endings are normalised first, so a Windows checkout (CRLF) hashes like the wheel (LF).
+    """
+    p = Path(path) if path else POOL
+    if not p.is_file():
+        return SYNTHETIC
+    return "sha256:" + hashlib.sha256(p.read_bytes().replace(b"\r\n", b"\n")).hexdigest()[:16]
 
 
 @lru_cache(maxsize=2)
-def load_pool(path: str | None = None) -> dict[str, list[dict]]:
+def load_pool(path: str | None = None, allow_synthetic: bool = False) -> dict[str, list[dict]]:
+    """Real-CVE parameters by impact class (``rce`` / ``info`` / ``local`` / ``rce_kev``).
+
+    Raises:
+        FileNotFoundError: the pool file is missing and ``allow_synthetic`` is False. With
+            ``allow_synthetic=True`` a warning is emitted and empty pools are returned, so the
+            generator falls back to placeholder ``CVE-2099-*`` ids with random scores.
+    """
     p = Path(path) if path else POOL
     by: dict[str, list[dict]] = {"rce": [], "info": [], "local": [], "rce_kev": []}
-    if not p.exists():
+    if not p.is_file():
+        if not allow_synthetic:
+            raise FileNotFoundError(f"CVE pool not found: {p} (it ships with the package; rebuild it with "
+                                    "scripts/build_cve_pool.py, or pass allow_synthetic=True)")
+        warnings.warn(f"CVE pool not found at {p}: planting placeholder CVE-2099-* vulns with random scores",
+                      RuntimeWarning, stacklevel=2)
         return by
     with p.open(encoding="utf-8") as fh:
         for r in csv.DictReader(line for line in fh if not line.startswith("#")):
@@ -242,15 +278,29 @@ def _ad(b: _B, n: int):
 _FAMILY = {"single": _single, "multi": _multi, "none": _none, "ad": _ad}
 
 
-def generate_family(family: str, n_hosts: int = 20, seed: int = 0, pool_path: str | None = None
-                    ) -> tuple[list[NormalizedFinding], GroundTruth]:
+def generate_family(family: str, n_hosts: int = 20, seed: int = 0, pool_path: str | None = None,
+                    allow_synthetic: bool = False) -> tuple[list[NormalizedFinding], GroundTruth]:
+    """Generate one seeded topology of ``family`` with about ``n_hosts`` hosts (minimum 8).
+
+    Args:
+        family: one of :data:`FAMILIES` (``single``, ``multi``, ``none``, ``ad``).
+        n_hosts: approximate host count; decoys and the crown-jewel host come on top.
+        seed: RNG seed; the same (family, n_hosts, seed, pool) always gives the same findings.
+        pool_path: alternative CVE pool CSV (default: the packaged one).
+        allow_synthetic: permit placeholder CVEs when the pool is missing (warns).
+
+    Returns:
+        ``(findings, ground_truth)``; ``ground_truth.cve_pool`` records the pool's hash.
+    """
     if family not in _FAMILY:
         raise ValueError(f"unknown family {family!r}; choose from {FAMILIES}")
-    b = _B(seed * 1009 + FAMILIES.index(family), load_pool(pool_path))
+    pool = load_pool(pool_path, allow_synthetic)
+    b = _B(seed * 1009 + FAMILIES.index(family), pool)
     linchpin, planted, crowns = _FAMILY[family](b, max(n_hosts, 8))
     decoy = b.decoys(2)
     # de-duplicate (a builder may overwrite a host's inventory deliberately)
     uniq = {f.finding_id: f for f in b.out}
     gt = GroundTruth(linchpin=linchpin, entrypoints=["internet"], crown_jewels=crowns, decoy_high_cvss=decoy,
-                     seed=seed, topology=family, planted_cut=planted)
+                     seed=seed, topology=family, planted_cut=planted,
+                     cve_pool=pool_provenance(pool_path) if pool["rce"] else SYNTHETIC)
     return list(uniq.values()), gt

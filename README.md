@@ -101,7 +101,7 @@ Full output: [`benchmarks/results/case_study.md`](benchmarks/results/case_study.
 
 ### 2. Benchmark: 4 topology families × 50 seeds, real CVE parameters
 
-Every planted vuln is drawn from [`benchmarks/data/cve_pool.csv`](benchmarks/data/cve_pool.csv). That file is a seeded sample of 3,000 real CVEs (300 in KEV) with their NVD vector, exploitability sub-score, EPSS and KEV status. The CVSS, EPSS and KEV baselines therefore rank realistic score distributions. The families span the brief's "multiple or zero chokepoints" cases:
+Every planted vuln is drawn from [`src/linchpin/synth/data/cve_pool.csv`](src/linchpin/synth/data/cve_pool.csv) (shipped in the wheel). That file is a seeded sample of 3,000 real CVEs (300 in KEV) with their NVD vector, exploitability sub-score, EPSS and KEV status. The CVSS, EPSS and KEV baselines therefore rank realistic score distributions. The families span the brief's "multiple or zero chokepoints" cases:
 
 * `single`: one bastion between the DMZ and everything else.
 * `multi`: 2–3 parallel bastions and two independent routes into the DB. No single cut exists; the minimum cut is 2.
@@ -192,7 +192,7 @@ uvicorn linchpin.api.app:app --host 127.0.0.1 --port 8000   # open http://127.0.
 ```bash
 python scripts/download_data.py                        # ~270 MB, checksummed
 python -m linchpin intel-build --data-dir ../../datasets/linchpin   # ~5 min -> derived/cve_intel.csv.gz
-python scripts/build_cve_pool.py                       # regenerates benchmarks/data/cve_pool.csv (seed 7)
+python scripts/build_cve_pool.py                       # regenerates src/linchpin/synth/data/cve_pool.csv (seed 7)
 python benchmarks/run_benchmark.py --seeds 50 --budget 3   # ~25 min
 python benchmarks/case_study.py
 python benchmarks/ml_exploitability.py                 # ~2.5 min

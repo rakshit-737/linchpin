@@ -3,7 +3,7 @@ parameters (CVSS base/vector/exploitability sub-score, EPSS, KEV).
 
     python scripts/build_cve_pool.py --intel ../../datasets/linchpin/derived/cve_intel.csv.gz
 
-Writes benchmarks/data/cve_pool.csv (seeded random sample; all numbers come from NVD / FIRST
+Writes src/linchpin/synth/data/cve_pool.csv (seeded random sample; all numbers come from NVD / FIRST
 EPSS / CISA KEV on the EPSS score date recorded in the header comment).
 """
 from __future__ import annotations
@@ -16,8 +16,8 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
 
-from linchpin.connectors._common import impact_class  # noqa: E402
-from linchpin.intel import CveIntel  # noqa: E402
+from linchpin.connectors._common import impact_class
+from linchpin.intel import CveIntel
 
 FIELDS = ["cve", "cvss_base", "cvss_vector", "cvss_exploitability", "epss", "kev", "impact_class"]
 
@@ -25,7 +25,7 @@ FIELDS = ["cve", "cvss_base", "cvss_vector", "cvss_exploitability", "epss", "kev
 def main(argv=None) -> int:
     ap = argparse.ArgumentParser()
     ap.add_argument("--intel", default="../../datasets/linchpin/derived/cve_intel.csv.gz")
-    ap.add_argument("--out", default="benchmarks/data/cve_pool.csv")
+    ap.add_argument("--out", default="src/linchpin/synth/data/cve_pool.csv")
     ap.add_argument("--n", type=int, default=3000)
     ap.add_argument("--n-kev", type=int, default=300)
     ap.add_argument("--seed", type=int, default=7)

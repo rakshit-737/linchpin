@@ -88,3 +88,4 @@ class GroundTruth(BaseModel):
     seed: int
     topology: str = "single"
     planted_cut: list[str] = Field(default_factory=list)  # a known (not necessarily minimum) cut
+    cve_pool: str = ""  # provenance of the planted CVE parameters (pool hash or "synthetic-fallback")
