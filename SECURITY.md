@@ -14,9 +14,17 @@ Only feed it data from environments you own or are explicitly authorised to asse
 ## Handling input
 
 - Finding files are untrusted input. Every record is validated against the pydantic `NormalizedFinding` contract, and invalid records are dropped.
-- All XML parsers go through `defusedxml` (a runtime dependency); if it is missing, documents containing entity declarations are refused.
-- The API has no authentication and binds to `127.0.0.1` in the Makefile and docker-compose. Do not expose it to a network.
+- All XML parsers go through `defusedxml` (a hard runtime dependency), which refuses internal and external entity declarations.
+- The API has no authentication and binds to `127.0.0.1` (`linchpin serve`, Makefile, compose). It only answers requests whose `Host` header is on `LINCHPIN_ALLOWED_HOSTS`, bounds body size, stored findings and graph size, and reads server-side scenarios only by relative name inside configured directories (see the [API reference](https://rakshit-737.github.io/linchpin/reference/api/)). Do not expose it to a network.
 - Findings describe weaknesses. Treat ingested data and `.linchpin/` state files as sensitive and keep them out of version control (they are already in `.gitignore`).
+
+## Known issues in released versions
+
+- **v1.0.0** (wheel, sdist and `ghcr.io/rakshit-737/linchpin:1.0.0`): `/demo/load` accepted any server-side file path
+  as a scenario, `k` / `budget` were unbounded and request bodies unlimited, and the `Host` header was not checked.
+  Anyone who can reach the API (or a DNS-rebinding page in a local browser) could read files the server can parse
+  or exhaust CPU. Fixed on `main`; run v1.0.0 only bound to localhost with no browser on the same host, or upgrade
+  to the next release.
 
 ## Reporting a vulnerability
 

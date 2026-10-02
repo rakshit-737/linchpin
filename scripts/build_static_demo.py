@@ -11,6 +11,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import os
 import sys
 from pathlib import Path
 
@@ -43,15 +44,17 @@ def main(argv=None) -> int:
     a = ap.parse_args(argv)
     out = Path(a.out)
     (out / "data").mkdir(parents=True, exist_ok=True)
-    client = TestClient(create_app())
+    # The API only reads the scenario the server is configured with (see api/app.py).
+    os.environ["LINCHPIN_SCENARIO"] = str(ROOT / "scenarios" / "composite_lab.yaml")
+    os.environ["LINCHPIN_DATA_DIR"] = str(Path(a.data_dir).resolve())
+    client = TestClient(create_app(), base_url="http://127.0.0.1")
     for fam in ("single", "multi", "none", "ad"):
-        client.post("/demo/load", json={"family": fam, "seed": 0})
+        client.post("/demo/load", json={"family": fam, "seed": 0}).raise_for_status()
         (out / "data" / f"{fam}.json").write_text(json.dumps(snapshot(client), separators=(",", ":")), "utf-8")
         print("wrote", fam)
     default = "single"
     if (Path(a.data_dir) / "derived" / "cve_intel.csv.gz").exists():
-        r = client.post("/demo/load", json={"family": "scenario", "data_dir": a.data_dir,
-                                            "scenario": str(ROOT / "scenarios" / "composite_lab.yaml")})
+        r = client.post("/demo/load", json={"family": "scenario"})
         r.raise_for_status()
         (out / "data" / "case_study.json").write_text(json.dumps(snapshot(client), separators=(",", ":")), "utf-8")
         default = "case_study"

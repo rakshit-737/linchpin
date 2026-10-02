@@ -36,6 +36,45 @@ class NormalizedFinding(BaseModel):
     observed_at: str
 
 
+def detail_problem(f: NormalizedFinding) -> str | None:
+    """Why ``f.detail`` cannot be used to build the attack graph, or None when it is usable.
+
+    The schema leaves ``detail`` free-form; the graph builder needs these keys per kind:
+    ``credential`` -> ``principal`` (and a list ``valid_on`` if given); ``acl`` -> ``principal``
+    plus ``target`` (AdminTo) or ``target_name`` (abusable ACE); ``reachability`` ->
+    ``from_segment`` and ``to_segment`` (and a list of integer ``ports`` if given); inventory
+    ``config`` -> ``datastores`` as a list of objects with a ``name``.
+    """
+    d = f.detail or {}
+
+    def text(key: str) -> bool:
+        return isinstance(d.get(key), str) and bool(d[key])
+
+    if f.kind == "credential":
+        if not text("principal"):
+            return "credential detail needs a non-empty 'principal'"
+        if not isinstance(d.get("valid_on", []), list):
+            return "credential 'valid_on' must be a list of host ids"
+    elif f.kind == "acl":
+        if not text("principal"):
+            return "acl detail needs a non-empty 'principal'"
+        if d.get("ace") and not text("target_name"):
+            return "ACE detail needs 'target_name'"
+        if d.get("right") == "AdminTo" and not text("target"):
+            return "AdminTo detail needs 'target'"
+    elif f.kind == "reachability":
+        if not (text("from_segment") and text("to_segment")):
+            return "reachability detail needs 'from_segment' and 'to_segment'"
+        ports = d.get("ports") or []
+        if not isinstance(ports, list) or not all(isinstance(p, int) and not isinstance(p, bool) for p in ports):
+            return "reachability 'ports' must be a list of integers"
+    elif f.kind == "config" and d.get("issue") == "inventory":
+        ds = d.get("datastores") or []
+        if not isinstance(ds, list) or not all(isinstance(x, dict) and x.get("name") for x in ds):
+            return "inventory 'datastores' must be a list of objects with a 'name'"
+    return None
+
+
 class AttackPath(BaseModel):
     path_id: str
     nodes: list[str]

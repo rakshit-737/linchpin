@@ -1,4 +1,4 @@
-"""M2: GraphStore. In-memory NetworkX backend (Neo4j backend is a documented TODO).
+"""M2: GraphStore, the in-memory NetworkX attack graph (Neo4j mirror and GDS: neo4j_store.py).
 
 This is the ONLY module that knows how the graph is stored; engines go through it.
 """
@@ -6,14 +6,18 @@ from __future__ import annotations
 
 import hashlib
 import itertools
+import logging
 import time
-from typing import Iterable
+from collections import Counter
+from collections.abc import Iterable
 
 import networkx as nx
 
 from linchpin.config import Config
 from linchpin.engine.edge_cost import EdgeContext, edge_cost
-from linchpin.models import AttackPath, BuildStats, NodeDetail, NormalizedFinding, PathStats
+from linchpin.models import AttackPath, BuildStats, NodeDetail, NormalizedFinding, PathStats, detail_problem
+
+log = logging.getLogger(__name__)
 
 INTERNET = "internet"
 _SRC, _SNK = "__src__", "__snk__"
@@ -34,22 +38,66 @@ CLASS_BY_REL = {"ENABLES": "network_exploit", "GRANTS": "cred_reuse", "STORED_ON
 
 
 def edge_id(u: str, rel: str, v: str) -> str:
+    """Stable relationship id used in ``AttackPath.edges`` and remediation evidence."""
     return f"{u}|{rel}|{v}"
 
 
+def path_from_nodes(g: nx.DiGraph, nodes: list[str], total_cost: float | None = None) -> AttackPath:
+    """Build an :class:`AttackPath` for an entry -> crown-jewel node sequence of ``g``.
+
+    The path id hashes the node sequence, so a path gets the same id whichever backend
+    (NetworkX or Neo4j GDS) enumerated it. ``total_cost`` defaults to the summed edge costs.
+    """
+    pairs = list(itertools.pairwise(nodes))
+    rels = [g.edges[u, v]["rel"] for u, v in pairs]
+    cost = sum(g.edges[u, v]["cost"] for u, v in pairs) if total_cost is None else total_cost
+    return AttackPath(
+        path_id=hashlib.sha1("|".join(nodes).encode(), usedforsecurity=False).hexdigest()[:12],
+        nodes=nodes,
+        edges=[g.edges[u, v]["id"] for u, v in pairs],
+        stages=[("recon" if u == INTERNET else STAGE_BY_REL[r]) for (u, _), r in zip(pairs, rels, strict=True)],
+        crown_jewel=nodes[-1],
+        total_cost=round(cost, 6))
+
+
+class GraphTooLarge(ValueError):
+    """Building the attack graph would exceed the caller's edge budget."""
+
+
 class GraphStore:
-    def __init__(self, cfg: Config | None = None):
+    """In-memory attack graph (NetworkX ``DiGraph``) built from :class:`NormalizedFinding` records.
+
+    Nodes carry a ``label`` from the frozen taxonomy (contracts/graph_model.md); every edge
+    carries ``rel``, a stable ``id`` and the deterministic ``cost`` of contracts/edge_cost.md.
+    Engines (paths, cuts, optimizer, explain) only read ``g`` through this class.
+    """
+
+    def __init__(self, cfg: Config | None = None) -> None:
         self.cfg = cfg or Config()
         self.findings: dict[str, NormalizedFinding] = {}
         self.g = nx.DiGraph()
 
     # ---------------------------------------------------------------- ingest
     def upsert_findings(self, findings: Iterable[NormalizedFinding]) -> None:
+        """Add or replace findings by ``finding_id`` (the graph is rebuilt by :meth:`build_attack_graph`)."""
         for f in findings:
             self.findings[f.finding_id] = f
 
     # ----------------------------------------------------------------- build
-    def build_attack_graph(self) -> BuildStats:
+    def build_attack_graph(self, max_edges: int | None = None) -> BuildStats:
+        """(Re)build the attack graph from the current findings, replacing ``self.g``.
+
+        Findings whose ``detail`` lacks what their kind needs (:func:`linchpin.models.detail_problem`)
+        are skipped with a warning instead of failing the build.
+
+        Args:
+            max_edges: when given, raise :class:`GraphTooLarge` *before* materialising the
+                network-reachability edges if the projected edge count exceeds it. Same-segment
+                reachability is quadratic in hosts, so the API uses this to bound build work.
+
+        Returns:
+            Node and edge counts and the build time in milliseconds.
+        """
         t0 = time.perf_counter()
         g = nx.DiGraph()
         hosts: dict[str, dict] = {}
@@ -84,6 +132,10 @@ class GraphStore:
 
         for f in fs:
             d = f.detail or {}
+            problem = detail_problem(f)
+            if problem:
+                log.warning("skipping finding %s: %s", f.finding_id, problem)
+                continue
             if f.kind == "config" and d.get("issue") == "inventory":
                 host(f.host_id)
                 # Topology-overlay facts (source=inventory) take precedence over what a
@@ -166,6 +218,11 @@ class GraphStore:
 
         # Reachability: same segment always; cross-segment only via explicit rules.
         rules = {(r["from_segment"], r["to_segment"]): set(r.get("ports") or []) for r in reach}
+        if max_edges is not None:
+            projected = g.number_of_edges() + self._projected_reach_edges(hosts, services, rules)
+            if projected > max_edges:
+                raise GraphTooLarge(f"attack graph would have about {projected:,} edges (limit {max_edges:,}); "
+                                    "split the scope or raise the limit")
         for a, b in itertools.permutations(hosts, 2):
             sa, sb = hosts[a]["segment"], hosts[b]["segment"]
             rule = rules.get((sa, sb))
@@ -189,6 +246,20 @@ class GraphStore:
             g.nodes[f"host:{h}"]["is_entrypoint"] = True
         return BuildStats(nodes=g.number_of_nodes(), edges=g.number_of_edges(),
                           build_ms=round((time.perf_counter() - t0) * 1000, 2))
+
+    @staticmethod
+    def _projected_reach_edges(hosts: dict[str, dict], services: dict[str, list[tuple[int, str]]],
+                               rules: dict[tuple[str, str], set[int]]) -> int:
+        """Upper bound on the CAN_REACH edges the build would add (O(hosts + rules x services))."""
+        seg_hosts = Counter(p["segment"] for p in hosts.values())
+        seg_ports: dict[str, list[int]] = {}
+        for h, lst in services.items():
+            seg_ports.setdefault(hosts[h]["segment"], []).extend(port for port, _ in lst)
+        total = sum(n * len(seg_ports.get(s, [])) for s, n in seg_hosts.items())
+        for (sa, sb), ports in rules.items():
+            if sa != sb:
+                total += seg_hosts.get(sa, 0) * sum(1 for p in seg_ports.get(sb, []) if not ports or p in ports)
+        return total
 
     def _add(self, g: nx.DiGraph, u: str, rel: str, v: str, **props) -> None:
         ctx = EdgeContext(rel=rel, transition_class=CLASS_BY_REL.get(rel),
@@ -249,16 +320,7 @@ class GraphStore:
         out: list[AttackPath] = []
         try:
             for raw in itertools.islice(nx.shortest_simple_paths(g, _SRC, _SNK, weight="cost"), k):
-                nodes = raw[1:-1]
-                pairs = list(zip(nodes, nodes[1:]))
-                rels = [g.edges[u, v]["rel"] for u, v in pairs]
-                out.append(AttackPath(
-                    path_id=hashlib.sha1("|".join(nodes).encode(), usedforsecurity=False).hexdigest()[:12],
-                    nodes=nodes,
-                    edges=[g.edges[u, v]["id"] for u, v in pairs],
-                    stages=[("recon" if u == INTERNET else STAGE_BY_REL[r]) for (u, _), r in zip(pairs, rels)],
-                    crown_jewel=nodes[-1],
-                    total_cost=round(sum(g.edges[u, v]["cost"] for u, v in pairs), 6)))
+                out.append(path_from_nodes(g, raw[1:-1]))
         except nx.NetworkXNoPath:
             pass
         return out
