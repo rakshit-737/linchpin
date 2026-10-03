@@ -13,8 +13,10 @@ jobs:
     needs: ci
     runs-on: ubuntu-24.04
     permissions:
-      contents: write   # GitHub Release
-      packages: write   # ghcr.io image
+      contents: write      # GitHub Release
+      packages: write      # ghcr.io image
+      id-token: write      # build provenance attestations (Sigstore)
+      attestations: write
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
       - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97  # v7.0.0
@@ -59,9 +61,25 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
       - name: Push exactly the image that was smoke-tested
+        id: push
         env:
           TAGS: ${{ steps.meta.outputs.tags }}
-        run: for t in $TAGS; do docker tag linchpin:release-candidate "$t" && docker push "$t"; done
+        run: |
+          for t in $TAGS; do docker tag linchpin:release-candidate "$t" && docker push "$t"; done
+          digest="$(docker image inspect --format '{{index .RepoDigests 0}}' linchpin:release-candidate)"
+          digest="${digest##*@}"
+          case "$digest" in sha256:*) ;; *) echo "::error::no pushed digest ($digest)"; exit 1 ;; esac
+          echo "digest=$digest" >> "$GITHUB_OUTPUT"
+      - name: Build provenance for the pushed image (stored next to it in ghcr.io)
+        uses: actions/attest-build-provenance@4d101475d8b20a2381f78447822ac1eab6504dd8  # v4.2.2
+        with:
+          subject-name: ghcr.io/${{ github.repository }}
+          subject-digest: ${{ steps.push.outputs.digest }}
+          push-to-registry: true
+      - name: Build provenance for the wheel and sdist
+        uses: actions/attest-build-provenance@4d101475d8b20a2381f78447822ac1eab6504dd8  # v4.2.2
+        with:
+          subject-path: dist/*
       - name: GitHub Release
         env:
           GH_TOKEN: ${{ github.token }}
