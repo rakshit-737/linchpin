@@ -65,6 +65,8 @@
     }
   },
   "paper_effort_ratio": 0.126,
+  "paper_effort_ratio_v2": 0.671,
+  "paper_check": "benchmarks/results/repro_epss_paper_check.md",
   "setups": {
     "paper_like_asof": "published <= 2022-12-01, NVD CVSS v3.x, EPSS v2022.01.01 scores of 2022-12-01; label = in KEV on 2022-12-01 (EPSS ingests KEV: circular, optimistic)",
     "paper_like_future": "same population minus CVEs already in KEV; label = added to KEV in (2022-12-01, 2023-12-01] (prospective, few positives)",
@@ -79,106 +81,106 @@
         {
           "name": "cvss>=7",
           "threshold": 7.0,
-          "effort": 58.178,
-          "coverage": 89.578,
-          "efficiency": 1.123,
           "flagged": 68150,
           "tp": 765,
+          "effort": 58.177751598500954,
           "effort_ci95": [
-            57.928,
-            58.495
+            57.8950104889175,
+            58.45995635240519
           ],
+          "coverage": 89.5784543325527,
           "coverage_ci95": [
-            87.699,
-            91.335
+            87.34888922788603,
+            91.45353770034875
           ],
+          "efficiency": 1.1225238444607484,
           "efficiency_ci95": [
-            1.1,
-            1.143
+            1.046134414692147,
+            1.2044233880539272
           ]
         },
         {
           "name": "epss_eq_cov",
           "threshold": 0.0106,
-          "effort": 40.762,
-          "coverage": 90.047,
-          "efficiency": 1.611,
           "flagged": 47749,
           "tp": 769,
+          "effort": 40.76198769004874,
           "effort_ci95": [
-            40.494,
-            41.022
+            40.48089157018723,
+            41.0436897051013
           ],
+          "coverage": 90.04683840749415,
           "coverage_ci95": [
-            88.056,
-            92.04
+            87.85609089180171,
+            91.8789091361755
           ],
+          "efficiency": 1.6105049320404616,
           "efficiency_ci95": [
-            1.577,
-            1.646
+            1.5014260020736585,
+            1.727369496454329
           ]
         },
         {
           "name": "ours_eq_cov",
           "threshold": 0.3115,
-          "effort": 68.759,
-          "coverage": 89.578,
-          "efficiency": 0.95,
           "flagged": 80545,
           "tp": 765,
+          "effort": 68.75901691124372,
           "effort_ci95": [
-            68.508,
-            68.997
+            68.49298834611781,
+            69.02381512532077
           ],
+          "coverage": 89.5784543325527,
           "coverage_ci95": [
-            87.348,
-            91.101
+            87.34888922788603,
+            91.45353770034875
           ],
+          "efficiency": 0.9497796262958594,
           "efficiency_ci95": [
-            0.927,
-            0.966
+            0.8850949808529582,
+            1.0191429566917576
           ]
         },
         {
           "name": "cvss>=9.1",
           "threshold": 9.1,
-          "effort": 15.025,
-          "coverage": 31.616,
-          "efficiency": 1.534,
           "flagged": 17600,
           "tp": 270,
+          "effort": 15.024628439231353,
           "effort_ci95": [
-            14.831,
-            15.234
+            14.821154636646886,
+            15.230396177862051
           ],
+          "coverage": 31.615925058548008,
           "coverage_ci95": [
-            28.689,
-            34.663
+            28.585569764867593,
+            34.810936070242306
           ],
+          "efficiency": 1.5340909090909092,
           "efficiency_ci95": [
-            1.395,
-            1.676
+            1.3627993116750983,
+            1.7265354617075477
           ]
         },
         {
           "name": "epss_eq_effort",
           "threshold": 0.0161,
-          "effort": 15.098,
-          "coverage": 71.429,
-          "efficiency": 3.449,
           "flagged": 17686,
           "tp": 610,
+          "effort": 15.098044237286688,
           "effort_ci95": [
-            14.912,
-            15.265
+            14.89415736444704,
+            15.304220231037288
           ],
+          "coverage": 71.42857142857143,
           "coverage_ci95": [
-            68.378,
-            74.476
+            68.3079733083581,
+            74.35724600485779
           ],
+          "efficiency": 3.4490557503109804,
           "efficiency_ci95": [
-            3.307,
-            3.595
+            3.1900553954261115,
+            3.72827450075566
           ]
         }
       ],
@@ -187,7 +189,35 @@
       "population_share_at_needed_value": 0.0786,
       "equal_coverage_reachable": true,
       "effort_ratio_epss_vs_cvss7": 0.701,
-      "coverage_gain_at_cvss91_effort": 39.81
+      "effort_ratio_ci95": {
+        "ci95": [
+          0.6953,
+          0.8238
+        ],
+        "reps": 1000,
+        "unreachable_reps": 0,
+        "seed": 0,
+        "method": "class-stratified bootstrap, EPSS threshold re-matched to CVSS 7+'s coverage per replicate"
+      },
+      "coverage_gain_at_cvss91_effort": 39.81,
+      "paired_epss_vs_cvss91": {
+        "positives": 854,
+        "both": 218,
+        "only_a": 392,
+        "only_b": 52,
+        "neither": 192,
+        "p_mcnemar_exact": 1.294521461386118e-65,
+        "coverage_diff_points": 39.813,
+        "coverage_diff_ci95": [
+          35.714,
+          43.911
+        ],
+        "bootstrap": {
+          "reps": 10000,
+          "seed": 0,
+          "resampled": "exploited CVEs (paired)"
+        }
+      }
     },
     "paper_like_future": {
       "n": 116287,
@@ -197,106 +227,106 @@
         {
           "name": "cvss>=7",
           "threshold": 7.0,
-          "effort": 57.947,
-          "coverage": 77.419,
-          "efficiency": 0.071,
           "flagged": 67385,
           "tp": 48,
+          "effort": 57.94714800450609,
           "effort_ci95": [
-            57.663,
-            58.214
+            57.66316069971923,
+            58.2306102505118
           ],
+          "coverage": 77.41935483870968,
           "coverage_ci95": [
-            67.702,
-            87.137
+            65.59414245921728,
+            86.04494286070205
           ],
+          "efficiency": 0.07123247013430288,
           "efficiency_ci95": [
-            0.062,
-            0.08
+            0.05373461518939606,
+            0.09442285068994026
           ]
         },
         {
           "name": "epss_eq_cov",
           "threshold": 0.0089,
-          "effort": 99.999,
-          "coverage": 100.0,
-          "efficiency": 0.053,
           "flagged": 116286,
           "tp": 62,
+          "effort": 99.999140058648,
           "effort_ci95": [
-            99.997,
-            100.0
+            99.99512852956536,
+            99.999848202979
           ],
+          "coverage": 100.0,
           "coverage_ci95": [
-            100.0,
+            94.16539087749996,
             100.0
           ],
+          "efficiency": 0.053316822317389885,
           "efficiency_ci95": [
-            0.053,
-            0.053
+            0.04159671643376086,
+            0.06833687556452765
           ]
         },
         {
           "name": "ours_eq_cov",
           "threshold": 0.3318,
-          "effort": 67.733,
-          "coverage": 77.419,
-          "efficiency": 0.061,
           "flagged": 78765,
           "tp": 48,
+          "effort": 67.73328059026375,
           "effort_ci95": [
-            67.478,
-            68.038
+            67.46399778741196,
+            68.00139177599112
           ],
+          "coverage": 77.41935483870968,
           "coverage_ci95": [
-            67.742,
-            87.137
+            65.59414245921728,
+            86.04494286070205
           ],
+          "efficiency": 0.060940773186059796,
           "efficiency_ci95": [
-            0.053,
-            0.069
+            0.04597051559082257,
+            0.08078214189652583
           ]
         },
         {
           "name": "cvss>=9.1",
           "threshold": 9.1,
-          "effort": 14.903,
-          "coverage": 29.032,
-          "efficiency": 0.104,
           "flagged": 17330,
           "tp": 18,
+          "effort": 14.902783630156422,
           "effort_ci95": [
-            14.683,
-            15.124
+            14.699260101133174,
+            15.1086259912485
           ],
+          "coverage": 29.032258064516128,
           "coverage_ci95": [
-            17.702,
-            41.935
+            19.223406385395197,
+            41.28788131113709
           ],
+          "efficiency": 0.10386612810155799,
           "efficiency_ci95": [
-            0.063,
-            0.149
+            0.06571234997854672,
+            0.1641362947673473
           ]
         },
         {
           "name": "epss_eq_effort",
           "threshold": 0.016,
-          "effort": 14.915,
-          "coverage": 53.226,
-          "efficiency": 0.19,
           "flagged": 17344,
           "tp": 33,
+          "effort": 14.91482280908442,
           "effort_ci95": [
-            14.743,
-            15.087
+            14.711230712343735,
+            15.120732942479451
           ],
+          "coverage": 53.225806451612904,
           "coverage_ci95": [
-            41.895,
-            64.556
+            40.98381737584801,
+            65.09136913237779
           ],
+          "efficiency": 0.19026752767527674,
           "efficiency_ci95": [
-            0.148,
-            0.233
+            0.1355174670139739,
+            0.2670778621940124
           ]
         }
       ],
@@ -305,7 +335,26 @@
       "population_share_at_needed_value": 0.4195,
       "equal_coverage_reachable": false,
       "effort_ratio_epss_vs_cvss7": null,
-      "coverage_gain_at_cvss91_effort": 24.19
+      "effort_ratio_ci95": null,
+      "coverage_gain_at_cvss91_effort": 24.19,
+      "paired_epss_vs_cvss91": {
+        "positives": 62,
+        "both": 13,
+        "only_a": 20,
+        "only_b": 5,
+        "neither": 24,
+        "p_mcnemar_exact": 0.004077315330505371,
+        "coverage_diff_points": 24.194,
+        "coverage_diff_ci95": [
+          9.677,
+          38.71
+        ],
+        "bootstrap": {
+          "reps": 10000,
+          "seed": 0,
+          "resampled": "exploited CVEs (paired)"
+        }
+      }
     },
     "current": {
       "n": 379082,
@@ -315,106 +364,106 @@
         {
           "name": "cvss>=7",
           "threshold": 7.0,
-          "effort": 50.738,
-          "coverage": 88.818,
-          "efficiency": 0.797,
           "flagged": 192338,
           "tp": 1533,
+          "effort": 50.73783508581257,
           "effort_ci95": [
-            50.583,
-            50.904
+            50.57867637745639,
+            50.89697883994491
           ],
+          "coverage": 88.8180764774044,
           "coverage_ci95": [
-            87.196,
-            90.623
+            87.24424910303281,
+            90.21949092958059
           ],
+          "efficiency": 0.7970343873805488,
           "efficiency_ci95": [
-            0.784,
-            0.812
+            0.758265673479386,
+            0.8377685406382769
           ]
         },
         {
           "name": "epss_eq_cov",
           "threshold": 0.0269,
-          "effort": 14.739,
-          "coverage": 88.818,
-          "efficiency": 2.744,
           "flagged": 55873,
           "tp": 1533,
+          "effort": 14.739027439973409,
           "effort_ci95": [
-            14.616,
-            14.835
+            14.626535430051318,
+            14.852234108884682
           ],
+          "coverage": 88.8180764774044,
           "coverage_ci95": [
-            87.486,
-            90.324
+            87.24424910303281,
+            90.21949092958059
           ],
+          "efficiency": 2.7437223703756732,
           "efficiency_ci95": [
-            2.695,
-            2.792
+            2.611485442398747,
+            2.8824571500902314
           ]
         },
         {
           "name": "ours_eq_cov",
           "threshold": 0.2937,
-          "effort": 71.609,
-          "coverage": 88.818,
-          "efficiency": 0.565,
           "flagged": 271456,
           "tp": 1533,
+          "effort": 71.60878121356329,
           "effort_ci95": [
-            71.464,
-            71.765
+            71.46502553450715,
+            71.7520989322168
           ],
+          "coverage": 88.8180764774044,
           "coverage_ci95": [
-            87.37,
-            90.324
+            87.24424910303281,
+            90.21949092958059
           ],
+          "efficiency": 0.5647324059884474,
           "efficiency_ci95": [
-            0.555,
-            0.574
+            0.537233330644257,
+            0.5936306608419887
           ]
         },
         {
           "name": "cvss>=9.1",
           "threshold": 9.1,
-          "effort": 13.561,
-          "coverage": 35.4,
-          "efficiency": 1.189,
           "flagged": 51408,
           "tp": 611,
+          "effort": 13.561182013390242,
           "effort_ci95": [
-            13.46,
-            13.669
+            13.452559695088462,
+            13.670542862904828
           ],
+          "coverage": 35.39976825028969,
           "coverage_ci95": [
-            33.313,
-            38.007
+            33.17839361214347,
+            37.685990733798945
           ],
+          "efficiency": 1.1885309679427327,
           "efficiency_ci95": [
-            1.119,
-            1.272
+            1.098430190119494,
+            1.2859263352456665
           ]
         },
         {
           "name": "epss_eq_effort",
           "threshold": 0.0291,
-          "effort": 13.562,
-          "coverage": 87.949,
-          "efficiency": 2.953,
           "flagged": 51412,
           "tp": 1518,
+          "effort": 13.562237194063554,
           "effort_ci95": [
-            13.455,
-            13.662
+            13.453611290242693,
+            13.671601607711123
           ],
+          "coverage": 87.94901506373117,
           "coverage_ci95": [
-            86.443,
-            89.515
+            86.32823377092659,
+            89.40124342513577
           ],
+          "efficiency": 2.952618065821209,
           "efficiency_ci95": [
-            2.899,
-            3.005
+            2.809771236437059,
+            3.1024953051651707
           ]
         }
       ],
@@ -423,10 +472,42 @@
       "population_share_at_needed_value": 0.0001,
       "equal_coverage_reachable": true,
       "effort_ratio_epss_vs_cvss7": 0.29,
-      "coverage_gain_at_cvss91_effort": 52.55
+      "effort_ratio_ci95": {
+        "ci95": [
+          0.2432,
+          0.3627
+        ],
+        "reps": 1000,
+        "unreachable_reps": 0,
+        "seed": 0,
+        "method": "class-stratified bootstrap, EPSS threshold re-matched to CVSS 7+'s coverage per replicate"
+      },
+      "coverage_gain_at_cvss91_effort": 52.55,
+      "paired_epss_vs_cvss91": {
+        "positives": 1726,
+        "both": 576,
+        "only_a": 942,
+        "only_b": 35,
+        "neither": 173,
+        "p_mcnemar_exact": 3.7631392063656067e-230,
+        "coverage_diff_points": 52.549,
+        "coverage_diff_ci95": [
+          50.0,
+          55.041
+        ],
+        "bootstrap": {
+          "reps": 10000,
+          "seed": 0,
+          "resampled": "exploited CVEs (paired)"
+        }
+      }
     }
   },
   "provenance": {
+    "code": {
+      "git_commit": "22b77b5ddb15940611a5a7f69fc1d81bb0d354a8",
+      "git_dirty_code": false
+    },
     "epss_history": {
       "model_version": "v2022.01.01",
       "score_date": "2022-12-01T00:00:00+0000",
