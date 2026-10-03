@@ -35,4 +35,4 @@ Tools: Nmap version 7.93 ( https://nmap.org ); docker 28.0.4.
 
 Images (tag and the digest that was pulled): `httpd:2.4.49 sha256:dcba0d12e2362fb0c50ec524ae8aa1cca4a4ba7216617a57e7bbca20767e79cc`; `nginx:1.16.1 sha256:d20aa6d1cae56fd17cd458f4807e0de462caf2336f0b70b5eeb69fcaaf30dd9c`; `tomcat:9.0.30 sha256:cba009c0ef8cec83df8178cf4f4668170bdb02440e4c7c576fc397e477c715d3`; `redis:5.0.7 sha256:938ee5bfba605cc85f9f52ff95024e9a24cf5511ba6f1cbc68ec9d91a0432125`; `mysql:5.5.62 sha256:12da85ab88aedfdf39455872fb044f607c32fdc233cd59f1d26769fbf439b045`; `debian:bookworm-slim sha256:3783cc01769c7b2b1b83a5c5ad96c815348e28ed7da68e2e3687004faa906251`.
 
-Scanned and analysed in CI run [37091866743](https://github.com/rakshit-737/linchpin/actions/runs/37091866743) at commit c5d7c9e6e821.
+Scanned and analysed in CI run [37091866743](https://github.com/rakshit-737/linchpin-attack-path-analysis/actions/runs/37091866743) at commit c5d7c9e6e821.

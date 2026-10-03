@@ -3,7 +3,7 @@
 ## Install
 
 ```bash
-git clone https://github.com/rakshit-737/linchpin && cd linchpin
+git clone https://github.com/rakshit-737/linchpin-attack-path-analysis && cd linchpin-attack-path-analysis
 pip install -e .                       # core: CLI, engines, connectors (pydantic, networkx, PyYAML, defusedxml)
 pip install -e ".[api]"                # + FastAPI service and web UI (`linchpin serve`)
 pip install -e ".[dev,api,ml,bench]"   # everything needed for the tests and benchmarks
@@ -20,7 +20,7 @@ docker build -t linchpin . && docker run --rm -p 127.0.0.1:8000:8000 linchpin   
 docker compose up api                                                              # same, via compose
 ```
 
-Release images are published to `ghcr.io/rakshit-737/linchpin`; v1.0.0 has known issues (see
+Release images are published to `ghcr.io/rakshit-737/linchpin-attack-path-analysis`; v1.0.0 has known issues (see
 [Security](security.md#known-issues-in-released-versions)), so use 1.1.0 or later.
 
 ## Synthetic demo (no downloads)
@@ -37,8 +37,8 @@ linchpin synth --family ad --hosts 30 --out data/ad.json   # or multi / none / l
 ## Your own lab exports
 
 Put the exports and a topology overlay in one scenario YAML (see
-[`scenarios/composite_lab.yaml`](https://github.com/rakshit-737/linchpin/blob/main/scenarios/composite_lab.yaml)
-and the measured [`scenarios/lab_scan.yaml`](https://github.com/rakshit-737/linchpin/blob/main/scenarios/lab_scan.yaml)):
+[`scenarios/composite_lab.yaml`](https://github.com/rakshit-737/linchpin-attack-path-analysis/blob/main/scenarios/composite_lab.yaml)
+and the measured [`scenarios/lab_scan.yaml`](https://github.com/rakshit-737/linchpin-attack-path-analysis/blob/main/scenarios/lab_scan.yaml)):
 it declares segments, internet-facing hosts, firewall rules and crown jewels, and lists under each host's `match:` the
 ids the scanners used for it, so findings from different tools merge onto one node.
 

@@ -333,7 +333,8 @@ def cmd_serve(args) -> int:
         import uvicorn
     except ImportError:
         raise SystemExit("serve needs the API extra: pip install \"linchpin-attackpath[api] @ "
-                         "git+https://github.com/rakshit-737/linchpin\" (in a checkout: pip install -e '.[api]'; "
+                         "git+https://github.com/rakshit-737/linchpin-attack-path-analysis\" "
+                         "(in a checkout: pip install -e '.[api]'; "
                          "PyPI's 'linchpin' is an unrelated project)") from None
     if args.host not in LOOPBACK:
         print(f"WARNING: binding to {args.host}. The API has no authentication and serves a map of your "

@@ -28,9 +28,9 @@ classifiers = [
 dependencies = ["pydantic>=2.5", "networkx>=3.2", "pyyaml>=6", "defusedxml>=0.7"]
 
 [project.urls]
-Homepage = "https://rakshit-737.github.io/linchpin/"
-Source = "https://github.com/rakshit-737/linchpin"
-Changelog = "https://github.com/rakshit-737/linchpin/blob/main/CHANGELOG.md"
+Homepage = "https://rakshit-737.github.io/linchpin-attack-path-analysis/"
+Source = "https://github.com/rakshit-737/linchpin-attack-path-analysis"
+Changelog = "https://github.com/rakshit-737/linchpin-attack-path-analysis/blob/main/CHANGELOG.md"
 
 [project.optional-dependencies]
 # starlette >= 1.3.1: the lowest versions fastapi used to allow carry published advisories

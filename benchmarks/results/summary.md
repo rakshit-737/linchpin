@@ -116,4 +116,4 @@ greedy fixes-to-disconnect / exact min cut = 1.00 (optimal in 100%); top-1 = pla
 | Random | 10% [6%, 16%] | 135 / 0 | < 1e-4 | - | - |
 
 Difference in the share of enumerated attack paths (k-capped) left after 3 fixes, CVSS-first minus LINCHPIN, over all 200 topologies: **69.2%** [62.7%, 75.5%] (bootstrap). Per family: ad 80.9% [70.8%, 90.8%], multi 98.0% [94.0%, 100.0%], none 0.0% [0.0%, 0.0%], single 98.0% [94.0%, 100.0%]. Over the 150 topologies of ad, multi, single (where a 3-fix cut exists): 92.3% [87.8%, 96.0%]. In none both plans leave the k-capped re-enumeration full, so that family contributes 0.
-Produced by CI run [37089520295](https://github.com/rakshit-737/linchpin/actions/runs/37089520295) at commit 0c72593ea68e (4 workers, 220.4 s).
+Produced by CI run [37089520295](https://github.com/rakshit-737/linchpin-attack-path-analysis/actions/runs/37089520295) at commit 0c72593ea68e (4 workers, 220.4 s).

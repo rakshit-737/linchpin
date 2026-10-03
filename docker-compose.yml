@@ -6,7 +6,7 @@
 services:
   api:
     build: .
-    image: ghcr.io/rakshit-737/linchpin:latest
+    image: ghcr.io/rakshit-737/linchpin-attack-path-analysis:latest
     volumes: ["${LINCHPIN_DATA:-../../datasets/linchpin}:/data:ro"]
     environment:
       LINCHPIN_DATA_DIR: /data

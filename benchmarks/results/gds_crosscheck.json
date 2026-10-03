@@ -14,7 +14,7 @@
     "github_sha": "c5d7c9e6e821697ecf061a0367b4c99dfdbdb8e4",
     "github_workflow": "ci",
     "github_job": "neo4j-gds",
-    "github_run_url": "https://github.com/rakshit-737/linchpin/actions/runs/37091866743"
+    "github_run_url": "https://github.com/rakshit-737/linchpin-attack-path-analysis/actions/runs/37091866743"
   },
   "runs": [
     {

@@ -15,27 +15,27 @@ Only feed it data from environments you own or are explicitly authorised to asse
 
 - Finding files are untrusted input. Every record is validated against the pydantic `NormalizedFinding` contract, and invalid records are dropped.
 - All XML parsers go through `defusedxml` (a hard runtime dependency), which refuses internal and external entity declarations.
-- The API has no authentication and binds to `127.0.0.1` (`linchpin serve`, Makefile, compose). It only answers requests whose `Host` header is on `LINCHPIN_ALLOWED_HOSTS`, bounds body size, stored findings and graph size, forbids framing (`X-Frame-Options: DENY`, `frame-ancestors 'none'`) and MIME sniffing, and reads server-side scenarios only by relative name inside configured directories (see the [API reference](https://rakshit-737.github.io/linchpin/reference/api/)). Do not expose it to a network.
+- The API has no authentication and binds to `127.0.0.1` (`linchpin serve`, Makefile, compose). It only answers requests whose `Host` header is on `LINCHPIN_ALLOWED_HOSTS`, bounds body size, stored findings and graph size, forbids framing (`X-Frame-Options: DENY`, `frame-ancestors 'none'`) and MIME sniffing, and reads server-side scenarios only by relative name inside configured directories (see the [API reference](https://rakshit-737.github.io/linchpin-attack-path-analysis/reference/api/)). Do not expose it to a network.
 - Findings describe weaknesses. Treat ingested data and `.linchpin/` state files as sensitive and keep them out of version control (they are already in `.gitignore`).
 
 ## Supported versions
 
 | version | supported | notes |
 | --- | :---: | --- |
-| 1.1.x | yes | wheel and sdist on the [latest 1.1.x release](https://github.com/rakshit-737/linchpin/releases/latest), `ghcr.io/rakshit-737/linchpin:1.1.2` / `:1.1` / `:latest` |
+| 1.1.x | yes | wheel and sdist on the [latest 1.1.x release](https://github.com/rakshit-737/linchpin-attack-path-analysis/releases/latest), `ghcr.io/rakshit-737/linchpin-attack-path-analysis:1.1.3` / `:1.1` / `:latest` |
 | 1.0.0 | no | known issues below; do not run it |
 
 ## Known issues in released versions
 
-- **v1.0.0** (wheel, sdist and `ghcr.io/rakshit-737/linchpin:1.0.0`): `/demo/load` accepted any server-side file path
+- **v1.0.0** (wheel, sdist and `ghcr.io/rakshit-737/linchpin-attack-path-analysis:1.0.0`): `/demo/load` accepted any server-side file path
   as a scenario, `k` / `budget` were unbounded and request bodies unlimited, and the `Host` header was not checked.
   Anyone who can reach the API (or a DNS-rebinding page in a local browser) could read files the server can parse
-  or exhaust CPU. Fixed in 1.1.0 (wheel and sdist on the v1.1.0 release, `ghcr.io/rakshit-737/linchpin:1.1.0` /
+  or exhaust CPU. Fixed in 1.1.0 (wheel and sdist on the v1.1.0 release, `ghcr.io/rakshit-737/linchpin-attack-path-analysis:1.1.0` /
   `:latest`); do not run 1.0.0.
 
 ## Reporting a vulnerability
 
-Use GitHub's private vulnerability reporting: [Report a vulnerability](https://github.com/rakshit-737/linchpin/security/advisories/new) (Security tab), instead of filing a public issue. Include reproduction steps on synthetic or trimmed, anonymised data. The maintainer aims to reply within 7 days.
+Use GitHub's private vulnerability reporting: [Report a vulnerability](https://github.com/rakshit-737/linchpin-attack-path-analysis/security/advisories/new) (Security tab), instead of filing a public issue. Include reproduction steps on synthetic or trimmed, anonymised data. The maintainer aims to reply within 7 days.
 
 ## Supply chain
 

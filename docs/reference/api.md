@@ -3,7 +3,7 @@
 `linchpin serve` (or `uvicorn linchpin.api.app:app --host 127.0.0.1 --port 8000`). The OpenAPI schema is at
 `/openapi.json`; the interactive Swagger UI (`/docs`) loads scripts from a CDN and is only served with
 `LINCHPIN_API_DOCS=1`. The frozen contract is
-[`contracts/openapi.yaml`](https://github.com/rakshit-737/linchpin/blob/main/contracts/openapi.yaml).
+[`contracts/openapi.yaml`](https://github.com/rakshit-737/linchpin-attack-path-analysis/blob/main/contracts/openapi.yaml).
 Bind to localhost only: there is no authentication.
 
 | method | path | returns |

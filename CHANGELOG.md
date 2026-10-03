@@ -2,6 +2,16 @@
 
 ## [Unreleased]
 
+## [1.1.3] - 2026-10-03
+
+### Changed
+- The GitHub repository was renamed from `rakshit-737/linchpin` to `rakshit-737/linchpin-attack-path-analysis`.
+  Repository, docs (<https://rakshit-737.github.io/linchpin-attack-path-analysis/>), badge, citation, package and
+  paper links now use the new name, and release images are published as
+  `ghcr.io/rakshit-737/linchpin-attack-path-analysis`. Entries below are kept as written; their
+  `rakshit-737/linchpin` and `ghcr.io/rakshit-737/linchpin` references mean the old name (GitHub redirects old
+  repository URLs; the old Pages URL no longer resolves, and older images stay under the old GHCR name).
+
 ## [1.1.2] - 2026-10-03
 
 ### Fixed

@@ -8,7 +8,7 @@ columns of `rows.csv`, `scale.json` and the `runtime_s` fields change).
 ## 0. Setup
 
 ```bash
-git clone https://github.com/rakshit-737/linchpin && cd linchpin
+git clone https://github.com/rakshit-737/linchpin-attack-path-analysis && cd linchpin-attack-path-analysis
 pip install -e ".[dev,api,ml,bench,docs]"
 python -m pytest -q          # real-data, live-Neo4j and browser tests skip without the datasets / server / Chromium
 ```
@@ -43,7 +43,7 @@ The benchmark and ablation need only the committed CVE pool, not the downloads.
 `make bench`, `make casestudy`, `make ml`, `make scale` and `make demo` wrap the same commands. The `results`
 workflow (Actions tab, run manually) runs the benchmark and the ablation on a clean Linux runner and uploads their
 result files; the committed tables come from its run
-[37089520295](https://github.com/rakshit-737/linchpin/actions/runs/37089520295). Every result JSON records the commit
+[37089520295](https://github.com/rakshit-737/linchpin-attack-path-analysis/actions/runs/37089520295). Every result JSON records the commit
 (and whether code had uncommitted changes) or the CI run that produced it.
 
 ## 3. Live environments (GitHub Actions only)
@@ -52,8 +52,8 @@ These need Docker and run on ephemeral `ubuntu-24.04` runners; locally, the comm
 
 | CI job | what it does | committed artefact |
 | --- | --- | --- |
-| `lab-scan` | `lab/up.sh` starts httpd 2.4.49, nginx 1.16.1, tomcat 9.0.30, redis 5.0.7 and mysql 5.5.62 on two `--internal` networks; `lab/scan.sh` runs `nmap -sV` (no scripts) from a container inside each; `benchmarks/lab_case_study.py` plans and checks | `benchmarks/results/lab/` (run [37091866743](https://github.com/rakshit-737/linchpin/actions/runs/37091866743), recorded in `lab_case_study.json`) |
-| `neo4j-gds` | Neo4j 5.26 Community with GDS 2.13.13; Yen in GDS vs NetworkX on 250 and 500 hosts, k = 10 and 100 | `benchmarks/results/gds_crosscheck.json` (run [37091866743](https://github.com/rakshit-737/linchpin/actions/runs/37091866743), recorded in the file) |
+| `lab-scan` | `lab/up.sh` starts httpd 2.4.49, nginx 1.16.1, tomcat 9.0.30, redis 5.0.7 and mysql 5.5.62 on two `--internal` networks; `lab/scan.sh` runs `nmap -sV` (no scripts) from a container inside each; `benchmarks/lab_case_study.py` plans and checks | `benchmarks/results/lab/` (run [37091866743](https://github.com/rakshit-737/linchpin-attack-path-analysis/actions/runs/37091866743), recorded in `lab_case_study.json`) |
+| `neo4j-gds` | Neo4j 5.26 Community with GDS 2.13.13; Yen in GDS vs NetworkX on 250 and 500 hosts, k = 10 and 100 | `benchmarks/results/gds_crosscheck.json` (run [37091866743](https://github.com/rakshit-737/linchpin-attack-path-analysis/actions/runs/37091866743), recorded in the file) |
 | `neo4j` | live push / pull round trip | |
 | `ui` | Playwright against the live API and the built static demo | |
 | `paper` | builds `paper/linchpin.pdf` from LaTeX and fails if the committed PDF's text differs from the fresh build | the PDF |

@@ -85,7 +85,7 @@ flowchart TB
 
 Remediable nodes are `Vuln` (patch or upgrade), `Credential` (rotate, clear cached copies), `Ace` (remove the ACL
 entry) and non-entry, non-crown `Host` (segmentation rule). The frozen taxonomy lives in
-[`contracts/graph_model.md`](https://github.com/rakshit-737/linchpin/blob/main/contracts/graph_model.md);
+[`contracts/graph_model.md`](https://github.com/rakshit-737/linchpin-attack-path-analysis/blob/main/contracts/graph_model.md);
 v1.2 added `Ace`, `HAS_ACE` and `ABUSES`, v1.3 the network-reachability prerequisite of credential use.
 
 ## Modules

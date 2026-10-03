@@ -73,4 +73,4 @@ Uniform-cost view vs real costs on the same graph: Kendall tau between the real 
 | none | 0.46 [0.39, 0.52] | 0.11 [0.08, 0.15] |
 | single | 0.36 [0.29, 0.43] | 0.20 [0.15, 0.25] |
 
-Produced by CI run [37089520295](https://github.com/rakshit-737/linchpin/actions/runs/37089520295) at commit 0c72593ea68e (4 workers, 547.5 s).
+Produced by CI run [37089520295](https://github.com/rakshit-737/linchpin-attack-path-analysis/actions/runs/37089520295) at commit 0c72593ea68e (4 workers, 547.5 s).

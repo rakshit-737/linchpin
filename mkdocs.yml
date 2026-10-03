@@ -1,8 +1,8 @@
 site_name: LINCHPIN
 site_description: Read-only attack-path reasoning and remediation prioritisation over scanner, identity and exploit-intel data
-site_url: https://rakshit-737.github.io/linchpin/
-repo_url: https://github.com/rakshit-737/linchpin
-repo_name: rakshit-737/linchpin
+site_url: https://rakshit-737.github.io/linchpin-attack-path-analysis/
+repo_url: https://github.com/rakshit-737/linchpin-attack-path-analysis
+repo_name: rakshit-737/linchpin-attack-path-analysis
 edit_uri: edit/main/docs/
 copyright: MIT licence. Lab-only, read-only tooling.
 

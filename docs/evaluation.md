@@ -56,7 +56,7 @@ test. p-values are printed as "p < 1e-4" or with three significant digits.
 
 **Provenance.** Each result file records the commit (and whether code had uncommitted changes) or the CI run that
 produced it. The benchmark and ablation tables below are the artefacts of the manual `results` workflow, run
-[37089520295](https://github.com/rakshit-737/linchpin/actions/runs/37089520295) at commit 0c72593 on a Linux runner;
+[37089520295](https://github.com/rakshit-737/linchpin-attack-path-analysis/actions/runs/37089520295) at commit 0c72593 on a Linux runner;
 every outcome cell (all columns except the millisecond timings) equals the v1.1.0 run on Windows.
 
 !!! note "What the 100% means"
@@ -91,7 +91,7 @@ derives hosts, segments and firewall rules from the measurement (`app` is the on
 declares the two facts a scan cannot see (the `lp-dmz` network faces the internet; `db` holds the crown jewel), maps
 the detected versions to CVEs offline and plans. The job fails if any check below fails. The scans, the derived
 topology, the analysis and the pulled image digests below are the artefact of CI run
-[37091866743](https://github.com/rakshit-737/linchpin/actions/runs/37091866743) (`lab_case_study.json` records the run
+[37091866743](https://github.com/rakshit-737/linchpin-attack-path-analysis/actions/runs/37091866743) (`lab_case_study.json` records the run
 id and commit); replay with `python benchmarks/lab_case_study.py --scans benchmarks/results/lab` or
 `linchpin scenario scenarios/lab_scan.yaml --data-dir .`.
 
@@ -131,7 +131,7 @@ discordant, exact McNemar p = 0.0041, a difference of +24.2 points with a paired
 The two marginal Wilson intervals ([41, 65] vs [19, 41]) overlap, which is why the paired test is the right
 comparison. LINCHPIN's own exploitability blend is a worse global ranker than EPSS (68.8% effort for CVSS 7+
 coverage): its job is the edge cost inside a path, not global triage. Every transcribed paper cell was checked
-against the arXiv v2 PDF ([record](https://github.com/rakshit-737/linchpin/blob/main/benchmarks/results/repro_epss_paper_check.md)).
+against the arXiv v2 PDF ([record](https://github.com/rakshit-737/linchpin-attack-path-analysis/blob/main/benchmarks/results/repro_epss_paper_check.md)).
 
 ## Learned exploitability (M11)
 
@@ -147,7 +147,7 @@ The `neo4j-gds` CI job loads seeded `single` topologies into Neo4j 5.26.31 Commu
 2.13.13 plugin (the official image's entrypoint fetches the jar from Neo4j's plugin host), runs
 `gds.shortestPath.yens` from the entry point to the crown jewel, and compares with the NetworkX engine on the same
 graph. Each backend is timed 10 times, interleaved (`benchmarks/results/gds_crosscheck.json`, CI run
-[37091866743](https://github.com/rakshit-737/linchpin/actions/runs/37091866743), which the file records). Costs and the
+[37091866743](https://github.com/rakshit-737/linchpin-attack-path-analysis/actions/runs/37091866743), which the file records). Costs and the
 paths strictly cheaper than the k-th agree in every case; the job fails if the plugin is missing.
 
 | hosts | nodes / relationships | k | Yen in NetworkX, median [IQR] | Yen in GDS, median [IQR] | speed-up (medians) | mirror into Neo4j |

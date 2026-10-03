@@ -1,10 +1,10 @@
 # LINCHPIN
 
-[![ci](https://github.com/rakshit-737/linchpin/actions/workflows/ci.yml/badge.svg)](https://github.com/rakshit-737/linchpin/actions/workflows/ci.yml)
+[![ci](https://github.com/rakshit-737/linchpin-attack-path-analysis/actions/workflows/ci.yml/badge.svg)](https://github.com/rakshit-737/linchpin-attack-path-analysis/actions/workflows/ci.yml)
 ![python](https://img.shields.io/badge/python-3.10%E2%80%933.14-blue)
 [![license: MIT](https://img.shields.io/badge/license-MIT-green)](LICENSE)
-[![docs](https://github.com/rakshit-737/linchpin/actions/workflows/docs.yml/badge.svg)](https://rakshit-737.github.io/linchpin/)
-[![release](https://img.shields.io/github/v/release/rakshit-737/linchpin)](https://github.com/rakshit-737/linchpin/releases)
+[![docs](https://github.com/rakshit-737/linchpin-attack-path-analysis/actions/workflows/docs.yml/badge.svg)](https://rakshit-737.github.io/linchpin-attack-path-analysis/)
+[![release](https://img.shields.io/github/v/release/rakshit-737/linchpin-attack-path-analysis)](https://github.com/rakshit-737/linchpin-attack-path-analysis/releases)
 
 **Read-only attack-path reasoning: find the few fixes that cut every route to the crown jewels, using scanner, identity and exploit-intel data.**
 
@@ -12,10 +12,10 @@
 
 | claim | result [95% interval] | paired test | source | run / commit |
 | --- | --- | --- | --- | --- |
-| Identity data decides whether 3 fixes cut credential-routed topologies off (ablation, `ad` + `multi`, n = 100) | with it 100/100 [96, 100]; without it 5/100 [2, 11]; identity data alone 27/100 [19, 36] | exact McNemar, 95 vs 0 discordant, p < 1e-4 | [ablation.md](benchmarks/results/ablation.md) | CI [37089520295](https://github.com/rakshit-737/linchpin/actions/runs/37089520295) |
-| Published planners reach the same rate (`single` + `multi` + `ad`, n = 150) | exact interdiction MILP (Israeli & Wood 2002) 100% [98, 100]; Guo et al.-style greedy interdiction 97% [92, 99]; best patch-only plan 95% [90, 97] | vs LINCHPIN: 0 vs 0 (p = 1), 5 vs 0 (p = 0.0625), 8 vs 0 (p = 0.0078) | [summary.md](benchmarks/results/summary.md) | CI [37089520295](https://github.com/rakshit-737/linchpin/actions/runs/37089520295) |
-| Score-sorted patch queues do no better than chance (n = 150) | CVSS / EPSS / KEV-then-EPSS queues over on-path vulns 10% [6, 16] / 9% [6, 15] / 9% [6, 15]; 3 fixes drawn uniformly from all remediable nodes 10% [6, 16]; betweenness 39% [31, 47] | vs random: 10 vs 10, 9 vs 10, 9 vs 10 (p = 1 each); betweenness 46 vs 3 (p < 1e-4) | [summary.md](benchmarks/results/summary.md) | CI [37089520295](https://github.com/rakshit-737/linchpin/actions/runs/37089520295) |
-| Measured lab: 5 outdated images scanned inside CI on internal Docker networks (n = 1 lab) | upgrading Tomcat 9.0.30 (1 fix) cuts the database off; betweenness, greedy interdiction and the MILP also need 1 fix; EPSS- and KEV-first 2, CVSS-first 3 | none (one lab) | [lab_case_study.md](benchmarks/results/lab/lab_case_study.md) | CI [37091866743](https://github.com/rakshit-737/linchpin/actions/runs/37091866743) |
+| Identity data decides whether 3 fixes cut credential-routed topologies off (ablation, `ad` + `multi`, n = 100) | with it 100/100 [96, 100]; without it 5/100 [2, 11]; identity data alone 27/100 [19, 36] | exact McNemar, 95 vs 0 discordant, p < 1e-4 | [ablation.md](benchmarks/results/ablation.md) | CI [37089520295](https://github.com/rakshit-737/linchpin-attack-path-analysis/actions/runs/37089520295) |
+| Published planners reach the same rate (`single` + `multi` + `ad`, n = 150) | exact interdiction MILP (Israeli & Wood 2002) 100% [98, 100]; Guo et al.-style greedy interdiction 97% [92, 99]; best patch-only plan 95% [90, 97] | vs LINCHPIN: 0 vs 0 (p = 1), 5 vs 0 (p = 0.0625), 8 vs 0 (p = 0.0078) | [summary.md](benchmarks/results/summary.md) | CI [37089520295](https://github.com/rakshit-737/linchpin-attack-path-analysis/actions/runs/37089520295) |
+| Score-sorted patch queues do no better than chance (n = 150) | CVSS / EPSS / KEV-then-EPSS queues over on-path vulns 10% [6, 16] / 9% [6, 15] / 9% [6, 15]; 3 fixes drawn uniformly from all remediable nodes 10% [6, 16]; betweenness 39% [31, 47] | vs random: 10 vs 10, 9 vs 10, 9 vs 10 (p = 1 each); betweenness 46 vs 3 (p < 1e-4) | [summary.md](benchmarks/results/summary.md) | CI [37089520295](https://github.com/rakshit-737/linchpin-attack-path-analysis/actions/runs/37089520295) |
+| Measured lab: 5 outdated images scanned inside CI on internal Docker networks (n = 1 lab) | upgrading Tomcat 9.0.30 (1 fix) cuts the database off; betweenness, greedy interdiction and the MILP also need 1 fix; EPSS- and KEV-first 2, CVSS-first 3 | none (one lab) | [lab_case_study.md](benchmarks/results/lab/lab_case_study.md) | CI [37091866743](https://github.com/rakshit-737/linchpin-attack-path-analysis/actions/runs/37091866743) |
 | Partial replication of Jacobs et al. (2023) with public data (EPSS v2, KEV as label; 117,141 of their ~191k CVEs) | effort within 2 points in all four rows, coverage within 1.5-7.5 points; effort ratio EPSS / CVSS 7+ at equal coverage 0.701 [0.695, 0.824] vs the paper's 0.671 (outside the interval); efficiency does not reproduce (1.6% vs 8.9%) | - | [repro_epss.md](benchmarks/results/repro_epss.md) | commit 22b77b5 (local; data hashes in the file) |
 | Prospective label: the 62 CVEs added to KEV in the following year | at 14.9% effort EPSS v2 covers 33/62 = 53% [41, 65], CVSS 9.1+ 18/62 = 29% [19, 41] | 20 vs 5 discordant, exact McNemar p = 0.0041; difference +24.2 points, paired bootstrap [9.7, 38.7] | [repro_epss.md](benchmarks/results/repro_epss.md) | commit 22b77b5 |
 
@@ -25,15 +25,15 @@ LINCHPIN reads exports that were **already collected** (OpenVAS, Nessus and nmap
 
 **Safety property:** LINCHPIN sends no packets and only parses files; it cannot exploit anything ([SECURITY.md](SECURITY.md), [THREAT_MODEL.md](THREAT_MODEL.md)). The only scanning anywhere in the project is a CI job that probes containers it starts itself on internal Docker networks, with version detection only.
 
-**Docs:** <https://rakshit-737.github.io/linchpin/> · **Static demo:** <https://rakshit-737.github.io/linchpin/demo/> · **Preprint:** [`paper/linchpin.pdf`](paper/linchpin.pdf) (CI fails if it differs from a fresh build of the LaTeX source)
+**Docs:** <https://rakshit-737.github.io/linchpin-attack-path-analysis/> · **Static demo:** <https://rakshit-737.github.io/linchpin-attack-path-analysis/demo/> · **Preprint:** [`paper/linchpin.pdf`](paper/linchpin.pdf) (CI fails if it differs from a fresh build of the LaTeX source)
 
 ## Try it in 60 seconds
 
 ```bash
-# in the browser: https://rakshit-737.github.io/linchpin/demo/  (pre-computed snapshots; nothing leaves the page)
+# in the browser: https://rakshit-737.github.io/linchpin-attack-path-analysis/demo/  (pre-computed snapshots; nothing leaves the page)
 
-# command line: install the v1.1.2 release once with uv, then run it
-uv tool install git+https://github.com/rakshit-737/linchpin@v1.1.2
+# command line: install the v1.1.3 release once with uv, then run it
+uv tool install git+https://github.com/rakshit-737/linchpin-attack-path-analysis@v1.1.3
 linchpin synth --out lab.json
 linchpin ingest --replace lab.json
 linchpin fix --budget 3
@@ -41,7 +41,7 @@ linchpin fix --budget 3
 #     jump-01 breaks 100/100 enumerated attack paths to ds:customer-db."
 
 # web UI from source, bound to localhost
-git clone https://github.com/rakshit-737/linchpin && cd linchpin
+git clone https://github.com/rakshit-737/linchpin-attack-path-analysis && cd linchpin-attack-path-analysis
 docker build -t linchpin . && docker run --rm -p 127.0.0.1:8000:8000 linchpin   # http://127.0.0.1:8000/ui
 ```
 
@@ -76,11 +76,11 @@ flowchart TB
 | M9 synth | `src/linchpin/synth/` | four seeded topology families with real CVE parameters and ground truth |
 | M11 ML | `src/linchpin/ml/` | learned exploit likelihood (KEV labels known at the cutoff, exploitation-status text masked) |
 
-Contracts are frozen in [`contracts/`](contracts/) and only change additively (v1.1 KEV and sub-score inputs, v1.2 ACE edges and `fix_cost`, v1.3 credential reachability). How every stage works: [docs/how-it-works](https://rakshit-737.github.io/linchpin/how-it-works/).
+Contracts are frozen in [`contracts/`](contracts/) and only change additively (v1.1 KEV and sub-score inputs, v1.2 ACE edges and `fix_cost`, v1.3 credential reachability). How every stage works: [docs/how-it-works](https://rakshit-737.github.io/linchpin-attack-path-analysis/how-it-works/).
 
 ## More results
 
-Every number comes from a committed file in [`benchmarks/results/`](benchmarks/results/), which records the commit or CI run that produced it; methods, all tables and threats to validity are on the [Evaluation](https://rakshit-737.github.io/linchpin/evaluation/) page, commands and runtimes on [Reproduce](https://rakshit-737.github.io/linchpin/reproduce/). The CI re-run of the benchmark and the ablation (run 37089520295, Linux) reproduced every outcome cell of the earlier Windows run.
+Every number comes from a committed file in [`benchmarks/results/`](benchmarks/results/), which records the commit or CI run that produced it; methods, all tables and threats to validity are on the [Evaluation](https://rakshit-737.github.io/linchpin-attack-path-analysis/evaluation/) page, commands and runtimes on [Reproduce](https://rakshit-737.github.io/linchpin-attack-path-analysis/reproduce/). The CI re-run of the benchmark and the ablation (run 37089520295, Linux) reproduced every outcome cell of the earlier Windows run.
 
 | evaluation | result [95% interval], paired test | source | run / commit |
 | --- | --- | --- | --- |
@@ -90,7 +90,7 @@ Every number comes from a committed file in [`benchmarks/results/`](benchmarks/r
 | Attack paths left after 3 fixes | difference in the share of enumerated (k-capped) paths left, CVSS-first minus LINCHPIN: 92 percentage points [88, 96] over the 150 topologies with a 3-fix cut (`ad` 81%, `multi` 98%, `single` 98%; `none` 0, both full) | [summary.md](benchmarks/results/summary.md) | CI 37089520295 |
 | Real-export case study (declared topology) | one credential rotation cuts the domain controller off, and the interdiction MILP, greedy interdiction and betweenness also do within 3 fixes; enriched CVSS / EPSS / KEV queues with 3 fixes do not. Planned without the identity findings (the ablation's `no_identity` view), LINCHPIN sees no attack path at all and proposes no fix, while the domain controller stays reachable (200/200 enumerated paths). | [case_study.md](benchmarks/results/case_study.md) | commit e26d0b1 |
 | M11 learned exploitability (label and phrase leakage removed; CVEs from 2023, n = 177,629, 631 in KEV) | ROC-AUC 0.836 [0.820, 0.852] vs 0.754 [0.739, 0.772] for the CVSS base score; average precision 0.028 [0.024, 0.034] vs 0.011 [0.010, 0.014]. Paired on the same resampled CVEs: AUC difference +0.082 [0.065, 0.100], average-precision ratio 2.43x [1.90, 3.24]. | [ml_exploitability.md](benchmarks/results/ml_exploitability.md), [ml_paired.md](benchmarks/results/ml_paired.md) | commits 552d969 (model), 094ef62 (paired) |
-| Neo4j GDS (CI) | identical costs and path sets on graphs of 60,040 and 238,665 relationships; Yen inside Neo4j is 4.8x / 8.1x faster at 250 hosts (k = 10 / 100) and 39x / 12x at 500 hosts (medians of 10 timed runs; 1.4-39x across the four CI runs that measured it), but mirroring the graph into Neo4j takes 5-15 s | [gds_crosscheck.json](benchmarks/results/gds_crosscheck.json) | CI [37091866743](https://github.com/rakshit-737/linchpin/actions/runs/37091866743) |
+| Neo4j GDS (CI) | identical costs and path sets on graphs of 60,040 and 238,665 relationships; Yen inside Neo4j is 4.8x / 8.1x faster at 250 hosts (k = 10 / 100) and 39x / 12x at 500 hosts (medians of 10 timed runs; 1.4-39x across the four CI runs that measured it), but mirroring the graph into Neo4j takes 5-15 s | [gds_crosscheck.json](benchmarks/results/gds_crosscheck.json) | CI [37091866743](https://github.com/rakshit-737/linchpin-attack-path-analysis/actions/runs/37091866743) |
 | Performance (laptop, median of 5) | 1.1 s at 467 nodes, 3.1 s at 903, 7.0 s at 1,384 (spec: < 5 s at 500 nodes) | [scale.json](benchmarks/results/scale.json) | commit bbf492e |
 
 ### Measured case study (CI lab scan)
@@ -104,7 +104,7 @@ The `lab-scan` CI job starts official images pinned to older releases (httpd 2.4
 | EPSS-first, KEV-then-EPSS | httpd 2.4.49 on `web` | no | 2 |
 | CVSS-first | redis 5.0.7 on `cache` (CVSS 9.9; on 5 of the 10 paths, the direct app-to-db route remains) | no | 3 |
 
-The `lab-scan` job re-runs on every push ([workflow](https://github.com/rakshit-737/linchpin/actions/workflows/ci.yml)); the scans, derived topology, analysis and image digests committed in [`benchmarks/results/lab/`](benchmarks/results/lab/) are the artefact of CI run [37091866743](https://github.com/rakshit-737/linchpin/actions/runs/37091866743) (5 of 6 services matched, 393 CVEs, 7 in KEV); replay with `linchpin scenario scenarios/lab_scan.yaml --data-dir .`. A version banner is not proof of exposure, so the CVE lists are an upper bound.
+The `lab-scan` job re-runs on every push ([workflow](https://github.com/rakshit-737/linchpin-attack-path-analysis/actions/workflows/ci.yml)); the scans, derived topology, analysis and image digests committed in [`benchmarks/results/lab/`](benchmarks/results/lab/) are the artefact of CI run [37091866743](https://github.com/rakshit-737/linchpin-attack-path-analysis/actions/runs/37091866743) (5 of 6 services matched, 393 CVEs, 7 in KEV); replay with `linchpin scenario scenarios/lab_scan.yaml --data-dir .`. A version banner is not proof of exposure, so the CVE lists are an upper bound.
 
 ### Synthetic benchmark and ablation
 
@@ -146,7 +146,7 @@ A hashed bag of description n-grams, CVSS vector components and CWE ids in a cla
 ## Quickstart
 
 ```bash
-git clone https://github.com/rakshit-737/linchpin && cd linchpin
+git clone https://github.com/rakshit-737/linchpin-attack-path-analysis && cd linchpin-attack-path-analysis
 pip install -e ".[dev,api,ml,bench]"      # distribution "linchpin-attackpath"; the command is `linchpin`
 python -m pytest -q                       # real-data, live-Neo4j and browser tests auto-skip without data / server / Chromium
 
@@ -167,7 +167,7 @@ linchpin ingest --replace --match-cpe benchmarks/results/lab/scan-lp-dmz.xml ben
 linchpin serve                             # API + web UI on http://127.0.0.1:8000/ui
 ```
 
-Do not `pip install linchpin` from PyPI: that name belongs to an unrelated project. Release images are on `ghcr.io/rakshit-737/linchpin`; v1.0.0 has known issues ([SECURITY.md](SECURITY.md)), use 1.1.0 or later.
+Do not `pip install linchpin` from PyPI: that name belongs to an unrelated project. Release images are on `ghcr.io/rakshit-737/linchpin-attack-path-analysis`; v1.0.0 has known issues ([SECURITY.md](SECURITY.md)), use 1.1.0 or later.
 
 ## Prior art and how this differs
 
@@ -191,7 +191,7 @@ Do not `pip install linchpin` from PyPI: that name belongs to an unrelated proje
 - **No cut within budget:** the greedy fallback reaches about 83% of the optimal attacker-cost rise.
 - **Scale:** about 3 s at 900 nodes, 7 s at 1,400 on a laptop; the GDS backend is faster only when the graph already lives in Neo4j.
 
-Full list: [docs/limitations](https://rakshit-737.github.io/linchpin/limitations/).
+Full list: [docs/limitations](https://rakshit-737.github.io/linchpin-attack-path-analysis/limitations/).
 
 ## Roadmap
 
@@ -202,7 +202,7 @@ Full list: [docs/limitations](https://rakshit-737.github.io/linchpin/limitations
 
 ## References
 
-Phillips & Swiler, NSPW 1998, [doi:10.1145/310889.310919](https://doi.org/10.1145/310889.310919) · Sheyner et al., IEEE S&P 2002, [doi:10.1109/SECPRI.2002.1004377](https://doi.org/10.1109/SECPRI.2002.1004377) · Ou, Govindavajhala & Appel, USENIX Security 2005, pp. 113-128 · Noel et al., ACSAC 2003, [doi:10.1109/CSAC.2003.1254313](https://doi.org/10.1109/CSAC.2003.1254313) · Jajodia, Noel & O'Berry, Managing Cyber Threats 2005, [doi:10.1007/0-387-24230-9_9](https://doi.org/10.1007/0-387-24230-9_9) · Wang, Noel & Jajodia, Computer Communications 2006, [doi:10.1016/j.comcom.2006.06.018](https://doi.org/10.1016/j.comcom.2006.06.018) · Ingols, Lippmann & Piwowarski, ACSAC 2006, [doi:10.1109/ACSAC.2006.39](https://doi.org/10.1109/ACSAC.2006.39) · Albanese, Jajodia & Noel, DSN 2012, [doi:10.1109/DSN.2012.6263942](https://doi.org/10.1109/DSN.2012.6263942) · Noel et al., CyGraph, Handbook of Statistics 2016, [doi:10.1016/bs.host.2016.07.001](https://doi.org/10.1016/bs.host.2016.07.001) · Dunagan, Zheng & Simon, SOSP 2009, [doi:10.1145/1629575.1629605](https://doi.org/10.1145/1629575.1629605) · Guo et al., AAAI 2022, [doi:10.1609/aaai.v36i9.21167](https://doi.org/10.1609/aaai.v36i9.21167) · Guo et al., AAAI 2023, [doi:10.1609/aaai.v37i5.25701](https://doi.org/10.1609/aaai.v37i5.25701) · Israeli & Wood, Networks 2002, [doi:10.1002/net.10039](https://doi.org/10.1002/net.10039) · Ford & Fulkerson 1956, [doi:10.4153/CJM-1956-045-5](https://doi.org/10.4153/CJM-1956-045-5) · Yen 1971, [doi:10.1287/mnsc.17.11.712](https://doi.org/10.1287/mnsc.17.11.712) · Jacobs et al., DTRAP 2021, [doi:10.1145/3436242](https://doi.org/10.1145/3436242) · Jacobs et al., IEEE EuroS&PW 2023, [doi:10.1109/EuroSPW59978.2023.00027](https://doi.org/10.1109/EuroSPW59978.2023.00027). Full list with statistics references: [docs/datasets](https://rakshit-737.github.io/linchpin/datasets/#references).
+Phillips & Swiler, NSPW 1998, [doi:10.1145/310889.310919](https://doi.org/10.1145/310889.310919) · Sheyner et al., IEEE S&P 2002, [doi:10.1109/SECPRI.2002.1004377](https://doi.org/10.1109/SECPRI.2002.1004377) · Ou, Govindavajhala & Appel, USENIX Security 2005, pp. 113-128 · Noel et al., ACSAC 2003, [doi:10.1109/CSAC.2003.1254313](https://doi.org/10.1109/CSAC.2003.1254313) · Jajodia, Noel & O'Berry, Managing Cyber Threats 2005, [doi:10.1007/0-387-24230-9_9](https://doi.org/10.1007/0-387-24230-9_9) · Wang, Noel & Jajodia, Computer Communications 2006, [doi:10.1016/j.comcom.2006.06.018](https://doi.org/10.1016/j.comcom.2006.06.018) · Ingols, Lippmann & Piwowarski, ACSAC 2006, [doi:10.1109/ACSAC.2006.39](https://doi.org/10.1109/ACSAC.2006.39) · Albanese, Jajodia & Noel, DSN 2012, [doi:10.1109/DSN.2012.6263942](https://doi.org/10.1109/DSN.2012.6263942) · Noel et al., CyGraph, Handbook of Statistics 2016, [doi:10.1016/bs.host.2016.07.001](https://doi.org/10.1016/bs.host.2016.07.001) · Dunagan, Zheng & Simon, SOSP 2009, [doi:10.1145/1629575.1629605](https://doi.org/10.1145/1629575.1629605) · Guo et al., AAAI 2022, [doi:10.1609/aaai.v36i9.21167](https://doi.org/10.1609/aaai.v36i9.21167) · Guo et al., AAAI 2023, [doi:10.1609/aaai.v37i5.25701](https://doi.org/10.1609/aaai.v37i5.25701) · Israeli & Wood, Networks 2002, [doi:10.1002/net.10039](https://doi.org/10.1002/net.10039) · Ford & Fulkerson 1956, [doi:10.4153/CJM-1956-045-5](https://doi.org/10.4153/CJM-1956-045-5) · Yen 1971, [doi:10.1287/mnsc.17.11.712](https://doi.org/10.1287/mnsc.17.11.712) · Jacobs et al., DTRAP 2021, [doi:10.1145/3436242](https://doi.org/10.1145/3436242) · Jacobs et al., IEEE EuroS&PW 2023, [doi:10.1109/EuroSPW59978.2023.00027](https://doi.org/10.1109/EuroSPW59978.2023.00027). Full list with statistics references: [docs/datasets](https://rakshit-737.github.io/linchpin-attack-path-analysis/datasets/#references).
 
 ## Lab-only safety note
 

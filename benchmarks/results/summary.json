@@ -15,7 +15,7 @@
       "github_sha": "0c72593ea68ed8ff2bc893665cc6d41103e0f60d",
       "github_workflow": "results",
       "github_job": "benchmark",
-      "github_run_url": "https://github.com/rakshit-737/linchpin/actions/runs/37089520295"
+      "github_run_url": "https://github.com/rakshit-737/linchpin-attack-path-analysis/actions/runs/37089520295"
     },
     "platform": {
       "python": "3.14.7",
