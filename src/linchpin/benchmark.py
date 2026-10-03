@@ -19,7 +19,11 @@ Strategies (:data:`STRATEGIES`):
 * ``*_reach`` -- the same queues restricted to vulns that lie on some entry -> crown-jewel
   route. They ignore the planted unreachable decoys and non-code-execution noise, so they are
   the like-for-like test of whether *path structure* (not just reachability) matters.
-* ``betweenness`` (graph-aware, path-agnostic) and ``random``.
+* ``vuln_only`` -- LINCHPIN's planner restricted to vulnerabilities (exact cut over vulns when it
+  fits the budget, else greedy over vulns): the best a patch-only plan can do, i.e. the
+  like-for-like ceiling for the score queues, which may also only patch.
+* ``betweenness`` (graph-aware, path-agnostic) and ``random`` (uniform over all remediable
+  nodes, on a path or not).
 
 The exact min cut (engine/cuts.py) gives the true minimum number of fixes that disconnect
 everything, and the interdiction MILP the best achievable cheapest-path cost, so optimality
@@ -41,12 +45,13 @@ from linchpin.graph.store import GraphStore
 from linchpin.synth.generator import generate
 from linchpin.synth.topologies import generate_family
 
-STRATEGIES = ("linchpin", "greedy", "milp_interdiction", "greedy_interdiction", "cvss", "cvss_reach",
+STRATEGIES = ("linchpin", "greedy", "milp_interdiction", "greedy_interdiction", "vuln_only", "cvss", "cvss_reach",
               "epss", "epss_reach", "kev_epss", "kev_epss_reach", "betweenness", "random")
 LABEL = {
     "linchpin": "LINCHPIN (exact cut, else greedy)", "greedy": "LINCHPIN greedy set cover only",
     "milp_interdiction": "Exact interdiction MILP (Israeli & Wood 2002)",
     "greedy_interdiction": "Greedy interdiction (Guo et al.-style)",
+    "vuln_only": "Best patch-only plan (LINCHPIN over vulns only)",
     "cvss": "CVSS-first", "cvss_reach": "CVSS-first, on-path vulns only",
     "epss": "EPSS-first", "epss_reach": "EPSS-first, on-path vulns only",
     "kev_epss": "KEV then EPSS", "kev_epss_reach": "KEV then EPSS, on-path vulns only",
@@ -84,6 +89,9 @@ def order(store: GraphStore, strategy: str, budget: int, k: int = 100, seed: int
         return exact_interdiction(store, budget)["removed"]
     if strategy == "greedy_interdiction":
         return greedy_interdiction(store, budget)
+    if strategy == "vuln_only":
+        vulns = [n for n, _ in _vulns(store)]
+        return [r.target_node for r in recommend(store, budget=budget, k=k, restrict=vulns)]
     if base == "cvss":
         return cvss_baseline(store, budget, on_path)
     if base == "epss":
@@ -98,7 +106,7 @@ def order(store: GraphStore, strategy: str, budget: int, k: int = 100, seed: int
         bc = nx.betweenness_centrality(store.g, weight="cost", seed=seed,
                                        k=min(200, store.g.number_of_nodes()))
         return [n for n, _ in sorted(((n, bc[n]) for n in cand), key=lambda t: (-t[1], t[0]))[:budget]]
-    if strategy == "random":
+    if strategy == "random":  # uniform over every remediable node, on an attack path or not
         cand = candidates(store)
         return random.Random(seed).sample(cand, min(budget, len(cand)))
     raise ValueError(strategy)
@@ -184,6 +192,22 @@ def mcnemar_exact(b: int, c: int) -> float:
     return min(1.0, 2 * tail)
 
 
+def paired_diff(a: list[float], b: list[float], reps: int = 2000, seed: int = 0) -> dict | None:
+    """Paired comparison of ``a`` and ``b`` on the same topologies.
+
+    Returns the mean of a - b with a percentile-bootstrap 95% interval over the pairs, how often
+    each is larger, and an exact two-sided sign test (ties dropped).
+    """
+    d = [x - y for x, y in zip(a, b, strict=True)]
+    if not d:
+        return None
+    a_larger, b_larger = sum(x > 1e-12 for x in d), sum(x < -1e-12 for x in d)
+    return {"n": len(d), "mean_diff": round(statistics.mean(d), 4),
+            "ci95": bootstrap_ci(d, reps, seed) if len(d) >= MIN_N_FOR_CI else None,
+            "a_larger": a_larger, "b_larger": b_larger, "ties": len(d) - a_larger - b_larger,
+            "p_sign": mcnemar_exact(a_larger, b_larger)}
+
+
 def format_p(p: float) -> str:
     """One format for every p-value in the result files: ``< 1e-4`` or three significant digits."""
     return "< 1e-4" if p < 1e-4 else f"{p:.3g}"
@@ -234,6 +258,10 @@ def summarise(rows: list[dict], strategies: tuple[str, ...] = STRATEGIES) -> dic
             }
             if s != "linchpin" and "linchpin" in strategies:
                 agg[s]["vs_linchpin"] = _paired(rs, "linchpin", s)
+                both = [r for r in rs if math.isfinite(r["linchpin_gain"]) and math.isfinite(r[f"{s}_gain"])]
+                if len(both) >= MIN_N_FOR_CI:  # paired cost gain where neither disconnects (LINCHPIN - s)
+                    agg[s]["gain_vs_linchpin"] = paired_diff([r["linchpin_gain"] for r in both],
+                                                             [r[f"{s}_gain"] for r in both])
         opt = [(r["greedy_fixes"], r["min_cut"]) for r in rs if r["greedy_fixes"] and r["min_cut"]]
         agg["greedy_optimal_rate"] = (sum(g == m for g, m in opt) / len(opt)) if opt else None
         agg["greedy_mean_ratio"] = statistics.mean(g / m for g, m in opt) if opt else None
@@ -252,10 +280,20 @@ def summarise(rows: list[dict], strategies: tuple[str, ...] = STRATEGIES) -> dic
             out["pooled"][s] = {"disconnect_rate": k_disc / len(pool), "disconnect_ci95": wilson_ci(k_disc, len(pool))}
             if s != "linchpin":
                 out["pooled"][s]["vs_linchpin"] = _paired(pool, "linchpin", s)
+            if s != "random" and "random" in strategies:
+                out["pooled"][s]["vs_random"] = _paired(pool, s, "random")
     if "cvss" in strategies and "linchpin" in strategies:
-        red = [(r["cvss_resid"] - r["linchpin_resid"]) / max(r["baseline_residual"], 1) for r in rows]
-        out["residual_reduction_vs_cvss"] = {"families": fams, "n": len(red), "mean": statistics.mean(red),
-                                             "ci95": bootstrap_ci(red)}
+        def red(rs: list[dict]) -> list[float]:
+            return [(r["cvss_resid"] - r["linchpin_resid"]) / max(r["baseline_residual"], 1) for r in rs]
+
+        allr = red(rows)
+        out["residual_reduction_vs_cvss"] = {
+            "families": fams, "n": len(allr), "mean": statistics.mean(allr), "ci95": bootstrap_ci(allr),
+            "per_family": {f: {"n": len(x), "mean": round(statistics.mean(x), 4), "ci95": bootstrap_ci(x)}
+                           for f in fams if (x := red([r for r in rows if r["family"] == f]))},
+            "where_a_cut_fits": ({"families": sorted({r["family"] for r in pool}), "n": len(pool),
+                                  "mean": round(statistics.mean(red(pool)), 4), "ci95": bootstrap_ci(red(pool))}
+                                 if pool else None)}
     return out
 
 

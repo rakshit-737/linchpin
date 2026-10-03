@@ -42,7 +42,8 @@ def candidates(store) -> list[str]:
 
 
 def recommend(store, paths: list[AttackPath] | None = None, budget: int = 5,
-              cfg: Config | None = None, k: int = 100, exact: bool = True) -> list[Remediation]:
+              cfg: Config | None = None, k: int = 100, exact: bool = True,
+              restrict: list[str] | None = None) -> list[Remediation]:
     """Pick <= budget remediations that break the most crown-jewel attack paths.
 
     Greedy set cover: repeatedly pick the remediable node on the most still-viable paths.
@@ -54,13 +55,19 @@ def recommend(store, paths: list[AttackPath] | None = None, budget: int = 5,
     Ties are broken by (fewest crown jewels still reachable after removal, node id), which
     prefers true graph cuts over nodes that merely appear on every *enumerated* path.
     When all enumerated paths are broken, paths are re-enumerated on the reduced graph.
+    ``restrict`` limits the plan to these remediable nodes (e.g. only vulnerabilities: a
+    patch-only plan); the exact cut is then the minimum cut over them.
     """
     cfg = cfg or store.cfg
-    greedy = _greedy(store, paths, budget, k, candidates(store))
+    cands = candidates(store)
+    if restrict is not None:
+        keep = set(restrict)
+        cands = [n for n in cands if n in keep]
+    greedy = _greedy(store, paths, budget, k, cands)
     if not exact:
         return greedy
     from linchpin.engine.cuts import min_remediation_cut
-    cut = min_remediation_cut(store)
+    cut = min_remediation_cut(store, candidates=cands if restrict is not None else None)
     if not cut or len(cut) > budget:
         return greedy
     g_nodes = [r.target_node for r in greedy]
