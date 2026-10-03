@@ -3,11 +3,11 @@
     python benchmarks/ml_paired.py --data-dir ../../datasets/linchpin
 
 Loads the default model that benchmarks/ml_exploitability.py saved (``derived/exploit_model.npz``,
-masked text, labels known at the 2023-01-01 cutoff), rebuilds the leak-free test set (CVEs published
-from the cutoff whose description does not report exploitation), checks that the model reproduces the
-published ROC-AUC and average precision, and then draws a class-stratified paired bootstrap (both
-scorers on the same resampled CVEs) of the AUC difference, the AP difference and the AP ratio. It does
-not retrain anything, so it runs in minutes. Writes benchmarks/results/ml_paired.{json,md}.
+masked text, labels known at the 2023-01-01 cutoff), rebuilds the test set without exploitation-status
+phrases (CVEs published from the cutoff whose description does not report exploitation), checks that
+the model reproduces the published ROC-AUC and average precision, and then draws a class-stratified
+paired bootstrap (both scorers on the same resampled CVEs) of the AUC difference, the AP difference and
+the AP ratio. It does not retrain anything. Writes benchmarks/results/ml_paired.{json,md}.
 """
 from __future__ import annotations
 
@@ -33,7 +33,12 @@ def main(argv=None) -> int:
     ap.add_argument("--cutoff", default="2023-01-01")
     ap.add_argument("--reps", type=int, default=1000)
     ap.add_argument("--out", default="benchmarks/results")
+    ap.add_argument("--render-only", action="store_true", help="only rewrite ml_paired.md from ml_paired.json")
     a = ap.parse_args(argv)
+    if a.render_only:
+        res = json.loads((Path(a.out) / "ml_paired.json").read_text(encoding="utf-8"))
+        (Path(a.out) / "ml_paired.md").write_text(render(res), encoding="utf-8")
+        return 0
     from sklearn.metrics import average_precision_score, roc_auc_score
     t0 = time.time()
     code = run_provenance()
@@ -85,13 +90,23 @@ def main(argv=None) -> int:
     }
     out = Path(a.out)
     (out / "ml_paired.json").write_text(json.dumps(res, indent=2), encoding="utf-8")
-    p = res["paired"]
-    text = "\n".join([
-        f"Paired comparison on the leak-free test set ({res['n_test']:,} CVEs published from {a.cutoff} whose "
-        f"description does not report exploitation, {res['positives']} in KEV): the default learned model "
-        f"({'reproduces' if same else 'does NOT reproduce'} the published ROC-AUC {point['learned']['roc_auc']:.3f} "
-        f"and average precision {point['learned']['avg_precision']:.3f}) against the CVSS base score, both scored "
-        f"on the same class-stratified bootstrap resamples ({a.reps:,} replicates, seed 0).", "",
+    text = render(res)
+    (out / "ml_paired.md").write_text(text, encoding="utf-8")
+    print(text)
+    return 0 if same else 1
+
+
+def render(res: dict) -> str:
+    point, p = res["point"], res["paired"]
+    code = res["provenance"]["code"]
+    same = res["matches_published_ml_exploitability"]
+    return "\n".join([
+        f"Paired comparison on the test CVEs without exploitation-status phrases ({res['n_test']:,} CVEs published "
+        f"from {res['model']['cutoff']} whose description does not report exploitation, {res['positives']} in KEV): "
+        f"the default learned model ({'reproduces' if same else 'does NOT reproduce'} the published ROC-AUC "
+        f"{point['learned']['roc_auc']:.3f} and average precision {point['learned']['avg_precision']:.3f}) against "
+        f"the CVSS base score, both scored on the same class-stratified bootstrap resamples "
+        f"({p['bootstrap']['reps']:,} replicates, seed {p['bootstrap']['seed']}).", "",
         "| metric | learned | CVSS base | learned - CVSS (95% paired bootstrap) | ratio (95%) |",
         "| --- | ---: | ---: | ---: | ---: |",
         f"| ROC-AUC | {point['learned']['roc_auc']:.3f} | {point['cvss_base']['roc_auc']:.3f} | "
@@ -103,9 +118,6 @@ def main(argv=None) -> int:
         f"The learned model has the higher ROC-AUC in {p['roc_auc_learned_better_share']:.1%} of the replicates. "
         f"Computed at commit {(code.get('git_commit') or 'unknown')[:12]}"
         + (" with uncommitted code changes" if code.get("git_dirty_code") else "") + ".", ""])
-    (out / "ml_paired.md").write_text(text, encoding="utf-8")
-    print(text)
-    return 0 if same else 1
 
 
 if __name__ == "__main__":
