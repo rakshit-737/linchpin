@@ -2,6 +2,8 @@
 
 ## [Unreleased]
 
+## [1.1.1] - 2026-10-03
+
 ### Fixed
 - `ingest`: a truncated XML report or malformed topology YAML/JSON is reported under `skipped` with its line and
   column instead of aborting the batch with a traceback; `--replace` drops the old `config.json` only after the inputs

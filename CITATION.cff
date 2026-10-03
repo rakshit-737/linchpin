@@ -10,8 +10,8 @@ type: software
 authors:
   - given-names: Rakshit
     affiliation: "VIT Chennai"
-version: 1.1.0
-date-released: "2026-10-02"
+version: 1.1.1
+date-released: "2026-10-03"
 license: MIT
 repository-code: "https://github.com/rakshit-737/linchpin"
 url: "https://rakshit-737.github.io/linchpin/"

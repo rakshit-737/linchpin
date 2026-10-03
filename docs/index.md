@@ -34,7 +34,7 @@ rate without identity data is 37% [29, 45]).
 === "Command line (uv)"
 
     ```bash
-    uv tool install git+https://github.com/rakshit-737/linchpin@v1.1.0   # the v1.1.0 release, once
+    uv tool install git+https://github.com/rakshit-737/linchpin@v1.1.1   # the v1.1.1 release, once
     linchpin synth --out lab.json   # seeded topology, real CVE parameters
     linchpin ingest --replace lab.json
     linchpin fix --budget 3
