@@ -1,12 +1,34 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE nmaprun>
 <?xml-stylesheet href="file:///usr/bin/../share/nmap/nmap.xsl" type="text/xsl"?>
-<!-- Nmap 7.93 scan initiated Fri Oct  2 11:11:27 2026 as: nmap -sV -sT -Pn -n -T4 -&#45;version-intensity 7 -p 1-10000 -oX /out/scan-lp-dmz.xml 172.18.0.4 172.18.0.2 172.18.0.3 -->
-<nmaprun scanner="nmap" args="nmap -sV -sT -Pn -n -T4 -&#45;version-intensity 7 -p 1-10000 -oX /out/scan-lp-dmz.xml 172.18.0.4 172.18.0.2 172.18.0.3" start="1790939487" startstr="Fri Oct  2 11:11:27 2026" version="7.93" xmloutputversion="1.05">
+<!-- Nmap 7.93 scan initiated Sat Oct  3 03:03:26 2026 as: nmap -sV -sT -Pn -n -T4 -&#45;version-intensity 7 -p 1-10000 -oX /out/scan-lp-dmz.xml 172.18.0.2 172.18.0.3 172.18.0.4 -->
+<nmaprun scanner="nmap" args="nmap -sV -sT -Pn -n -T4 -&#45;version-intensity 7 -p 1-10000 -oX /out/scan-lp-dmz.xml 172.18.0.2 172.18.0.3 172.18.0.4" start="1790996606" startstr="Sat Oct  3 03:03:26 2026" version="7.93" xmloutputversion="1.05">
 <scaninfo type="connect" protocol="tcp" numservices="10000" services="1-10000"/>
 <verbose level="0"/>
 <debugging level="0"/>
-<host starttime="1790939487" endtime="1790939494"><status state="up" reason="user-set" reason_ttl="0"/>
+<host starttime="1790996606" endtime="1790996613"><status state="up" reason="user-set" reason_ttl="0"/>
+<address addr="172.18.0.2" addrtype="ipv4"/>
+<hostnames>
+</hostnames>
+<ports><extraports state="closed" count="9999">
+<extrareasons reason="conn-refused" count="9999" proto="tcp" ports="1-79,81-10000"/>
+</extraports>
+<port protocol="tcp" portid="80"><state state="open" reason="syn-ack" reason_ttl="0"/><service name="http" product="Apache httpd" version="2.4.49" extrainfo="(Unix)" method="probed" conf="10"><cpe>cpe:/a:apache:http_server:2.4.49</cpe></service></port>
+</ports>
+<times srtt="233" rttvar="185" to="100000"/>
+</host>
+<host starttime="1790996606" endtime="1790996613"><status state="up" reason="user-set" reason_ttl="0"/>
+<address addr="172.18.0.3" addrtype="ipv4"/>
+<hostnames>
+</hostnames>
+<ports><extraports state="closed" count="9999">
+<extrareasons reason="conn-refused" count="9999" proto="tcp" ports="1-79,81-10000"/>
+</extraports>
+<port protocol="tcp" portid="80"><state state="open" reason="syn-ack" reason_ttl="0"/><service name="http" product="nginx" version="1.16.1" method="probed" conf="10"><cpe>cpe:/a:igor_sysoev:nginx:1.16.1</cpe></service></port>
+</ports>
+<times srtt="255" rttvar="175" to="100000"/>
+</host>
+<host starttime="1790996606" endtime="1790996613"><status state="up" reason="user-set" reason_ttl="0"/>
 <address addr="172.18.0.4" addrtype="ipv4"/>
 <hostnames>
 </hostnames>
@@ -16,30 +38,8 @@
 <port protocol="tcp" portid="8009"><state state="open" reason="syn-ack" reason_ttl="0"/><service name="ajp13" product="Apache Jserv" extrainfo="Protocol v1.3" method="probed" conf="10"/></port>
 <port protocol="tcp" portid="8080"><state state="open" reason="syn-ack" reason_ttl="0"/><service name="http" product="Apache Tomcat" version="9.0.30" method="probed" conf="10"><cpe>cpe:/a:apache:tomcat:9.0.30</cpe></service></port>
 </ports>
-<times srtt="178" rttvar="105" to="100000"/>
+<times srtt="271" rttvar="156" to="100000"/>
 </host>
-<host starttime="1790939487" endtime="1790939494"><status state="up" reason="user-set" reason_ttl="0"/>
-<address addr="172.18.0.2" addrtype="ipv4"/>
-<hostnames>
-</hostnames>
-<ports><extraports state="closed" count="9999">
-<extrareasons reason="conn-refused" count="9999" proto="tcp" ports="1-79,81-10000"/>
-</extraports>
-<port protocol="tcp" portid="80"><state state="open" reason="syn-ack" reason_ttl="0"/><service name="http" product="Apache httpd" version="2.4.49" extrainfo="(Unix)" method="probed" conf="10"><cpe>cpe:/a:apache:http_server:2.4.49</cpe></service></port>
-</ports>
-<times srtt="152" rttvar="122" to="100000"/>
-</host>
-<host starttime="1790939487" endtime="1790939494"><status state="up" reason="user-set" reason_ttl="0"/>
-<address addr="172.18.0.3" addrtype="ipv4"/>
-<hostnames>
-</hostnames>
-<ports><extraports state="closed" count="9999">
-<extrareasons reason="conn-refused" count="9999" proto="tcp" ports="1-79,81-10000"/>
-</extraports>
-<port protocol="tcp" portid="80"><state state="open" reason="syn-ack" reason_ttl="0"/><service name="http" product="nginx" version="1.16.1" method="probed" conf="10"><cpe>cpe:/a:igor_sysoev:nginx:1.16.1</cpe></service></port>
-</ports>
-<times srtt="168" rttvar="117" to="100000"/>
-</host>
-<runstats><finished time="1790939494" timestr="Fri Oct  2 11:11:34 2026" summary="Nmap done at Fri Oct  2 11:11:34 2026; 3 IP addresses (3 hosts up) scanned in 6.77 seconds" elapsed="6.77" exit="success"/><hosts up="3" down="0" total="3"/>
+<runstats><finished time="1790996613" timestr="Sat Oct  3 03:03:33 2026" summary="Nmap done at Sat Oct  3 03:03:33 2026; 3 IP addresses (3 hosts up) scanned in 6.92 seconds" elapsed="6.92" exit="success"/><hosts up="3" down="0" total="3"/>
 </runstats>
 </nmaprun>

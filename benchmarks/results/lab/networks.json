@@ -1,8 +1,8 @@
 [
     {
         "Name": "lp-dmz",
-        "Id": "c954d7eb22072eb8ad1028208e9bd271387bd4189f9019d3352d40ef1c6f3994",
-        "Created": "2026-10-02T11:11:00.419105979Z",
+        "Id": "63ba6985dee985591a88fcdc183ddd13f0de48800a3b73f7568644c4df6a1f71",
+        "Created": "2026-10-03T03:02:49.95466463Z",
         "Scope": "local",
         "Driver": "bridge",
         "EnableIPv4": true,
@@ -25,25 +25,25 @@
         },
         "ConfigOnly": false,
         "Containers": {
-            "81995da6cfff92b294fceb1763a1122074d35d41ef34bcc9ed26a7fe29656dd1": {
-                "Name": "app",
-                "EndpointID": "72cedf863c1fa8b75b991a675c807900784faf0697f8ef93741122c99d7d9642",
-                "MacAddress": "66:94:e9:80:5e:69",
-                "IPv4Address": "172.18.0.4/16",
-                "IPv6Address": ""
-            },
-            "853968fd35826379bc2e2c7495a5c04b3ddd7ade66804c317814d25ec4ed9db2": {
+            "0a7b980f673e45cc7b0a11ace9026348f1de92356dae1f0f72f406100bc2eeb1": {
                 "Name": "web",
-                "EndpointID": "ac38bf1d4a981dceaddecda0fb50eaa4e9fe7e856f64650cde3e9b73fdabcd07",
-                "MacAddress": "be:6e:14:53:c0:2d",
+                "EndpointID": "9eddfc55307cafd3155c2ae72251e7d647adb98cf3e759c5640b32ce12a0b013",
+                "MacAddress": "2a:31:ac:bc:5d:7a",
                 "IPv4Address": "172.18.0.2/16",
                 "IPv6Address": ""
             },
-            "f581114d07671fca941deb208ce8b084d4a7b5043b4f25e6dae3d730381fa1fe": {
+            "57c57e8303b4622ea01721cfa4fb6b1b3d4d121242e8e76411c30544e70721eb": {
                 "Name": "proxy",
-                "EndpointID": "4bd54850a4c1d3f5ebc904b7a873694dbac7933fc598f0b39fb3a2c96eb19b84",
-                "MacAddress": "3e:72:f9:39:e7:ab",
+                "EndpointID": "1902f895651360b32f0a1d167ee7c95caecea361804cb9b9c20d454401207766",
+                "MacAddress": "ee:3b:e9:97:f3:4c",
                 "IPv4Address": "172.18.0.3/16",
+                "IPv6Address": ""
+            },
+            "5eb743fecfe03776ce8e4c0e142e24971a81bfa694de2c7166b9daa15d5f7915": {
+                "Name": "app",
+                "EndpointID": "3764fe883728ea967cd9a7cc3eaa05541a2f11c915ec670cd4446dea03799ab2",
+                "MacAddress": "22:75:c4:ba:42:73",
+                "IPv4Address": "172.18.0.4/16",
                 "IPv6Address": ""
             }
         },
@@ -52,8 +52,8 @@
     },
     {
         "Name": "lp-core",
-        "Id": "21f7e37d9c2071f6aaeff2f0bac4d926772af69fe4da9d9d53223c0b2b42458f",
-        "Created": "2026-10-02T11:11:00.448419196Z",
+        "Id": "043712dbded63a48a1ad6e7a408e5a29e58772f0ad77729c65706942b62d25c2",
+        "Created": "2026-10-03T03:02:49.979910067Z",
         "Scope": "local",
         "Driver": "bridge",
         "EnableIPv4": true,
@@ -76,25 +76,25 @@
         },
         "ConfigOnly": false,
         "Containers": {
-            "38afe43152d8da7036a894369a3050a268204d8bd1f26e09fb35f38c063bdb32": {
-                "Name": "cache",
-                "EndpointID": "9e1203afcb26363c93f68327ecc742379b6d912cca8975eed10bd729d3a587bf",
-                "MacAddress": "fe:3e:15:f1:e0:6a",
-                "IPv4Address": "172.19.0.3/16",
+            "0049d3017cc8c9bacc7c26f72ed8ab98fc99a70e985c1f83187cf21734dbd5be": {
+                "Name": "db",
+                "EndpointID": "30bb802163529f32fcc02c470d23829a00b4e06fadce48e201183f8432fc28da",
+                "MacAddress": "0a:86:5a:72:50:7a",
+                "IPv4Address": "172.19.0.4/16",
                 "IPv6Address": ""
             },
-            "81995da6cfff92b294fceb1763a1122074d35d41ef34bcc9ed26a7fe29656dd1": {
+            "5eb743fecfe03776ce8e4c0e142e24971a81bfa694de2c7166b9daa15d5f7915": {
                 "Name": "app",
-                "EndpointID": "a87b8f2d0873f3f545d511c220c21d706ec09210ab74a167334fe750dc49b995",
-                "MacAddress": "4a:91:f1:bf:31:06",
+                "EndpointID": "48afe3c75b4945f95b30f86c582382cfdb438c7d86ac692f8d67f9c1a1b22960",
+                "MacAddress": "da:7d:1d:f1:9f:eb",
                 "IPv4Address": "172.19.0.2/16",
                 "IPv6Address": ""
             },
-            "ce596f563ec22da32f27846444f9a460f90370e8e19949e8b02384f1ba79d261": {
-                "Name": "db",
-                "EndpointID": "371f3f1f4469415451ccc070a7f9ad23eb8385eb4c88cb1597550b102f3d1099",
-                "MacAddress": "ee:8a:ff:d2:90:c1",
-                "IPv4Address": "172.19.0.4/16",
+            "a812719111a7b3948f859e79c53f27fbe737c377a6ae72021f6262f380f9d8ad": {
+                "Name": "cache",
+                "EndpointID": "f0d7ac3b874cfd00ace357e9f1f3ca079a9f9278453102610b195891fa2ee1e2",
+                "MacAddress": "6e:21:d6:7f:5a:eb",
+                "IPv4Address": "172.19.0.3/16",
                 "IPv6Address": ""
             }
         },

@@ -1,4 +1,4 @@
-# Measured CI lab (GitHub Actions run 36999203784): official images pinned to older releases on two
+# Measured CI lab (GitHub Actions run 37091866743): official images pinned to older releases on two
 # --internal Docker networks, scanned with nmap -sV (no NSE scripts) from inside each network
 # (lab/up.sh, lab/scan.sh). Hosts, segments and firewall rules are DERIVED from that measurement by
 # benchmarks/lab_case_study.py; two facts are DECLARED because a scan cannot see them: the lp-dmz
