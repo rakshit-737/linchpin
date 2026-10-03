@@ -23,6 +23,7 @@ from linchpin.engine.cuts import min_remediation_cut
 from linchpin.engine.optimizer import recommend
 from linchpin.engine.paths import rank_paths
 from linchpin.graph.store import GraphStore
+from linchpin.runinfo import run_provenance
 from linchpin.synth.topologies import generate_family
 
 
@@ -85,7 +86,7 @@ def main(argv=None) -> int:
     out = Path(a.out)
     out.mkdir(parents=True, exist_ok=True)
     meta = {"cpu": cpu_name(), "cpus": os.cpu_count(), "python": platform.python_version(), "os": platform.platform(),
-            "reps": a.reps, "statistic": "median",
+            "reps": a.reps, "statistic": "median", "code": run_provenance(),
             "command": "python benchmarks/scale.py " + " ".join(argv or sys.argv[1:])}
     (out / "scale.json").write_text(json.dumps({"meta": meta, "rows": rows}, indent=2), encoding="utf-8")
     try:
