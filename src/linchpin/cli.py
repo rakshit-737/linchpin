@@ -109,8 +109,6 @@ def cmd_ingest(args) -> int:
             files.append(p)
     existing = {}
     st = _state(args)
-    if args.replace:
-        (st.parent / "config.json").unlink(missing_ok=True)  # drop a previous scenario's config
     if st.exists() and not args.replace:
         existing = {x["finding_id"]: x for x in json.loads(st.read_text(encoding="utf-8"))}
     n = 0
@@ -126,8 +124,14 @@ def cmd_ingest(args) -> int:
                 alias.update(inventory.aliases(doc))
                 overrides.update({k: doc[k] for k in CONFIG_KEYS if k in doc})
             parsed += CONNECTORS[name](f)
-        except ValueError as e:
+        except ValueError as e:  # unsafe or malformed input (connectors raise ValueError naming the file)
             skipped.append(str(e))
+        except (KeyError, TypeError, AttributeError) as e:  # well-formed, but not the structure expected
+            skipped.append(f"{f}: unexpected content ({type(e).__name__}: {e})")
+    if files and len(skipped) == len(files):  # nothing usable: leave the state (and its config) untouched
+        _emit({"files": files, "skipped": skipped, "accepted": 0})
+        print(f"ingest: none of the {len(files)} input(s) could be read; the state was not changed", file=sys.stderr)
+        return 1
     unmatched: list[str] = []
     if alias:
         scanner_hosts = {x.host_id for x in parsed} | {x["host_id"] for x in existing.values()}
@@ -154,6 +158,8 @@ def cmd_ingest(args) -> int:
         existing[finding.finding_id] = finding.model_dump()
         n += 1
     st.parent.mkdir(parents=True, exist_ok=True)
+    if args.replace:  # drop a previous scenario's config, only once the new inputs parsed
+        (st.parent / "config.json").unlink(missing_ok=True)
     st.write_text(json.dumps(list(existing.values())), encoding="utf-8")
     cfg = _config(args)
     if overrides:  # same mechanism as `linchpin scenario`: config stored next to the state
@@ -205,6 +211,11 @@ def cmd_whatif(args) -> int:
     """``linchpin whatif``: path statistics with nodes removed."""
     store = _load_store(args)
     ids = [i if ":" in i or i == "internet" else f"host:{i}" for i in args.remove]
+    unknown = [i for i in ids if i not in store.g]
+    if unknown:
+        print(f"unknown node(s) {', '.join(repr(i) for i in unknown)}; node ids look like host:<id>, "
+              "vuln:<key>@<host>:<port>, cred:<principal>, ds:<name> (see `linchpin paths`)", file=sys.stderr)
+        return 2
     _emit(store.remove_nodes_view(ids).model_dump())
     return 0
 
@@ -321,8 +332,9 @@ def cmd_serve(args) -> int:
     try:
         import uvicorn
     except ImportError:
-        raise SystemExit("serve needs the API extra: install the [api] extra (in a checkout: "
-                         "pip install -e '.[api]'; PyPI's 'linchpin' is an unrelated project)") from None
+        raise SystemExit("serve needs the API extra: pip install \"linchpin-attackpath[api] @ "
+                         "git+https://github.com/rakshit-737/linchpin\" (in a checkout: pip install -e '.[api]'; "
+                         "PyPI's 'linchpin' is an unrelated project)") from None
     if args.host not in LOOPBACK:
         print(f"WARNING: binding to {args.host}. The API has no authentication and serves a map of your "
               "weaknesses; keep it on a trusted, isolated network.", file=sys.stderr)
@@ -343,6 +355,24 @@ def _positive(v: str) -> int:
     return n
 
 
+EXAMPLES = {
+    "ingest": "linchpin ingest --replace --match-cpe benchmarks/results/lab/scan-lp-dmz.xml "
+              "benchmarks/results/lab/scan-lp-core.xml benchmarks/results/lab/topology.yaml",
+    "scenario": "linchpin scenario scenarios/composite_lab.yaml --data-dir ../../datasets/linchpin",
+    "synth": "linchpin synth --family ad --hosts 30 --seed 1 --out data/ad.json",
+    "intel-build": "linchpin intel-build --data-dir ../../datasets/linchpin",
+    "build": "linchpin build",
+    "paths": "linchpin paths --k 5 --explain",
+    "fix": "linchpin fix --budget 3",
+    "cuts": "linchpin cuts --weighted",
+    "whatif": "linchpin whatif --remove jump-01",
+    "node": "linchpin node host:jump-01",
+    "export": "linchpin export --format graphml --out graph.graphml",
+    "neo4j-push": "NEO4J_PASSWORD=... linchpin neo4j-push --graph-name lab",
+    "serve": "linchpin serve --scenario scenarios/composite_lab.yaml --data-dir ../../datasets/linchpin",
+}
+
+
 def build_parser() -> argparse.ArgumentParser:
     """The argparse parser for every ``linchpin`` command (also renders docs/reference/cli.md)."""
     ap = argparse.ArgumentParser(
@@ -358,8 +388,14 @@ def build_parser() -> argparse.ArgumentParser:
                     help="weights / entry points / crown jewels YAML (env LINCHPIN_CONFIG; default %(default)s)")
     sub = ap.add_subparsers(dest="cmd", required=True, metavar="command")
 
+    def add(name: str, help: str) -> argparse.ArgumentParser:
+        """A sub-command whose --help repeats its one-line summary and shows an example."""
+        example = EXAMPLES.get(name)
+        return sub.add_parser(name, help=help, description=help[0].upper() + help[1:] + ".",
+                              epilog=f"example: {example}" if example else None)
+
     # -- load data
-    s = sub.add_parser("ingest", help="parse exports (nmap/OpenVAS/Nessus XML, SharpHound JSON, inventory "
+    s = add("ingest", help="parse exports (nmap/OpenVAS/Nessus XML, SharpHound JSON, inventory "
                                       "YAML, native JSON) into the state file")
     s.add_argument("paths", nargs="+", help="files or directories (directories are scanned one level deep)")
     s.add_argument("--replace", action="store_true", help="discard previously ingested findings")
@@ -368,12 +404,12 @@ def build_parser() -> argparse.ArgumentParser:
                    help="map detected service versions (e.g. nmap -sV) to CVEs with the packaged offline NVD "
                         "version-range index")
     s.set_defaults(fn=cmd_ingest)
-    s = sub.add_parser("scenario", help="load a scenario YAML (exports + topology overlay + intel) as the state")
+    s = add("scenario", help="load a scenario YAML (exports + topology overlay + intel) as the state")
     s.add_argument("path", help="scenario YAML, e.g. scenarios/composite_lab.yaml")
     s.add_argument("--data-dir", help="base directory of the exports it lists (default: the YAML's folder)")
     s.add_argument("--no-intel", action="store_true", help="skip NVD / EPSS / KEV enrichment")
     s.set_defaults(fn=cmd_scenario)
-    s = sub.add_parser("synth", help="write a synthetic enterprise (findings JSON + ground truth)")
+    s = add("synth", help="write a synthetic enterprise (findings JSON + ground truth)")
     s.add_argument("--family", choices=["single", "multi", "none", "ad", "legacy"], default="single",
                    help="topology family; all but `legacy` plant real CVEs from the packaged NVD/EPSS/KEV pool "
                         "(`legacy` uses placeholder CVE-2099-* ids) (default %(default)s)")
@@ -381,41 +417,41 @@ def build_parser() -> argparse.ArgumentParser:
     s.add_argument("--seed", type=int, default=0, help="random seed (default %(default)s)")
     s.add_argument("--out", default="data/synth.json", help="output file (default %(default)s)")
     s.set_defaults(fn=cmd_synth)
-    s = sub.add_parser("intel-build", help="build the NVD / EPSS / KEV lookup cache from downloaded feeds")
+    s = add("intel-build", help="build the NVD / EPSS / KEV lookup cache from downloaded feeds")
     s.add_argument("--data-dir", default="../../datasets/linchpin",
                    help="folder written by scripts/download_data.py (default %(default)s)")
     s.add_argument("--out", help="cache path (default <data-dir>/derived/cve_intel.csv.gz)")
     s.set_defaults(fn=cmd_intel_build)
 
     # -- analyse
-    sub.add_parser("build", help="build the attack graph and print its size").set_defaults(fn=cmd_build)
-    s = sub.add_parser("paths", help="k cheapest entry -> crown-jewel attack paths")
+    add("build", help="build the attack graph and print its size").set_defaults(fn=cmd_build)
+    s = add("paths", help="k cheapest entry -> crown-jewel attack paths")
     s.add_argument("--k", type=_positive, default=10, help="number of paths (default %(default)s)")
     s.add_argument("--explain", action="store_true", help="plain-English hop list instead of JSON")
     s.set_defaults(fn=cmd_paths)
-    s = sub.add_parser("fix", help="ordered remediation plan with rationale and evidence paths")
+    s = add("fix", help="ordered remediation plan with rationale and evidence paths")
     s.add_argument("--budget", type=_positive, default=5, help="maximum number of fixes (default %(default)s)")
     s.set_defaults(fn=cmd_fix)
-    s = sub.add_parser("cuts", help="exact minimum remediation cut and single-node chokepoints")
+    s = add("cuts", help="exact minimum remediation cut and single-node chokepoints")
     s.add_argument("--weighted", action="store_true", help="also the minimum-effort cut (config fix_cost)")
     s.set_defaults(fn=cmd_cuts)
-    s = sub.add_parser("whatif", help="path statistics with some nodes removed (nothing is persisted)")
+    s = add("whatif", help="path statistics with some nodes removed (nothing is persisted)")
     s.add_argument("--remove", nargs="+", required=True, help="node ids; bare names mean host:<name>")
     s.set_defaults(fn=cmd_whatif)
-    s = sub.add_parser("node", help="one node with its inbound / outbound attack edges")
+    s = add("node", help="one node with its inbound / outbound attack edges")
     s.add_argument("id", help="node id, e.g. host:jump-01 or cred:svc_backup")
     s.set_defaults(fn=cmd_node)
 
     # -- export / serve
-    s = sub.add_parser("export", help="export the attack graph (Neo4j .cypher script or GraphML)")
+    s = add("export", help="export the attack graph (Neo4j .cypher script or GraphML)")
     s.add_argument("--format", choices=["cypher", "graphml"], default="cypher", help="default %(default)s")
     s.add_argument("--out", required=True, help="output file")
     s.add_argument("--graph-name", default="default", help="graph tag on every node (default %(default)s)")
     s.set_defaults(fn=cmd_export)
-    s = sub.add_parser("neo4j-push", help="mirror the attack graph into Neo4j (password from NEO4J_PASSWORD)")
+    s = add("neo4j-push", help="mirror the attack graph into Neo4j (password from NEO4J_PASSWORD)")
     s.add_argument("--graph-name", default="default", help="graph tag on every node (default %(default)s)")
     s.set_defaults(fn=cmd_neo4j_push)
-    s = sub.add_parser("serve", help="run the API + web UI (localhost only by default; needs the [api] extra)")
+    s = add("serve", help="run the API + web UI (localhost only by default; needs the [api] extra)")
     s.add_argument("--host", default="127.0.0.1", help="bind address (default %(default)s)")
     s.add_argument("--port", type=_positive, default=8000, help="port (default %(default)s)")
     s.add_argument("--scenario", help="scenario YAML to preload (else a synthetic demo)")

@@ -119,3 +119,38 @@ def test_cli_reference_page_is_generated_from_the_parser():
     script = Path(__file__).parents[1] / "scripts" / "gen_cli_reference.py"
     r = subprocess.run([sys.executable, str(script), "--check"], capture_output=True, text=True)
     assert r.returncode == 0, r.stderr
+
+
+def test_ingest_reports_malformed_files_and_keeps_going(tmp_path, capsys):
+    st = tmp_path / "lp" / "state.json"
+    base = ["--state", str(st), "--config", str(tmp_path / "none.yaml")]
+    good = tmp_path / "in" / "synth.json"
+    good.parent.mkdir()
+    rc, _ = run(capsys, *base, "synth", "--out", str(good), "--seed", "1", "--hosts", "12")
+    (tmp_path / "in" / "broken.xml").write_text('<?xml version="1.0"?>\n<nmaprun><host><address addr="10.0.0.1"',
+                                                encoding="utf-8")
+    rc, out = run(capsys, *base, "ingest", "--replace", str(tmp_path / "in"))
+    got = json.loads(out)
+    assert rc == 0 and got["accepted"] > 0
+    assert len(got["skipped"]) == 1 and "malformed XML at line" in got["skipped"][0]
+    before = st.read_text(encoding="utf-8")
+    cfg = st.parent / "config.json"
+    cfg.write_text("{}", encoding="utf-8")
+    bad_yaml = tmp_path / "topo.yaml"
+    bad_yaml.write_text("hosts:\n  - id: a\n   segment: [dmz\n", encoding="utf-8")
+    rc, out = run(capsys, *base, "ingest", "--replace", str(tmp_path / "in" / "broken.xml"), str(bad_yaml))
+    got = json.loads(out)
+    assert rc == 1 and got["accepted"] == 0 and len(got["skipped"]) == 2
+    assert any("malformed YAML at line" in s for s in got["skipped"])
+    assert st.read_text(encoding="utf-8") == before and cfg.exists()  # nothing usable: state left alone
+
+
+def test_whatif_unknown_node_is_an_error(tmp_path, capsys):
+    st = str(tmp_path / "state.json")
+    data = str(tmp_path / "synth.json")
+    base = ["--state", st, "--config", str(tmp_path / "none.yaml")]
+    run(capsys, *base, "synth", "--out", data, "--seed", "3")
+    run(capsys, *base, "ingest", data)
+    rc = main([*base, "whatif", "--remove", "jump01"])
+    cap = capsys.readouterr()
+    assert rc == 2 and cap.out == "" and "unknown node(s) 'host:jump01'" in cap.err

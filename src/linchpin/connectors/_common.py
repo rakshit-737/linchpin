@@ -7,6 +7,7 @@ from pathlib import Path
 from typing import TYPE_CHECKING
 
 from defusedxml import DefusedXmlException
+from defusedxml.ElementTree import ParseError
 from defusedxml.ElementTree import parse as _safe_parse
 
 from linchpin.models import NormalizedFinding, make_finding_id
@@ -23,12 +24,16 @@ def parse_xml(path: str | Path) -> Element:
 
     Raises:
         ValueError: the document declares entities or references external resources
-            (XXE, billion laughs); callers report the file as skipped.
+            (XXE, billion laughs), or is not well-formed (e.g. truncated); callers report
+            the file as skipped.
     """
     try:
         return _safe_parse(str(path)).getroot()
     except DefusedXmlException as e:
         raise ValueError(f"{path}: refused unsafe XML ({type(e).__name__})") from None
+    except ParseError as e:
+        line, col = getattr(e, "position", (0, 0))
+        raise ValueError(f"{path}: malformed XML at line {line}, column {col}") from None
 
 
 def epoch_iso(s: str | int | None) -> str:

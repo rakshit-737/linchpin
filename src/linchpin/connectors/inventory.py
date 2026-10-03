@@ -32,10 +32,24 @@ TS = "1970-01-01T00:00:00+00:00"
 
 
 def load(path: str | Path) -> dict:
-    """Read a topology / inventory document (YAML, or JSON by extension)."""
+    """Read a topology / inventory document (YAML, or JSON by extension).
+
+    Raises:
+        ValueError: the document is not valid YAML / JSON (message names the line and column).
+    """
     p = Path(path)
     text = p.read_text(encoding="utf-8")
-    return (json.loads(text) if p.suffix == ".json" else yaml.safe_load(text)) or {}
+    try:
+        doc = json.loads(text) if p.suffix == ".json" else yaml.safe_load(text)
+    except yaml.YAMLError as e:
+        mark = getattr(e, "problem_mark", None)
+        where = f" at line {mark.line + 1}, column {mark.column + 1}" if mark else ""
+        raise ValueError(f"{path}: malformed YAML{where}") from None
+    except json.JSONDecodeError as e:
+        raise ValueError(f"{path}: malformed JSON at line {e.lineno}, column {e.colno}") from None
+    if doc is not None and not isinstance(doc, dict):
+        raise ValueError(f"{path}: expected a mapping with a 'hosts' list, got {type(doc).__name__}")
+    return doc or {}
 
 
 def is_inventory(path: str | Path) -> bool:
