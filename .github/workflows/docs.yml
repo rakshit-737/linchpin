@@ -19,6 +19,14 @@ jobs:
       - run: pip install -e ".[docs]"
       - name: Build (strict)
         run: mkdocs build --strict
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020  # v7.0.0
+        with: { node-version: "24" }
+      - name: Every mermaid block parses (mkdocs --strict does not check them)
+        run: |
+          mkdir -p /tmp/mermaid && cp scripts/check_mermaid.mjs /tmp/mermaid/
+          echo '{"private": true}' > /tmp/mermaid/package.json
+          npm install --prefix /tmp/mermaid --no-audit --no-fund --silent mermaid@11.17.2 jsdom@26.1.0
+          node /tmp/mermaid/check_mermaid.mjs README.md docs
       - name: /demo/ must be the path explorer, not a docs page
         run: grep -q LINCHPIN_STATIC site/demo/index.html || { echo "::error::/demo/ is not the explorer"; exit 1; }
       - name: Publish the preprint next to the docs
