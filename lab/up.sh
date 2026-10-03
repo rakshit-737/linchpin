@@ -22,6 +22,7 @@ docker run -d --name cache --network lp-core redis:5.0.7
 # a random root password is generated inside the container and never leaves it
 docker run -d --name db    --network lp-core -e MYSQL_RANDOM_ROOT_PASSWORD=yes mysql:5.5.62
 
-# scanner image: Debian's nmap package, nothing else
+# scanner image: Debian's nmap package, nothing else (base pulled first so its digest can be recorded)
+docker pull -q debian:bookworm-slim
 docker build -q -t lp-scanner -f Dockerfile.scanner .
 docker ps --format '{{.Names}}\t{{.Image}}\t{{.Status}}'
