@@ -37,4 +37,10 @@ done
 if grep -q "<script " "$OUT"/scan-*.xml; then echo "NSE script output found in the scans" >&2; exit 1; fi
 docker run --rm lp-scanner --version | head -1 > "$OUT/versions.txt"
 docker version --format 'docker {{.Server.Version}}' >> "$OUT/versions.txt"
+# the exact images that ran: tag plus the registry digest that was pulled (tags are mutable)
+# (BuildKit may not keep the scanner's base image in the local store: then the digest is "not recorded")
+for img in httpd:2.4.49 nginx:1.16.1 tomcat:9.0.30 redis:5.0.7 mysql:5.5.62 debian:bookworm-slim; do
+  d=$(docker image inspect --format '{{index .RepoDigests 0}}' "$img" 2>/dev/null) || d="not-recorded"
+  echo "image $img ${d##*@}" >> "$OUT/versions.txt"
+done
 grep -ho 'product="[^"]*" version="[^"]*"' "$OUT"/scan-*.xml | sort -u

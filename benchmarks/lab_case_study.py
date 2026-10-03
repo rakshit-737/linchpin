@@ -40,6 +40,7 @@ from linchpin.engine.cuts import chokepoints, min_remediation_cut
 from linchpin.engine.optimizer import recommend
 from linchpin.graph.store import GraphStore
 from linchpin.intel.cpe import CpeIndex, match_services
+from linchpin.runinfo import run_provenance
 from linchpin.scenario import apply_aliases
 
 NETWORKS = ("lp-dmz", "lp-core")  # order defines the segment names, e.g. "dmz+core"
@@ -148,8 +149,11 @@ def main(argv=None) -> int:
         for v in res["strategies"].values())
     res["checks"] = checks
     versions = scans / "versions.txt"
-    res["tools"] = versions.read_text(encoding="utf-8").strip().splitlines() if versions.exists() else []
+    vlines = versions.read_text(encoding="utf-8").strip().splitlines() if versions.exists() else []
+    res["tools"] = [x for x in vlines if not x.startswith("image ")]
+    res["images"] = [x.removeprefix("image ") for x in vlines if x.startswith("image ")]  # tag + pulled digest
     res["cpe_index"] = index.meta[:200]
+    res["code"] = run_provenance()  # in CI: the run id and sha whose artefact this is
     (out / "lab_case_study.json").write_text(json.dumps(res, indent=2, default=str), encoding="utf-8")
     text = render(res)
     (out / "lab_case_study.md").write_text(text, encoding="utf-8")
@@ -189,7 +193,16 @@ def render(res: dict) -> str:
     if res["plan"]:
         lines += ["", "LINCHPIN's rationale for its first fix:", "", f"> {res['plan'][0]['rationale']}"]
     lines += ["", "Checks: " + "; ".join(f"{k}: {'pass' if ok else 'FAIL'}" for k, ok in res["checks"].items()) + ".",
-              *(["", "Tools: " + "; ".join(res["tools"]) + "."] if res["tools"] else [])]
+              *(["", "Tools: " + "; ".join(res["tools"]) + "."] if res["tools"] else []),
+              *(["", "Images (tag and the digest that was pulled): " + "; ".join(f"`{x}`" for x in res["images"])
+                 + "."] if res.get("images") else [])]
+    code = res.get("code") or {}
+    if code.get("github_run_id"):
+        lines += ["", f"Scanned and analysed in CI run [{code['github_run_id']}]({code['github_run_url']}) at commit "
+                      f"{(code.get('github_sha') or '')[:12]}."]
+    elif code.get("git_commit"):
+        lines += ["", f"Analysed (replay of the scans in this folder) at commit {code['git_commit'][:12]}"
+                      + (" with uncommitted code changes" if code.get("git_dirty_code") else "") + "."]
     return "\n".join(lines) + "\n"
 
 

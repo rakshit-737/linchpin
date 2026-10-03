@@ -7,7 +7,8 @@ NetworkX engine exactly (same path ids, same costs).
   increasing size into a live Neo4j with the GDS plugin, runs ``gds.shortestPath.yens`` and
   the NetworkX engine on each, compares them and records both timings in
   ``$LINCHPIN_ARTIFACT_DIR/gds_crosscheck.json``. ``LINCHPIN_GDS_SWEEP`` lists
-  ``hosts:k`` pairs (default ``250:10``). With a server configured, a missing plugin *fails*
+  ``hosts:k`` pairs (default ``250:10``); ``LINCHPIN_GDS_REPEATS`` timed runs per backend
+  (default 10; median and interquartile range). With a server configured, a missing plugin *fails*
   the test unless ``LINCHPIN_GDS_OPTIONAL=1``: a green CI job must mean the comparison ran.
 """
 from __future__ import annotations
@@ -15,6 +16,7 @@ from __future__ import annotations
 import json
 import os
 import platform
+import statistics
 import time
 from pathlib import Path
 
@@ -25,6 +27,7 @@ from neo4j.exceptions import ClientError, ServiceUnavailable
 
 from linchpin.graph.neo4j_store import GDS_YENS, Neo4jGraphStore
 from linchpin.graph.store import GraphStore
+from linchpin.runinfo import run_provenance
 from linchpin.synth.topologies import generate_family
 
 
@@ -113,7 +116,12 @@ def test_connect_verifies_connectivity():
         Neo4jGraphStore.connect(Config(neo4j={"uri": "bolt://127.0.0.1:1"}), "wrong-pw")
 
 
-def _crosscheck(s: Neo4jGraphStore, hosts: int, k: int) -> dict:
+def _quartiles(xs: list[float]) -> dict:
+    q1, med, q3 = statistics.quantiles(xs, n=4, method="inclusive") if len(xs) > 1 else (xs[0],) * 3
+    return {"median": round(med, 4), "q1": round(q1, 4), "q3": round(q3, 4)}
+
+
+def _crosscheck(s: Neo4jGraphStore, hosts: int, k: int, repeats: int = 10) -> dict:
     f, gt = generate_family("single", hosts, 1)
     s.findings = {}
     s.upsert_findings(f)
@@ -125,7 +133,7 @@ def _crosscheck(s: Neo4jGraphStore, hosts: int, k: int) -> dict:
     push_s = time.perf_counter() - t0
     proj = s.gds_project()
     nx_times, gds_times = [], []
-    for _ in range(3):  # median of 3 timed runs per backend
+    for _ in range(repeats):  # timed runs per backend, interleaved
         t0 = time.perf_counter()
         nx_paths = s.k_shortest_paths(k=k)
         nx_times.append(time.perf_counter() - t0)
@@ -142,11 +150,13 @@ def _crosscheck(s: Neo4jGraphStore, hosts: int, k: int) -> dict:
         "family": "single", "hosts": hosts, "k": k, "planted_linchpin": gt.linchpin,
         "graph": {"nodes": s.g.number_of_nodes(), "relationships": s.g.number_of_edges()},
         "projection": proj,
-        "timings_s": {"build": round(build_s, 3), "push": round(push_s, 3),
-                      "networkx_yen_median": round(sorted(nx_times)[1], 4),
-                      "gds_yen_median": round(sorted(gds_times)[1], 4),
+        "timings_s": {"build": round(build_s, 3), "push": round(push_s, 3), "repeats": repeats,
+                      "networkx_yen_median": round(statistics.median(nx_times), 4),
+                      "gds_yen_median": round(statistics.median(gds_times), 4),
+                      "networkx_yen": _quartiles(nx_times), "gds_yen": _quartiles(gds_times),
                       "networkx_yen_runs": [round(x, 4) for x in nx_times],
                       "gds_yen_runs": [round(x, 4) for x in gds_times]},
+        "speedup_median": round(statistics.median(nx_times) / statistics.median(gds_times), 2),
         "networkx_costs": nx_costs, "gds_costs": gds_costs,
         "strictly_cheaper_than_kth": {"networkx": nx_strict, "gds": gds_strict},
         "top_path_networkx": nx_paths[0].nodes if nx_paths else [],
@@ -172,11 +182,13 @@ def test_gds_large_graph_crosscheck():
         with s._driver.session() as sess:
             server = sess.run("CALL dbms.components() YIELD name, versions, edition "
                               "RETURN name, versions[0] AS version, edition").single()
-        runs = [_crosscheck(s, hosts, k) for hosts, k in sweep]
+        repeats = int(os.environ.get("LINCHPIN_GDS_REPEATS", "10"))
+        runs = [_crosscheck(s, hosts, k, repeats) for hosts, k in sweep]
     finally:
         s.close()
     result = {"gds_version": version, "neo4j": dict(server) if server else None,
-              "python": platform.python_version(), "machine": platform.machine(), "runs": runs}
+              "python": platform.python_version(), "machine": platform.machine(), "code": run_provenance(),
+              "runs": runs}
     out = Path(os.environ.get("LINCHPIN_ARTIFACT_DIR", "artifacts"))
     out.mkdir(parents=True, exist_ok=True)
     (out / "gds_crosscheck.json").write_text(json.dumps(result, indent=2), encoding="utf-8")
