@@ -1,5 +1,49 @@
 # Changelog
 
+## [Unreleased]
+
+### Fixed
+- `ingest`: a truncated XML report or malformed topology YAML/JSON is reported under `skipped` with its line and
+  column instead of aborting the batch with a traceback; `--replace` drops the old `config.json` only after the inputs
+  parsed, and when no input can be read the state is left alone and the command exits 1.
+- `whatif` (CLI exit 2, `POST /whatif` 422) rejects node ids that are not in the graph instead of reporting that
+  removing them changes nothing.
+- The API sets `X-Frame-Options: DENY`, `Content-Security-Policy: frame-ancestors 'none'`, `X-Content-Type-Options:
+  nosniff` and `Referrer-Policy: no-referrer` on every response.
+- The committed preprint PDF predated the v1.1.0 source edit and still said the prospective intervals "overlap".
+
+### Added
+- Paired statistics: the EPSS-vs-CVSS comparison is paired on the same exploited CVEs (prospective label: 20 vs 5
+  discordant, exact McNemar p = 0.0041, +24.2 points [9.7, 38.7]); Wilson intervals replace the 200-replicate
+  bootstrap for reproduction proportions; the effort ratio gets a 1,000-replicate bootstrap (0.701 [0.695, 0.824],
+  which excludes the paper's 0.671); paired cost-gain tests in the benchmark and ablation; a paired AUC / AP bootstrap
+  for M11 (`benchmarks/ml_paired.py`).
+- Benchmark: the best patch-only plan (LINCHPIN restricted to vulnerabilities, 95% [90, 97]) as the like-for-like
+  ceiling for score queues; every strategy tested against random; residual difference per family.
+- Ablation: identity result over the families where it can matter (`ad` + `multi`: 100/100 vs 5/100); the fused and
+  uniform-cost plans are also scored with uniform costs. Real-export case study: the same identity ablation on real
+  data.
+- Provenance: every result JSON records the commit (and a dirty flag) or the CI run that produced it; the lab and GDS
+  artefacts record their run id and the pulled image digests; a manual `results` workflow regenerates the benchmark
+  and ablation (run 37089520295 reproduced every outcome cell of the v1.1.0 tables).
+- CI: the paper job fails when the committed PDF's text differs from a fresh build; the docs job parses every mermaid
+  block; the GDS cross-check times 10 runs per backend (median and IQR); release builds attest provenance for the
+  image, wheel and sdist.
+- `benchmarks/results/repro_epss_paper_check.md`: every transcribed Jacobs et al. cell checked against the arXiv v2
+  PDF (all match); a test pins them.
+- Sub-command `--help` pages have descriptions and examples.
+
+### Changed
+- Results that got worse or narrower: scored with uniform edge costs, the uniform-cost plan beats the fused plan on
+  `none` (-0.054 [-0.082, -0.027]), so the ablation no longer supports "exploit intel improves the cost gain"; the
+  identity result is stated per family (it is designed into the generator) instead of as a pooled "decisive" effect;
+  the reproduction is called a partial replication (117,141 of the paper's ~191k CVEs), and its effort ratio interval
+  excludes the paper's value; GDS speed-ups are reported as 1.4-39x across four CI runs instead of 4-31x from one.
+- Untraceable timing claims (session variation, optimiser A/B re-timing, the 37 s / 70 s install times) were removed;
+  the quick start installs the v1.1.0 tag instead of `main`.
+- Paper: retitled "An Open Evaluation of LINCHPIN with a Measured Lab"; cites TVA, NetSPA and CyGraph; random and
+  patch-only rows in Table 1; the ablation table fits the page.
+
 ## [1.1.0] - 2026-10-02: measured lab, ablation, published baselines, reproduction, preprint
 
 ### Security
@@ -60,9 +104,10 @@
 - **Case study:** "135 findings from 6 exports" was 119 exported + 16 overlay; one of the three ACE nodes is reachable
   from the entry points (none lies on a path to the crown jewel).
 - **Performance:** re-measured as medians on an idle laptop: 1.1 s at 467 nodes (v1.0 reported 0.7 s from a single
-  run); session-to-session variation on this laptop is up to about 1.6x and A/B runs show no code regression.
-- The 0.2.0 "about 4x faster optimiser" was re-timed: 1.4-2.7x per family, about 1.8x overall (18 graphs, two
-  alternating runs of `recommend` at ba7e795~1 vs ba7e795).
+  run). (A session-to-session variation figure and A/B timings quoted here at release had no committed raw data and
+  were removed in the next release.)
+- The 0.2.0 "about 4x faster optimiser" claim was withdrawn; the re-timing quoted here at release had no committed raw
+  data.
 
 ## 1.0.0 (2026-09-26): ACL paths, weighted cuts, docs site, releases
 
@@ -100,7 +145,7 @@
 ### Changed (additive to the frozen contracts)
 - Edge cost prefers the NVD CVSS *exploitability sub-score* and floors exploitability at 0.95 for KEV entries.
 - A vuln grants a privilege only if its CVSS vector (or a conservative heuristic) implies code execution.
-- Faster optimiser (re-timed in v1.1: 1.4-2.7x per family, about 1.8x overall; first reported as "about 4x"): Yen runs on the entry-to-crown subgraph, and reachability no longer copies the graph.
+- Faster optimiser (first reported as "about 4x"; that figure is withdrawn, no raw timings were kept): Yen runs on the entry-to-crown subgraph, and reachability no longer copies the graph.
 
 ## 0.1.0
 
