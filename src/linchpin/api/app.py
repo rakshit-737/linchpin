@@ -107,6 +107,32 @@ class HostAllowList:
         await _reject(send, 400, "Host header not allowed (set LINCHPIN_ALLOWED_HOSTS)")
 
 
+class SecurityHeaders:
+    """Pure-ASGI middleware: forbid framing and MIME sniffing on every response.
+
+    The web UI's buttons call state-changing endpoints (``/demo/load``), so no other site may
+    frame it. Inline scripts are left alone (no ``script-src``): the UI is a single static page.
+    """
+
+    HEADERS = ((b"x-frame-options", b"DENY"), (b"content-security-policy", b"frame-ancestors 'none'"),
+               (b"x-content-type-options", b"nosniff"), (b"referrer-policy", b"no-referrer"))
+
+    def __init__(self, app: ASGIApp) -> None:
+        self.app = app
+
+    async def __call__(self, scope: Scope, receive: Receive, send: Send) -> None:  # noqa: D102 - ASGI entry
+        if scope["type"] != "http":
+            return await self.app(scope, receive, send)
+
+        async def with_headers(msg: Message) -> None:
+            if msg["type"] == "http.response.start":
+                have = {k.lower() for k, _ in msg.get("headers") or []}
+                msg["headers"] = [*(msg.get("headers") or []), *((k, v) for k, v in self.HEADERS if k not in have)]
+            await send(msg)
+
+        return await self.app(scope, receive, with_headers)
+
+
 class BodySizeLimit:
     """Pure-ASGI middleware: refuse request bodies larger than ``max_bytes`` with 413."""
 
@@ -181,6 +207,7 @@ def create_app(store: GraphStore | None = None, loaded: str = "") -> FastAPI:
                   docs_url="/docs" if docs else None, redoc_url="/redoc" if docs else None)
     app.add_middleware(BodySizeLimit, max_bytes=int(float(os.environ.get("LINCHPIN_MAX_BODY_MB", "25")) * 2**20))
     app.add_middleware(HostAllowList, allowed=os.environ.get("LINCHPIN_ALLOWED_HOSTS", DEFAULT_HOSTS).split(","))
+    app.add_middleware(SecurityHeaders)  # outermost: also covers the 400 / 413 answers of the others
     app.state.store = store or GraphStore(Config())
     app.state.loaded = loaded
 
@@ -249,6 +276,9 @@ def create_app(store: GraphStore | None = None, loaded: str = "") -> FastAPI:
 
     @app.post("/whatif", response_model=PathStats)
     def whatif(body: WhatIf) -> PathStats:
+        unknown = [n for n in body.remove_nodes if n not in S().g]
+        if unknown:  # a typo must not read as "removing this changes nothing"
+            raise HTTPException(422, {"msg": "unknown node ids", "unknown_nodes": unknown[:50]})
         return S().remove_nodes_view(body.remove_nodes)
 
     # ---------------------------------------------------------- UI helpers

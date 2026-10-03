@@ -169,3 +169,20 @@ def test_interactive_docs_are_opt_in(monkeypatch):
     assert client.get("/docs").status_code == 404 and client.get("/openapi.json").status_code == 200
     monkeypatch.setenv("LINCHPIN_API_DOCS", "1")
     assert TestClient(create_app(), base_url=LOCAL).get("/docs").status_code == 200
+
+
+def test_whatif_rejects_unknown_node_ids():
+    client = TestClient(create_app(), base_url=LOCAL)
+    findings, gt = generate(15, 5, 2)
+    client.post("/ingest", json=[f.model_dump() for f in findings])
+    client.post("/graph/build")
+    r = client.post("/whatif", json={"remove_nodes": [gt.linchpin, "host:does-not-exist"]})
+    assert r.status_code == 422 and r.json()["detail"]["unknown_nodes"] == ["host:does-not-exist"]
+
+
+def test_security_headers_on_every_response():
+    client = TestClient(create_app(), base_url=LOCAL)
+    for resp in (client.get("/ui"), client.get("/stats"), client.get("/stats", headers={"host": "evil.example"})):
+        assert resp.headers["x-frame-options"] == "DENY"
+        assert resp.headers["content-security-policy"] == "frame-ancestors 'none'"
+        assert resp.headers["x-content-type-options"] == "nosniff"
