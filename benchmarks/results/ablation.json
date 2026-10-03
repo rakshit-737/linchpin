@@ -6,12 +6,21 @@
     "long_budget": 12,
     "hosts": "12..60 (12 + seed mod 49)",
     "cve_pool": "sha256:f14a3fe5e3a1717d",
-    "runtime_s": 841.0,
-    "workers": 8,
+    "runtime_s": 547.5,
+    "workers": 4,
+    "code": {
+      "git_commit": "0c72593ea68ed8ff2bc893665cc6d41103e0f60d",
+      "git_dirty_code": false,
+      "github_run_id": "37089520295",
+      "github_sha": "0c72593ea68ed8ff2bc893665cc6d41103e0f60d",
+      "github_workflow": "results",
+      "github_job": "ablation",
+      "github_run_url": "https://github.com/rakshit-737/linchpin/actions/runs/37089520295"
+    },
     "platform": {
-      "python": "3.14.3",
-      "machine": "AMD64",
-      "cpus": 16
+      "python": "3.14.7",
+      "machine": "x86_64",
+      "cpus": 4
     }
   },
   "families": {
@@ -1280,6 +1289,72 @@
           "only_fused": 146,
           "only_view": 0,
           "p_mcnemar": 2.2420775429197073e-44
+        }
+      }
+    },
+    "identity_families": {
+      "families": [
+        "ad",
+        "multi"
+      ],
+      "n": 100,
+      "fused": {
+        "disconnect_rate": 1.0,
+        "disconnect_ci95": [
+          0.963,
+          1.0
+        ]
+      },
+      "no_identity": {
+        "disconnect_rate": 0.05,
+        "disconnect_ci95": [
+          0.0215,
+          0.1118
+        ],
+        "vs_fused": {
+          "only_fused": 95,
+          "only_view": 0,
+          "p_mcnemar": 5.048709793414476e-29
+        }
+      },
+      "identity_only": {
+        "disconnect_rate": 0.27,
+        "disconnect_ci95": [
+          0.1927,
+          0.3643
+        ],
+        "vs_fused": {
+          "only_fused": 73,
+          "only_view": 0,
+          "p_mcnemar": 2.117582368135751e-22
+        }
+      }
+    },
+    "exploit_intel_paired": {
+      "none": {
+        "intel_scoring": {
+          "n": 50,
+          "mean_diff": 0.1441,
+          "ci95": [
+            0.1195,
+            0.1684
+          ],
+          "a_larger": 46,
+          "b_larger": 3,
+          "ties": 1,
+          "p_sign": 6.981082378842984e-11
+        },
+        "uniform_scoring": {
+          "n": 50,
+          "mean_diff": -0.0544,
+          "ci95": [
+            -0.0816,
+            -0.0272
+          ],
+          "a_larger": 4,
+          "b_larger": 20,
+          "ties": 26,
+          "p_sign": 0.001543879508972168
         }
       }
     }

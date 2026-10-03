@@ -3,18 +3,20 @@ Budget 3 fixes, 50 seeds per family. Each planner runs the same optimiser on a d
 | planner (view of the data) | ad | multi | none | single | pooled (ad+multi+single, n=150) |
 | --- | ---: | ---: | ---: | ---: | ---: |
 | **LINCHPIN (fused data, exact cut)** | 100% [93%, 100%] | 100% [93%, 100%] | 0% [0%, 7%] | 100% [93%, 100%] | 100% [98%, 100%] |
-| - exact cut (greedy only) | 100% [93%, 100%] | 94% [84%, 98%], p=0.25 | 0% [0%, 7%] | 100% [93%, 100%] | 98% [94%, 99%], p=0.25 |
-| - identity data (scanner + firewall view) | 10% [4%, 21%], p=<1e-4 | 0% [0%, 7%], p=<1e-4 | 0% [0%, 7%] | 100% [93%, 100%] | 37% [29%, 45%], p=<1e-4 |
+| - exact cut (greedy only) | 100% [93%, 100%] | 94% [84%, 98%], p = 0.25 | 0% [0%, 7%] | 100% [93%, 100%] | 98% [94%, 99%], p = 0.25 |
+| - identity data (scanner + firewall view) | 10% [4%, 21%], p < 1e-4 | 0% [0%, 7%], p < 1e-4 | 0% [0%, 7%] | 100% [93%, 100%] | 37% [29%, 45%], p < 1e-4 |
 | - 10% of identity findings | 100% [93%, 100%] | 100% [93%, 100%] | 0% [0%, 7%] | 100% [93%, 100%] | 100% [98%, 100%] |
-| - 25% of identity findings | 86% [74%, 93%], p=0.016 | 100% [93%, 100%] | 0% [0%, 7%] | 100% [93%, 100%] | 95% [91%, 98%], p=0.016 |
-| - 50% of identity findings | 74% [60%, 84%], p=0.00024 | 96% [87%, 99%], p=0.5 | 0% [0%, 7%] | 100% [93%, 100%] | 90% [84%, 94%], p=<1e-4 |
+| - 25% of identity findings | 86% [74%, 93%], p = 0.0156 | 100% [93%, 100%] | 0% [0%, 7%] | 100% [93%, 100%] | 95% [91%, 98%], p = 0.0156 |
+| - 50% of identity findings | 74% [60%, 84%], p = 0.000244 | 96% [87%, 99%], p = 0.5 | 0% [0%, 7%] | 100% [93%, 100%] | 90% [84%, 94%], p < 1e-4 |
 | - segmentation data (flat network assumed) | 100% [93%, 100%] | 100% [93%, 100%] | 0% [0%, 7%] | 100% [93%, 100%] | 100% [98%, 100%] |
 | - exploit semantics (every CVE = RCE) | 100% [93%, 100%] | 100% [93%, 100%] | 0% [0%, 7%] | 100% [93%, 100%] | 100% [98%, 100%] |
 | - exploit intel (uniform edge costs) | 100% [93%, 100%] | 100% [93%, 100%] | 0% [0%, 7%] | 100% [93%, 100%] | 100% [98%, 100%] |
-| identity data only (BloodHound-style view) | 54% [40%, 67%], p=<1e-4 | 0% [0%, 7%], p=<1e-4 | 0% [0%, 7%] | 0% [0%, 7%], p=<1e-4 | 18% [13%, 25%], p=<1e-4 |
-| no graph: KEV then EPSS queue | 2% [0%, 10%], p=<1e-4 | 2% [0%, 10%], p=<1e-4 | 0% [0%, 7%] | 4% [1%, 13%], p=<1e-4 | 3% [1%, 7%], p=<1e-4 |
+| identity data only (BloodHound-style view) | 54% [40%, 67%], p < 1e-4 | 0% [0%, 7%], p < 1e-4 | 0% [0%, 7%] | 0% [0%, 7%], p < 1e-4 | 18% [13%, 25%], p < 1e-4 |
+| no graph: KEV then EPSS queue | 2% [0%, 10%], p < 1e-4 | 2% [0%, 10%], p < 1e-4 | 0% [0%, 7%] | 4% [1%, 13%], p < 1e-4 | 3% [1%, 7%], p < 1e-4 |
 
 `none` has a mean exact min cut of about 7 fixes, so no 3-fix plan can disconnect it; it is excluded from the pooled column, and its rows are compared by attacker cost gain below.
+
+**Where identity data can matter.** The pooled rate mixes families by design: only ad and multi route through cached credentials (the generator plants them there), while `single` has no identity edge on its route. Over ad + multi (n=100): fused 100/100 [96%, 100%], without identity data 5/100 [2%, 11%] (exact McNemar p < 1e-4), identity data only 27/100 [19%, 36%]. This is a result inside the generator's model, not a population rate.
 
 ### Fixes needed on the real graph
 
@@ -52,6 +54,14 @@ Rise of the attacker's cheapest-path cost (edge-cost units) after the 3 fixes, o
 | identity data only (BloodHound-style view) | +0.000 [+0.000, +0.000] (n=23) | +0.000 [+0.000, +0.000] (n=50) | +0.019 [+0.009, +0.032] (n=50) | +0.000 [+0.000, +0.000] (n=50) |
 | no graph: KEV then EPSS queue | +0.101 [+0.067, +0.141] (n=49) | +0.080 [+0.055, +0.108] (n=49) | +0.037 [+0.022, +0.056] (n=50) | +0.078 [+0.051, +0.113] (n=48) |
 
+### Exploit intel: paired cost gains
+
+Fused minus uniform-cost planner, on the topologies where neither disconnects (mean, 95% bootstrap interval over the pairs, exact sign test). *Intel scoring* uses the same CVSS / EPSS / KEV edge costs the uniform planner removed, which favours the fused planner. *Uniform scoring* scores both plans with uniform costs instead, the uniform planner's own model.
+
+| family | intel scoring | uniform scoring |
+| --- | ---: | ---: |
+| none | +0.144 [+0.119, +0.168] (n=50; fused larger in 46, smaller in 3, equal in 1; sign test p < 1e-4) | -0.054 [-0.082, -0.027] (n=50; fused larger in 4, smaller in 20, equal in 26; sign test p = 0.00154) |
+
 ### How much the exploit intel moves the path ranking
 
 Uniform-cost view vs real costs on the same graph: Kendall tau between the real top-100 paths' real costs and their uniform-view costs, and the overlap of the two top-10 path sets (mean, 95% bootstrap interval).
@@ -62,3 +72,5 @@ Uniform-cost view vs real costs on the same graph: Kendall tau between the real 
 | multi | 0.48 [0.41, 0.55] | 0.08 [0.05, 0.12] |
 | none | 0.46 [0.39, 0.52] | 0.11 [0.08, 0.15] |
 | single | 0.36 [0.29, 0.43] | 0.20 [0.15, 0.25] |
+
+Produced by CI run [37089520295](https://github.com/rakshit-737/linchpin/actions/runs/37089520295) at commit 0c72593ea68e (4 workers, 547.5 s).
