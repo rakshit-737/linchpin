@@ -23,6 +23,8 @@ LINCHPIN rationale for its first fix:
 
 M11 learned exploitability instead of CVSS/EPSS/KEV: first fix `cred:ADMINISTRATOR@TESTLAB.LOCAL`, cheapest path cost 0.530.
 
+Identity ablation on this real data (the synthetic ablation's `no_identity` view): planned without the credential and ACL findings, LINCHPIN sees 0 attack paths and proposes no fix at all; on the full graph that plan does not cut the crown jewel off (200 paths left, k cap 200); even 12 fixes planned from that view never cut it off. The fused plan (`cred:ADMINISTRATOR@TESTLAB.LOCAL`) cuts it off.
+
 Scanner scores only (no NVD/EPSS/KEV enrichment; 28 vulns grant code execution, cheapest path cost 0.428). Without EPSS data only findings whose export carries an EPSS value can be ranked by EPSS, which is why the EPSS queues differ:
 
 | strategy (budget 3) | fixes chosen | crown jewel cut off? | residual paths (k=200) |
@@ -37,3 +39,5 @@ Scanner scores only (no NVD/EPSS/KEV enrichment; 28 vulns grant code execution, 
 | KEV then EPSS | `vuln:NVT-836484@app-win:42`<br>`vuln:NESSUS-58987@web-php:80`<br>`vuln:NVT-100111@msf2:512` | yes | 0 |
 | KEV then EPSS, on-path vulns only | `vuln:NVT-836484@app-win:42`<br>`vuln:NESSUS-58987@web-php:80`<br>`vuln:NVT-100111@msf2:512` | yes | 0 |
 | Betweenness | `vuln:NESSUS-58987@web-php:80`<br>`vuln:NVT-836484@app-win:42`<br>`host:app-win` | yes | 0 |
+
+Computed at commit e26d0b10b3d0.

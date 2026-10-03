@@ -56,7 +56,11 @@
       "file": "cve_intel.csv.gz",
       "sha256": "55da128b0c4dac17a10cddbbb385eb4fbf980737f66f6a6582399339dc80ba0e"
     },
-    "manifest_sha256": "53e4480a1c42ec4ef13f38c621104e500867c9032f53e4108532d1f8fe8d555f"
+    "manifest_sha256": "53e4480a1c42ec4ef13f38c621104e500867c9032f53e4108532d1f8fe8d555f",
+    "code": {
+      "git_commit": "e26d0b10b3d08b6deb74e323a07d5e4d0c9770af",
+      "git_dirty_code": false
+    }
   },
   "intel": {
     "nodes": 128,
@@ -237,6 +241,19 @@
         "min_cost_after": null
       }
     }
+  },
+  "identity_ablation": {
+    "view": "no_identity (credential and ACL findings removed)",
+    "view_paths": 0,
+    "view_plan": [],
+    "view_plan_disconnects_real_graph": false,
+    "view_plan_residual": 200,
+    "view_fixes_needed_on_real_graph": null,
+    "long_budget": 12,
+    "fused_plan": [
+      "cred:ADMINISTRATOR@TESTLAB.LOCAL"
+    ],
+    "fused_disconnects": true
   },
   "learned": {
     "nodes": 128,
