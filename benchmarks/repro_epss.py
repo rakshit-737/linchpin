@@ -18,9 +18,11 @@ What we can and cannot reproduce:
   label is CISA KEV, a small, curated subset, so coverage and efficiency are not expected to
   match. Two KEV labels are used: ``asof`` (listed in KEV on the scoring date) and
   ``future`` (added to KEV in the 365 days after it, CVEs already listed excluded).
-* EPSS takes KEV membership as an input feature (paper Table 1; "Site: KEV" is among its top
-  SHAP features, Fig. 7), so EPSS scored against the ``asof`` KEV label is partly circular and
-  optimistic. The ``future`` label avoids that but has few positives.
+* EPSS v3 takes KEV membership as an input feature (paper Table 1; "Site: KEV" is among its top
+  SHAP features, Fig. 7). The paper does not list the v2 features (only that there were 1,164),
+  so for the v2 scores used here this is likely but not documented; if it holds, EPSS scored
+  against the ``asof`` KEV label is partly circular and optimistic. The ``future`` label avoids
+  that but has few positives.
 * The paper estimated CVSS v3 vectors for CVEs that only have v2 with its own neural model;
   we cannot, so the CVSS population is the CVEs with an NVD v3.x score.
 
@@ -235,7 +237,12 @@ def main(argv=None) -> int:
     ap.add_argument("--out", default="benchmarks/results")
     ap.add_argument("--ratio-boot", type=int, default=1000, help="bootstrap replicates for the effort ratio")
     ap.add_argument("--paired-boot", type=int, default=10_000, help="paired bootstrap replicates (coverage gap)")
+    ap.add_argument("--render-only", action="store_true", help="only rewrite repro_epss.md from repro_epss.json")
     a = ap.parse_args(argv)
+    if a.render_only:
+        doc = json.loads((Path(a.out) / "repro_epss.json").read_text(encoding="utf-8"))
+        (Path(a.out) / "repro_epss.md").write_text(render(doc), encoding="utf-8")
+        return 0
     code = run_provenance()
     d = Path(a.data_dir)
     intel = d / "derived" / "cve_intel.csv.gz"
@@ -300,13 +307,18 @@ def _cell(r: dict, k: str, digits: int = 1) -> str:
     return f"{v:.{digits}f}" + (f" [{ci[0]:.{digits}f}, {ci[1]:.{digits}f}]" if ci else "")
 
 
+def _p_eq(p: float) -> str:
+    txt = format_p(p)
+    return f"p {txt}" if txt.startswith("<") else f"p = {txt}"
+
+
 def paired_sentence(r: dict) -> str:
     """One line: EPSS at CVSS 9.1+'s effort against CVSS 9.1+, paired on the same exploited CVEs."""
     pc = r["paired_epss_vs_cvss91"]
     lo, hi = pc["coverage_diff_ci95"]
     return (f"Paired on the same {pc['positives']:,} exploited CVEs, EPSS at CVSS 9.1+'s effort flags {pc['only_a']:,} "
             f"that CVSS 9.1+ misses and misses {pc['only_b']:,} that it flags ({pc['both']:,} flagged by both, "
-            f"{pc['neither']:,} by neither): exact McNemar p = {format_p(pc['p_mcnemar_exact'])}; coverage difference "
+            f"{pc['neither']:,} by neither): exact McNemar {_p_eq(pc['p_mcnemar_exact'])}; coverage difference "
             f"{pc['coverage_diff_points']:+.1f} points, paired bootstrap 95% [{lo:+.1f}, {hi:+.1f}] "
             f"({pc['bootstrap']['reps']:,} replicates over the exploited CVEs, seed {pc['bootstrap']['seed']}).")
 
