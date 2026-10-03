@@ -21,7 +21,8 @@ With the Graph Data Science plugin, `gds_project()` and `gds_k_shortest_paths()`
 ## Consequences
 - Neo4j Browser/Bloom exploration and custom Cypher work on the real attack graph.
 - Unit tests use an in-memory fake driver. CI runs a live round trip against `neo4j:5.26-community`, and a GDS job
-  (GDS 2.13.13) cross-checks Yen on graphs of 60k and 239k relationships: identical costs and path sets, Yen 4-31x
-  faster inside Neo4j, but the mirror takes 8-22 s, more than the NetworkX computation it replaces. GDS pays off only
+  (GDS 2.13.13) cross-checks Yen on graphs of 60k and 239k relationships: identical costs and path sets, Yen
+  1.4-39x faster inside Neo4j (medians across four CI runs), but the mirror takes 5-23 s, more than the NetworkX
+  computation it replaces. GDS pays off only
   when the graph already lives in Neo4j. The job fails when the plugin is missing.
 - The official image's entrypoint fetches the GDS jar from Neo4j's plugin host at start-up.

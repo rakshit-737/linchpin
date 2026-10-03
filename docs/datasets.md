@@ -74,4 +74,17 @@ Statistics
 19. B. Efron. Bootstrap methods: another look at the jackknife. *The Annals of Statistics* 7(1):1-26, 1979.
     doi:10.1214/aos/1176344552
 
-Every DOI above was checked against Crossref; MulVAL against its USENIX proceedings page.
+Fusing scanner and network data into attack graphs (the closest systems)
+
+20. S. Jajodia, S. Noel, B. O'Berry. Topological analysis of network attack vulnerability (TVA). In *Managing Cyber
+    Threats* (Massive Computing), Springer, 2005, pp. 247-266. doi:10.1007/0-387-24230-9_9
+21. K. Ingols, R. Lippmann, K. Piwowarski. Practical attack graph generation for network defense (NetSPA). *ACSAC*,
+    2006, pp. 121-130. doi:10.1109/ACSAC.2006.39
+22. S. Noel, E. Harley, K. H. Tam, M. Limiero, M. Share. CyGraph. In *Cognitive Computing: Theory and Applications*
+    (Handbook of Statistics), Elsevier, 2016, pp. 117-167. doi:10.1016/bs.host.2016.07.001
+
+These combine vulnerability scans with firewall rules and topology (CyGraph in Neo4j). LINCHPIN's addition is the
+Active Directory identity layer from SharpHound, fused with them and with public exploit intel, plus fix plans that
+carry their evidence and the open ablation.
+
+Every DOI above was checked against Crossref (20-22 on 2026-10-03); MulVAL against its USENIX proceedings page.
