@@ -22,7 +22,7 @@ Only feed it data from environments you own or are explicitly authorised to asse
 
 | version | supported | notes |
 | --- | :---: | --- |
-| 1.1.x | yes | wheel and sdist on the [v1.1.0 release](https://github.com/rakshit-737/linchpin/releases/tag/v1.1.0), `ghcr.io/rakshit-737/linchpin:1.1.0` / `:1.1` / `:latest` |
+| 1.1.x | yes | wheel and sdist on the [latest 1.1.x release](https://github.com/rakshit-737/linchpin/releases/latest), `ghcr.io/rakshit-737/linchpin:1.1.2` / `:1.1` / `:latest` |
 | 1.0.0 | no | known issues below; do not run it |
 
 ## Known issues in released versions

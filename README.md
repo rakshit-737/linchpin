@@ -32,8 +32,8 @@ LINCHPIN reads exports that were **already collected** (OpenVAS, Nessus and nmap
 ```bash
 # in the browser: https://rakshit-737.github.io/linchpin/demo/  (pre-computed snapshots; nothing leaves the page)
 
-# command line: install the v1.1.1 release once with uv, then run it
-uv tool install git+https://github.com/rakshit-737/linchpin@v1.1.1
+# command line: install the v1.1.2 release once with uv, then run it
+uv tool install git+https://github.com/rakshit-737/linchpin@v1.1.2
 linchpin synth --out lab.json
 linchpin ingest --replace lab.json
 linchpin fix --budget 3

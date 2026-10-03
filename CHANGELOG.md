@@ -2,6 +2,12 @@
 
 ## [Unreleased]
 
+## [1.1.2] - 2026-10-03
+
+### Fixed
+- SECURITY.md's supported-versions row still pointed at the v1.1.0 release and image tag; it now names the latest
+  1.1.x release and the current image tag.
+
 ## [1.1.1] - 2026-10-03
 
 ### Fixed
