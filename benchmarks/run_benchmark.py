@@ -53,7 +53,11 @@ def _diff(d: dict | None) -> str:
         return "-"
     ci = d.get("ci95")
     return (f"{d['mean_diff']:+.3f}" + (f" [{ci[0]:+.3f}, {ci[1]:+.3f}]" if ci else "")
-            + f"; {d['a_larger']} / {d['b_larger']} / {d['ties']}; p = {format_p(d['p_sign'])}")
+            + f"; {d['a_larger']} / {d['b_larger']} / {d['ties']}; p {_eq(format_p(d['p_sign']))}")
+
+
+def _eq(p: str) -> str:
+    return p if p.startswith("<") else f"= {p}"
 
 
 def provenance_line(meta: dict) -> str:
