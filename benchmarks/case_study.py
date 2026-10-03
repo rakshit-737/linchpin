@@ -22,6 +22,7 @@ from linchpin.engine.optimizer import recommend
 from linchpin.engine.paths import rank_paths
 from linchpin.graph.store import GraphStore
 from linchpin.intel.provenance import feed_provenance
+from linchpin.runinfo import run_provenance
 from linchpin.scenario import load_scenario
 
 STRATEGIES = ("linchpin", "milp_interdiction", "greedy_interdiction", "cvss", "cvss_reach", "epss", "epss_reach",
@@ -63,6 +64,27 @@ def analyse(findings, cfg, budget, k):
     return res
 
 
+def identity_ablation(findings, cfg, budget: int, k: int, long_budget: int = 12) -> dict:
+    """The ablation's ``no_identity`` view on real data: plan without credential / ACL findings, score on all."""
+    truth = GraphStore(cfg)
+    truth.upsert_findings(findings)
+    truth.build_attack_graph()
+    view = GraphStore(cfg)
+    view.upsert_findings([f for f in findings if f.kind not in ("credential", "acl")])
+    view.build_attack_graph()
+    plan = [r.target_node for r in recommend(view, budget=budget, k=k)]
+    ev = evaluate(truth, [n for n in plan if n in truth.g], k)
+    longer = [n for n in (r.target_node for r in recommend(view, budget=long_budget, k=k)) if n in truth.g]
+    needed = next((i for i in range(1, len(longer) + 1) if not truth.reachable_crown_jewels(exclude=longer[:i])),
+                  None)
+    fused = [r.target_node for r in recommend(truth, budget=budget, k=k)]
+    return {"view": "no_identity (credential and ACL findings removed)",
+            "view_paths": len(view.k_shortest_paths(k=k)), "view_plan": plan,
+            "view_plan_disconnects_real_graph": ev["disconnected"], "view_plan_residual": ev["residual"],
+            "view_fixes_needed_on_real_graph": needed, "long_budget": long_budget,
+            "fused_plan": fused, "fused_disconnects": evaluate(truth, fused, k)["disconnected"]}
+
+
 def table(r: dict, budget: int, k: int) -> list[str]:
     lines = [f"| strategy (budget {budget}) | fixes chosen | crown jewel cut off? | residual paths (k={k}) |",
              "| --- | --- | :---: | ---: |"]
@@ -80,8 +102,11 @@ def main(argv=None) -> int:
     ap.add_argument("--k", type=int, default=200)
     ap.add_argument("--out", default="benchmarks/results")
     a = ap.parse_args(argv)
+    code = run_provenance()
     findings, cfg, stats = load_scenario(a.scenario, a.data_dir)
-    out = {"scenario": stats, "provenance": feed_provenance(a.data_dir), "intel": analyse(findings, cfg, a.budget, a.k)}
+    out = {"scenario": stats, "provenance": {**feed_provenance(a.data_dir), "code": code},
+           "intel": analyse(findings, cfg, a.budget, a.k),
+           "identity_ablation": identity_ablation(findings, cfg, a.budget, a.k)}
     if stats.get("intel", {}).get("learned_model"):
         out["learned"] = analyse(findings, cfg.model_copy(update={"exploitability_source": "learned"}),
                                  a.budget, a.k)
@@ -112,11 +137,27 @@ def main(argv=None) -> int:
         lp = out["learned"]["linchpin_plan"]
         lines += ["", f"M11 learned exploitability instead of CVSS/EPSS/KEV: first fix "
                       f"`{lp[0]['node'] if lp else '-'}`, cheapest path cost {out['learned']['min_cost']:.3f}."]
+    ia = out["identity_ablation"]
+    after = ""
+    if not ia["view_plan_disconnects_real_graph"]:
+        n = ia["view_fixes_needed_on_real_graph"]
+        after = (f"; even {ia['long_budget']} fixes planned from that view "
+                 + ("never cut it off" if n is None else f"need {n} to cut it off"))
+    lines += ["", (f"Identity ablation on this real data (the synthetic ablation's `no_identity` view): planned "
+                   f"without "
+                   f"the credential and ACL findings, LINCHPIN sees {ia['view_paths']} attack paths and proposes "
+                   f"{', '.join(f'`{x}`' for x in ia['view_plan']) or 'no fix at all'}; on the full graph that plan "
+                   f"{'cuts' if ia['view_plan_disconnects_real_graph'] else 'does not cut'} the crown jewel off "
+                   f"({ia['view_plan_residual']} paths left, k cap {a.k}){after}. The fused plan "
+                   f"({', '.join(f'`{x}`' for x in ia['fused_plan'])}) "
+                   f"{'cuts it off' if ia['fused_disconnects'] else 'does not cut it off'}.")]
     so = out["scanner_only"]
     lines += ["", (f"Scanner scores only (no NVD/EPSS/KEV enrichment; {so['vulns_granting_privilege']} vulns grant "
                    f"code execution, cheapest path cost {so['min_cost']:.3f}). Without EPSS data only findings whose "
                    "export carries an EPSS value can be ranked by EPSS, which is why the EPSS queues differ:"), "",
               *table(so, a.budget, a.k)]
+    lines += ["", f"Computed at commit {(code.get('git_commit') or 'unknown')[:12]}"
+                  + (" with uncommitted code changes" if code.get("git_dirty_code") else "") + "."]
     (d / "case_study.md").write_text("\n".join(lines) + "\n", encoding="utf-8")
     print("\n".join(lines))
     return 0
