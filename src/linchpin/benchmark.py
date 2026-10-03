@@ -153,15 +153,16 @@ def run_one(family: str, seed: int, n_hosts: int, budget: int, k: int = 100,
     return row
 
 
-def wilson_ci(k: int, n: int, z: float = 1.96) -> tuple[float, float]:
-    """95% Wilson score interval for a binomial proportion k/n."""
+def wilson_ci(k: int, n: int, z: float = 1.96, ndigits: int | None = 4) -> tuple[float, float]:
+    """95% Wilson score interval for a binomial proportion k/n (``ndigits=None``: unrounded)."""
     if n == 0:
         return (0.0, 1.0)
     p = k / n
     den = 1 + z * z / n
     mid = (p + z * z / (2 * n)) / den
     half = z * math.sqrt(p * (1 - p) / n + z * z / (4 * n * n)) / den
-    return (round(max(0.0, mid - half), 4), round(min(1.0, mid + half), 4))
+    lo, hi = max(0.0, mid - half), min(1.0, mid + half)
+    return (lo, hi) if ndigits is None else (round(lo, ndigits), round(hi, ndigits))
 
 
 def bootstrap_ci(xs: list[float], reps: int = 2000, seed: int = 0) -> tuple[float, float] | None:
@@ -181,6 +182,11 @@ def mcnemar_exact(b: int, c: int) -> float:
         return 1.0
     tail = sum(math.comb(n, i) for i in range(min(b, c) + 1)) / 2 ** n
     return min(1.0, 2 * tail)
+
+
+def format_p(p: float) -> str:
+    """One format for every p-value in the result files: ``< 1e-4`` or three significant digits."""
+    return "< 1e-4" if p < 1e-4 else f"{p:.3g}"
 
 
 def _paired(rs: list[dict], a: str, b: str) -> dict:
