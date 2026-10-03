@@ -21,7 +21,8 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
 
-from linchpin.benchmark import LABEL, MIN_N_FOR_CI, STRATEGIES, hosts_for_seed, run_one, summarise
+from linchpin.benchmark import LABEL, MIN_N_FOR_CI, STRATEGIES, format_p, hosts_for_seed, run_one, summarise
+from linchpin.runinfo import run_provenance
 from linchpin.synth.topologies import FAMILIES, pool_provenance
 
 # strategies shown in the headline tables / figure (the full set is in summary.json)
@@ -44,7 +45,27 @@ def _rate(a: dict) -> str:
 
 
 def _p(x: float) -> str:
-    return "<1e-4" if x < 1e-4 else f"{x:.2g}"
+    return format_p(x)
+
+
+def _diff(d: dict | None) -> str:
+    if not d:
+        return "-"
+    ci = d.get("ci95")
+    return (f"{d['mean_diff']:+.3f}" + (f" [{ci[0]:+.3f}, {ci[1]:+.3f}]" if ci else "")
+            + f"; {d['a_larger']} / {d['b_larger']} / {d['ties']}; p = {format_p(d['p_sign'])}")
+
+
+def provenance_line(meta: dict) -> str:
+    """Which code and run produced the table."""
+    code = meta.get("code") or {}
+    if code.get("github_run_id"):
+        return (f"Produced by CI run [{code['github_run_id']}]({code['github_run_url']}) at commit "
+                f"{(code.get('github_sha') or '')[:12]} ({meta.get('workers')} workers, {meta.get('runtime_s')} s).")
+    if code.get("git_commit"):
+        return (f"Produced at commit {code['git_commit'][:12]}"
+                + (" with uncommitted code changes" if code.get("git_dirty_code") else "") + ".")
+    return "Produced before run provenance was recorded (v1.1.0 or earlier)."
 
 
 def md_table(summ: dict, budget: int, k: int) -> str:
@@ -83,28 +104,53 @@ def md_table(summ: dict, budget: int, k: int) -> str:
             extra.append(f"top-1 is a true chokepoint in {agg['top1_chokepoint_rate']:.0%} of chokepoint topologies")
         if extra:
             lines += ["", "; ".join(extra) + "."]
+        paired = [(s, agg[s].get("gain_vs_linchpin")) for s in SHOWN if agg[s].get("gain_vs_linchpin")]
+        if fam == "none" and paired:
+            lines += ["", "Paired on the same topologies (none disconnects): LINCHPIN's cost gain minus the "
+                          "strategy's, mean [95% bootstrap interval]; topologies where LINCHPIN's gain is larger / "
+                          "smaller / equal; exact sign test.", "",
+                      "| strategy | LINCHPIN gain - strategy gain | larger / smaller / equal; p |",
+                      "| --- | ---: | ---: |"]
+            for s, d in paired:
+                head, _, tail = _diff(d).partition("; ")
+                lines.append(f"| {LABEL[s]} | {head} | {tail} |")
         lines.append("")
     if "pooled" in summ:
         pl = summ["pooled"]
         lines += [f"**Pooled over {', '.join(pl['families'])}** (n={pl['n']}; the families where a {budget}-fix "
-                  "plan can disconnect):", "", "| strategy | disconnect rate | LINCHPIN-only / strategy-only | p |",
-                  "| --- | ---: | ---: | ---: |"]
+                  "plan can disconnect):", "",
+                  "| strategy | disconnect rate | LINCHPIN-only / strategy-only | p | strategy-only / random-only "
+                  "| p vs random |", "| --- | ---: | ---: | ---: | ---: | ---: |"]
         for s in SHOWN:
             a = pl[s]
-            vs = a.get("vs_linchpin")
+            vs, vr = a.get("vs_linchpin"), a.get("vs_random")
             pair = "-" if not vs else f"{vs['only_linchpin']} / {vs['only_' + s]}"
-            lines.append(f"| {LABEL[s]} | {_rate(a)} | {pair} | {'-' if not vs else _p(vs['p_mcnemar'])} |")
+            rpair = "-" if not vr else f"{vr['only_' + s]} / {vr['only_random']}"
+            lines.append(f"| {LABEL[s]} | {_rate(a)} | {pair} | {'-' if not vs else _p(vs['p_mcnemar'])} | {rpair} "
+                         f"| {'-' if not vr else _p(vr['p_mcnemar'])} |")
         lines.append("")
     if "residual_reduction_vs_cvss" in summ:
         r = summ["residual_reduction_vs_cvss"]
         lo, hi = r["ci95"]
-        lines += [f"Residual attack paths removed by LINCHPIN beyond CVSS-first, as a share of the paths before "
-                  f"any fix, over all {r['n']} topologies: **{r['mean']:.1%}** [{lo:.1%}, {hi:.1%}] (bootstrap).", ""]
+        lines += [f"Difference in the share of enumerated attack paths (k-capped) left after 3 fixes, CVSS-first minus "
+                  f"LINCHPIN, over all {r['n']} topologies: **{r['mean']:.1%}** [{lo:.1%}, {hi:.1%}] (bootstrap)."]
+        per = r.get("per_family") or {}
+        if per:
+            lines[-1] += " Per family: " + ", ".join(
+                f"{f} {v['mean']:.1%} [{v['ci95'][0]:.1%}, {v['ci95'][1]:.1%}]" for f, v in per.items()) + "."
+        w = r.get("where_a_cut_fits")
+        if w:
+            lines[-1] += (f" Over the {w['n']} topologies of {', '.join(w['families'])} (where a 3-fix cut exists): "
+                          f"{w['mean']:.1%} [{w['ci95'][0]:.1%}, {w['ci95'][1]:.1%}].")
+        if per.get("none", {}).get("mean") == 0:
+            lines[-1] += " In none both plans leave the k-capped re-enumeration full, so that family contributes 0."
+        lines.append("")
     return "\n".join(lines)
 
 
 COLORS = {"linchpin": "#1f5fbf", "greedy": "#6f9be0", "milp_interdiction": "#2a7f62",
-          "greedy_interdiction": "#7fc8a9", "cvss": "#d9822b", "cvss_reach": "#f0b97a", "epss": "#c0392b",
+          "greedy_interdiction": "#7fc8a9", "vuln_only": "#17becf", "cvss": "#d9822b", "cvss_reach": "#f0b97a",
+          "epss": "#c0392b",
           "epss_reach": "#e8908a", "kev_epss": "#8e44ad", "kev_epss_reach": "#c39bd3", "betweenness": "#5a5a5a",
           "random": "#b0b0b0"}
 
@@ -169,8 +215,9 @@ def main(argv=None) -> int:
         doc = json.loads((out / "summary.json").read_text(encoding="utf-8"))
         plot(doc["families"], out)
         (out / "summary.md").write_text(md_table(doc["families"], doc["meta"]["budget"], doc["meta"]["k_cap"])
-                                        + "\n", encoding="utf-8")
+                                        + provenance_line(doc["meta"]) + "\n", encoding="utf-8")
         return 0
+    code = run_provenance()
     tasks = [(fam, seed, a.budget, a.k) for fam in a.families.split(",") for seed in range(a.seeds)]
     t0 = time.time()
     if a.workers > 1:
@@ -188,12 +235,12 @@ def main(argv=None) -> int:
             "hosts": f"{min(r['n_hosts'] for r in rows)}..{max(r['n_hosts'] for r in rows)} "
                      f"({len({r['n_hosts'] for r in rows})} sizes, 12 + seed mod 49)",
             "nodes": f"{min(r['nodes'] for r in rows)}..{max(r['nodes'] for r in rows)}",
-            "cve_pool": pool_provenance(), "runtime_s": runtime, "workers": a.workers,
+            "cve_pool": pool_provenance(), "runtime_s": runtime, "workers": a.workers, "code": code,
             "platform": {"python": platform.python_version(), "machine": platform.machine(),
                          "processor": platform.processor(), "cpus": os.cpu_count()}}
     clean = json.loads(json.dumps({"meta": meta, "families": summ}, default=_clean))
     (out / "summary.json").write_text(json.dumps(clean, indent=2), encoding="utf-8")
-    (out / "summary.md").write_text(md_table(summ, a.budget, a.k) + "\n", encoding="utf-8")
+    (out / "summary.md").write_text(md_table(summ, a.budget, a.k) + provenance_line(meta) + "\n", encoding="utf-8")
     plot(summ, out)
     print(md_table(summ, a.budget, a.k))
     print(f"runtime {runtime:.0f}s with {a.workers} workers")

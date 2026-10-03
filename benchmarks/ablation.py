@@ -20,7 +20,11 @@ happens when a tool plans from incomplete data and the attacker uses the real ne
 * ``no_vuln_semantics`` -- every CVE treated as code execution (no CVSS-vector impact gating)
 * ``uniform_cost``      -- every exploit equally hard (exploitability 0.5, no CVSS / EPSS / KEV):
                            isolates the intel-based edge costs; also reports how far its path
-                           ranking moves from the real one (Kendall tau, top-10 overlap)
+                           ranking moves from the real one (Kendall tau, top-10 overlap). Its
+                           plans are scored with the intel-based costs it removed, which favours
+                           the fused planner; as a robustness check the fused and uniform plans
+                           are also both scored with uniform costs (the uniform planner's home
+                           ground)
 * ``identity_only``     -- CVE findings removed, internet-facing hosts assumed owned (the view
                            of an identity-graph tool such as BloodHound)
 * ``kev_epss_queue``    -- no graph at all: patch KEV first, then by EPSS (BOD 22-01 style)
@@ -46,11 +50,21 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
 
-from linchpin.benchmark import bootstrap_ci, evaluate, hosts_for_seed, mcnemar_exact, order, wilson_ci
+from linchpin.benchmark import (
+    bootstrap_ci,
+    evaluate,
+    format_p,
+    hosts_for_seed,
+    mcnemar_exact,
+    order,
+    paired_diff,
+    wilson_ci,
+)
 from linchpin.config import Config
 from linchpin.engine.optimizer import recommend
 from linchpin.graph.store import GraphStore
 from linchpin.models import NormalizedFinding
+from linchpin.runinfo import run_provenance
 from linchpin.synth.topologies import FAMILIES, generate_family, pool_provenance
 
 DOSES = (10, 25, 50)
@@ -68,6 +82,7 @@ LABEL = {
     "kev_epss_queue": "no graph: KEV then EPSS queue",
 }
 LONG_BUDGET = 12
+IDENTITY_FAMILIES = ("ad", "multi")  # families whose routes include cached credentials (by construction)
 
 
 def _flat(f: NormalizedFinding) -> NormalizedFinding | None:
@@ -173,10 +188,15 @@ def run_one(family: str, seed: int, n_hosts: int, budget: int, k: int) -> dict:
     row: dict = {"family": family, "seed": seed, "n_hosts": n_hosts, "nodes": truth.g.number_of_nodes(),
                  "baseline_residual": base["residual"], "baseline_min_cost": base["min_cost"],
                  "optimum": None if opt is None else len(opt)}
+    plans: dict[str, list[str]] = {}
+    uniform_store = None
     for name in VIEWS:
         t0 = time.perf_counter()
         vs = None if name == "kev_epss_queue" else _view_store(findings, name, seed)
         rem = plan(vs, truth, name, budget, k)
+        plans[name] = rem
+        if name == "uniform_cost":
+            uniform_store = vs
         ev = evaluate(truth, rem, k)
         row[f"{name}_disc"] = ev["disconnected"]
         row[f"{name}_resid"] = ev["residual"] / max(base["residual"], 1)
@@ -186,6 +206,12 @@ def run_one(family: str, seed: int, n_hosts: int, budget: int, k: int) -> dict:
         if name == "uniform_cost":
             row.update({f"uniform_{key}": v for key, v in ranking_shift(truth, vs).items()})
         row[f"{name}_ms"] = round((time.perf_counter() - t0) * 1000, 1)
+    # robustness: the fused and uniform-cost plans both scored with uniform edge costs
+    if uniform_store is not None:
+        ub = evaluate(uniform_store, [], k)["min_cost"]
+        for name in ("fused", "uniform_cost"):
+            ev = evaluate(uniform_store, [n for n in plans[name] if n in uniform_store.g], k)
+            row[f"{name}_gain_uniform_scoring"] = (ev["min_cost"] - ub) if math.isfinite(ev["min_cost"]) else math.inf
     return row
 
 
@@ -237,6 +263,23 @@ def summarise(rows: list[dict]) -> dict:
     if pool:
         out["pooled"] = {"families": sorted({r["family"] for r in pool}), "n": len(pool),
                          **{name: _disc(pool, name) for name in VIEWS}}
+    ident = [r for r in rows if r["family"] in IDENTITY_FAMILIES]
+    if ident:  # the identity result restated where it can matter at all (cached-credential routes)
+        out["identity_families"] = {"families": sorted({r["family"] for r in ident}), "n": len(ident),
+                                    **{name: _disc(ident, name) for name in ("fused", "no_identity",
+                                                                             "identity_only")}}
+    out["exploit_intel_paired"] = {}
+    for fam in sorted({r["family"] for r in rows}):
+        rs = [r for r in rows if r["family"] == fam]
+        both = [r for r in rs if math.isfinite(r["fused_gain"]) and math.isfinite(r["uniform_cost_gain"])]
+        both_u = [r for r in rs if math.isfinite(r.get("fused_gain_uniform_scoring", math.inf))
+                  and math.isfinite(r.get("uniform_cost_gain_uniform_scoring", math.inf))]
+        if len(both) >= 10:
+            out["exploit_intel_paired"][fam] = {
+                "intel_scoring": paired_diff([r["fused_gain"] for r in both], [r["uniform_cost_gain"] for r in both]),
+                "uniform_scoring": (paired_diff([r["fused_gain_uniform_scoring"] for r in both_u],
+                                                [r["uniform_cost_gain_uniform_scoring"] for r in both_u])
+                                    if len(both_u) >= 10 else None)}
     return out
 
 
@@ -245,13 +288,23 @@ def _cell(a: dict) -> str:
     txt = f"{a['disconnect_rate']:.0%} [{lo:.0%}, {hi:.0%}]"
     vs = a.get("vs_fused")
     if vs and vs["only_fused"] + vs["only_view"]:
-        p = vs["p_mcnemar"]
-        txt += f", p={'<1e-4' if p < 1e-4 else format(p, '.2g')}"
+        p = format_p(vs["p_mcnemar"])
+        txt += f", p {p}" if p.startswith("<") else f", p = {p}"
     return txt
 
 
+def _pd(d: dict | None, unit: str = "") -> str:
+    if not d:
+        return "n/a"
+    ci = d.get("ci95")
+    p = format_p(d["p_sign"])
+    return (f"{d['mean_diff']:+.3f}{unit}" + (f" [{ci[0]:+.3f}, {ci[1]:+.3f}]" if ci else "")
+            + f" (n={d['n']}; fused larger in {d['a_larger']}, smaller in {d['b_larger']}, equal in {d['ties']}; "
+            + (f"sign test p {p})" if p.startswith("<") else f"sign test p = {p})"))
+
+
 def md(summ: dict, budget: int, seeds: int) -> str:
-    fams = [f for f in summ if f != "pooled"]
+    fams = [f for f in summ if f not in ("pooled", "identity_families", "exploit_intel_paired")]
     pooled = summ.get("pooled")
     cols = [*fams, *(["pooled"] if pooled else [])]
     pooled_label = f"pooled ({'+'.join(pooled['families'])}, n={pooled['n']})" if pooled else ""
@@ -274,6 +327,21 @@ def md(summ: dict, budget: int, seeds: int) -> str:
     if "none" in summ:
         lines += ["", ("`none` has a mean exact min cut of about 7 fixes, so no 3-fix plan can disconnect it; it is "
                        "excluded from the pooled column, and its rows are compared by attacker cost gain below.")]
+    idf = summ.get("identity_families")
+    if idf:
+        f, ni, io = idf["fused"], idf["no_identity"], idf["identity_only"]
+
+        def k_of(a: dict) -> str:
+            lo, hi = a["disconnect_ci95"]
+            return f"{round(a['disconnect_rate'] * idf['n'])}/{idf['n']} [{lo:.0%}, {hi:.0%}]"
+
+        p_ni = format_p(ni["vs_fused"]["p_mcnemar"])
+        lines += ["", (f"**Where identity data can matter.** The pooled rate mixes families by design: only "
+                       f"{' and '.join(idf['families'])} route through cached credentials (the generator plants them "
+                       f"there), while `single` has no identity edge on its route. Over {' + '.join(idf['families'])} "
+                       f"(n={idf['n']}): fused {k_of(f)}, without identity data {k_of(ni)} (exact McNemar p "
+                       f"{p_ni if p_ni.startswith('<') else '= ' + p_ni}), identity data only {k_of(io)}. This is a "
+                       "result inside the generator's model, not a population rate.")]
     lines += ["", "### Fixes needed on the real graph", "",
               (f"Each planner again with a generous budget ({LONG_BUDGET}): how many of its fixes, taken in its own "
                "order, the *real* graph needs before every crown jewel is cut off, as a multiple of the exact minimum "
@@ -308,6 +376,16 @@ def md(summ: dict, budget: int, seeds: int) -> str:
             cells.append(f"{a['cost_gain']:+.3f}" + (f" [{ci[0]:+.3f}, {ci[1]:+.3f}]" if ci else "")
                          + f" (n={a['cost_gain_n']})")
         lines.append(f"| {LABEL[name]} | " + " | ".join(cells) + " |")
+    eip = summ.get("exploit_intel_paired") or {}
+    if eip:
+        lines += ["", "### Exploit intel: paired cost gains", "",
+                  ("Fused minus uniform-cost planner, on the topologies where neither disconnects (mean, 95% bootstrap "
+                   "interval over the pairs, exact sign test). *Intel scoring* uses the same CVSS / EPSS / KEV edge "
+                   "costs the uniform planner removed, which favours the fused planner. *Uniform scoring* scores both "
+                   "plans with uniform costs instead, the uniform planner's own model."), "",
+                  "| family | intel scoring | uniform scoring |", "| --- | ---: | ---: |"]
+        for f, v in eip.items():
+            lines.append(f"| {f} | {_pd(v['intel_scoring'])} | {_pd(v.get('uniform_scoring'))} |")
     lines += ["", "### How much the exploit intel moves the path ranking", "",
               ("Uniform-cost view vs real costs on the same graph: Kendall tau between the real top-100 paths' real "
                "costs and their uniform-view costs, and the overlap of the two top-10 path sets (mean, 95% bootstrap "
@@ -320,6 +398,17 @@ def md(summ: dict, budget: int, seeds: int) -> str:
         lines.append(f"| {f} | {fmt(u['kendall_tau'], u.get('kendall_tau_ci95'))} | "
                      f"{fmt(u['top10_overlap'], u.get('top10_overlap_ci95'))} |")
     return "\n".join(lines) + "\n"
+
+
+def provenance_line(meta: dict) -> str:
+    code = meta.get("code") or {}
+    if code.get("github_run_id"):
+        return (f"Produced by CI run [{code['github_run_id']}]({code['github_run_url']}) at commit "
+                f"{(code.get('github_sha') or '')[:12]} ({meta.get('workers')} workers, {meta.get('runtime_s')} s).")
+    if code.get("git_commit"):
+        return (f"Produced at commit {code['git_commit'][:12]}"
+                + (" with uncommitted code changes" if code.get("git_dirty_code") else "") + ".")
+    return "Produced before run provenance was recorded (v1.1.0 or earlier)."
 
 
 def _task(a: tuple) -> dict:
@@ -342,6 +431,7 @@ def main(argv=None) -> int:
     a = ap.parse_args(argv)
     out = Path(a.out)
     out.mkdir(parents=True, exist_ok=True)
+    code = run_provenance()
     tasks = [(fam, seed, a.budget, a.k) for fam in a.families.split(",") for seed in range(a.seeds)]
     t0 = time.time()
     if a.workers > 1:
@@ -357,10 +447,11 @@ def main(argv=None) -> int:
     meta = {"seeds_per_family": a.seeds, "budget": a.budget, "k_cap": a.k, "long_budget": LONG_BUDGET,
             "hosts": f"{min(r['n_hosts'] for r in rows)}..{max(r['n_hosts'] for r in rows)} (12 + seed mod 49)",
             "cve_pool": pool_provenance(), "runtime_s": round(time.time() - t0, 1), "workers": a.workers,
+            "code": code,
             "platform": {"python": platform.python_version(), "machine": platform.machine(), "cpus": os.cpu_count()}}
     doc = json.loads(json.dumps({"meta": meta, "families": summ}, default=_clean))
     (out / "ablation.json").write_text(json.dumps(doc, indent=2), encoding="utf-8")
-    text = md(summ, a.budget, a.seeds)
+    text = md(summ, a.budget, a.seeds) + "\n" + provenance_line(meta) + "\n"
     (out / "ablation.md").write_text(text, encoding="utf-8")
     print(text)
     return 0
