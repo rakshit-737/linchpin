@@ -75,6 +75,12 @@ every outcome cell (all columns except the millisecond timings) equals the v1.1.
 
 --8<-- "benchmarks/results/ablation.md"
 
+**The identity row on real data.** The same `no_identity` view applied to the real-export case study below (public
+OpenVAS, Nessus, nmap and SharpHound sample reports in a declared topology; one topology): planned without the
+credential and ACL findings, LINCHPIN sees no attack path to the domain controller and proposes no fix, while on the
+full graph the domain controller stays reachable (200/200 enumerated paths, k cap 200); the fused plan's one
+credential rotation cuts it off (`benchmarks/results/case_study.md`, commit e26d0b1).
+
 ## Measured case study (CI lab scan)
 
 The `lab-scan` CI job starts official Docker images pinned to older releases (httpd 2.4.49, nginx 1.16.1,
