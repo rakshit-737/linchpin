@@ -96,17 +96,20 @@ jobs:
           NEO4J_PASSWORD: ci-lab-only-pw
           LINCHPIN_ARTIFACT_DIR: artifacts
           LINCHPIN_GDS_SWEEP: "250:10,250:100,500:10,500:100"
+          LINCHPIN_GDS_REPEATS: "10"
         run: pytest -q -rs -m neo4j_gds tests/test_neo4j_gds.py
-      - name: Check the artefact
+      - name: Check the artefact (and that it names this run)
         run: |
           python - <<'PY'
-          import json
+          import json, os
           d = json.load(open("artifacts/gds_crosscheck.json"))
+          assert d["code"]["github_run_id"] == os.environ["GITHUB_RUN_ID"], d["code"]
           for r in d["runs"]:
               assert r["projection"]["relationships"] == r["graph"]["relationships"] > 10000, r["graph"]
               assert [round(c, 5) for c in r["gds_costs"]] == [round(c, 5) for c in r["networkx_costs"]]
-              print(r["hosts"], r["k"], r["graph"], r["timings_s"]["networkx_yen_median"], r["timings_s"]["gds_yen_median"])
-          print(d["gds_version"], d["neo4j"])
+              t = r["timings_s"]
+              print(r["hosts"], r["k"], r["graph"], t["networkx_yen"], t["gds_yen"], r["speedup_median"])
+          print(d["gds_version"], d["neo4j"], d["code"])
           PY
       - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a  # v7.0.1
         if: always()
@@ -130,6 +133,15 @@ jobs:
         run: bash lab/scan.sh
       - name: Analyse with LINCHPIN (offline) and check the plan
         run: python benchmarks/lab_case_study.py --scans artifacts/lab
+      - name: The artefact names this run and the pulled image digests
+        run: |
+          python - <<'PY'
+          import json, os
+          d = json.load(open("artifacts/lab/lab_case_study.json"))
+          assert d["code"]["github_run_id"] == os.environ["GITHUB_RUN_ID"], d["code"]
+          assert len(d["images"]) == 6, d["images"]
+          print(d["code"], *d["images"], sep="\n")
+          PY
       - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a  # v7.0.1
         if: always()
         with: { name: lab-scan, path: artifacts/lab/, if-no-files-found: error }
@@ -218,9 +230,24 @@ jobs:
     runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
+      - name: Keep the committed PDF (the build below overwrites it)
+        run: cp paper/linchpin.pdf /tmp/committed.pdf
       - uses: xu-cheng/latex-action@6549dc21effb2730855a1281407ecfcececc6c1b  # 4.1.0
         with:
           root_file: linchpin.tex
           working_directory: paper
       - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a  # v7.0.1
         with: { name: preprint, path: paper/linchpin.pdf, if-no-files-found: error }
+      # README and the docs site link the committed PDF, so it must say what paper/linchpin.tex says
+      - name: The committed PDF matches a fresh build (text, layout ignored)
+        run: |
+          sudo apt-get install -y -qq poppler-utils > /dev/null
+          if ! python3 scripts/compare_pdf_text.py /tmp/committed.pdf paper/linchpin.pdf; then
+            echo "::error::paper/linchpin.pdf is stale: rebuild it from paper/linchpin.tex or commit this run's preprint artefact"
+            exit 1
+          fi
+      - name: Overfull boxes wider than 10pt
+        run: |
+          if grep -E 'Overfull .hbox .[1-9][0-9]+[.][0-9]+pt too wide' paper/linchpin.log; then
+            echo "::warning::an overfull box is wider than 10pt (see above)"
+          fi
